@@ -20,9 +20,15 @@ enum Endpoint {
 
     // Discover
     case discover(provider: String?, type: String?, region: String?)
+    case discoverFiltered(type: String, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?)
     case trending
-    case search(query: String)
+    case search(query: String, type: String?, year: Int?)
     case nowPlaying
+    case topRated(type: String, page: Int?)
+    case upcoming(page: Int?)
+    case popular(type: String, page: Int?)
+    case genres(type: String)
+    case providers(type: String)
 
     var path: String {
         switch self {
@@ -40,7 +46,7 @@ enum Endpoint {
             return "/media/tv/\(tvId)/season/\(season)/episode/\(episode)/watch"
         case .seasonDetail(let tvId, let season):
             return "/media/tv/\(tvId)/season/\(season)"
-        case .discover:
+        case .discover, .discoverFiltered:
             return "/discover"
         case .trending:
             return "/discover/trending"
@@ -48,12 +54,23 @@ enum Endpoint {
             return "/discover/search"
         case .nowPlaying:
             return "/discover/now-playing"
+        case .topRated:
+            return "/discover/top-rated"
+        case .upcoming:
+            return "/discover/upcoming"
+        case .popular:
+            return "/discover/popular"
+        case .genres:
+            return "/discover/genres"
+        case .providers:
+            return "/discover/providers"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .watchlist, .mediaDetail, .seasonDetail, .discover, .trending, .search, .nowPlaying:
+        case .watchlist, .mediaDetail, .seasonDetail, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
+             .topRated, .upcoming, .popular, .genres, .providers:
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode:
             return .POST
@@ -70,8 +87,34 @@ enum Endpoint {
             if let type { items.append(URLQueryItem(name: "type", value: type)) }
             if let region { items.append(URLQueryItem(name: "region", value: region)) }
             return items.isEmpty ? nil : items
-        case .search(let query):
-            return [URLQueryItem(name: "query", value: query)]
+        case .discoverFiltered(let type, let genres, let originCountry, let providers, let watchRegion, let sortBy, let page):
+            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type)]
+            if let genres { items.append(URLQueryItem(name: "with_genres", value: genres)) }
+            if let originCountry { items.append(URLQueryItem(name: "with_origin_country", value: originCountry)) }
+            if let providers { items.append(URLQueryItem(name: "with_watch_providers", value: providers)) }
+            if let watchRegion { items.append(URLQueryItem(name: "watch_region", value: watchRegion)) }
+            if let sortBy { items.append(URLQueryItem(name: "sort_by", value: sortBy)) }
+            if let page { items.append(URLQueryItem(name: "page", value: String(page))) }
+            return items
+        case .search(let query, let type, let year):
+            var items: [URLQueryItem] = [URLQueryItem(name: "query", value: query)]
+            if let type { items.append(URLQueryItem(name: "type", value: type)) }
+            if let year { items.append(URLQueryItem(name: "year", value: String(year))) }
+            return items
+        case .topRated(let type, let page):
+            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type)]
+            if let page { items.append(URLQueryItem(name: "page", value: String(page))) }
+            return items
+        case .upcoming(let page):
+            var items: [URLQueryItem] = []
+            if let page { items.append(URLQueryItem(name: "page", value: String(page))) }
+            return items.isEmpty ? nil : items
+        case .popular(let type, let page):
+            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type)]
+            if let page { items.append(URLQueryItem(name: "page", value: String(page))) }
+            return items
+        case .genres(let type), .providers(let type):
+            return [URLQueryItem(name: "type", value: type)]
         default:
             return nil
         }

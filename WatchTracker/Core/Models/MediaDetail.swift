@@ -8,6 +8,8 @@ struct MediaDetail: Codable, Identifiable {
     let posterPath: String?
     let backdropPath: String?
     let voteAverage: Double?
+    let releaseDate: String?
+    let firstAirDate: String?
     let genres: [Genre]?
     let credits: Credits?
     let watchProviders: WatchProviderResult?
@@ -15,6 +17,12 @@ struct MediaDetail: Codable, Identifiable {
 
     var displayTitle: String {
         title ?? name ?? "Unknown"
+    }
+
+    var releaseYear: String? {
+        let date = releaseDate ?? firstAirDate
+        guard let date, date.count >= 4 else { return nil }
+        return String(date.prefix(4))
     }
 
     var posterURL: URL? {
