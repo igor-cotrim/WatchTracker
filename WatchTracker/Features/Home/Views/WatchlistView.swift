@@ -14,6 +14,10 @@ struct WatchlistView: View {
             if viewModel.isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, minHeight: 200)
+            } else if let error = viewModel.errorMessage {
+                ErrorStateView(message: error) {
+                    await viewModel.fetchWatchlist()
+                }
             } else if viewModel.filteredWatchlist.isEmpty {
                 emptyState
             } else {

@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct SearchFilterBar: View {
-    @Binding var selectedType: String?
+    @Binding var selectedType: MediaType?
     @Binding var selectedYear: Int?
 
-    private let types: [(label: String, value: String?)] = [
+    private let types: [(label: String, value: MediaType?)] = [
         ("All", nil),
-        ("Movies", "movie"),
-        ("TV Shows", "tv")
+        ("Movies", .movie),
+        ("TV Shows", .tv)
     ]
 
     private var years: [Int] {
@@ -31,7 +31,7 @@ struct SearchFilterBar: View {
         }
     }
 
-    private func typeChip(label: String, value: String?) -> some View {
+    private func typeChip(label: String, value: MediaType?) -> some View {
         let isSelected = selectedType == value
         return Button {
             selectedType = value

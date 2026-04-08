@@ -4,12 +4,10 @@ import Supabase
 actor APIClient {
     static let shared = APIClient()
 
-    private let baseURL: URL
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
     private init() {
-        self.baseURL = Config.apiBaseURL
         self.decoder = JSONDecoder()
         self.decoder.keyDecodingStrategy = .convertFromSnakeCase
         self.decoder.dateDecodingStrategy = .iso8601
@@ -44,16 +42,17 @@ actor APIClient {
     // MARK: - Private Helpers
 
     private func buildRequest(for endpoint: Endpoint) async throws -> URLRequest {
+        let baseURL = Config.apiBaseURL
         let fullURLString = baseURL.absoluteString + endpoint.path
         var components = URLComponents(string: fullURLString)!
-        components.queryItems = endpoint.queryItems
+        components.queryItems = await endpoint.queryItems
 
         guard let url = components.url else {
             throw APIError.unknown
         }
 
         var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method.rawValue
+        request.httpMethod = await endpoint.method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         // Inject Supabase auth token
@@ -61,8 +60,8 @@ actor APIClient {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
-        if let body = endpoint.body {
-            request.httpBody = try encoder.encode(AnyEncodable(body))
+        if let body = await endpoint.body {
+            request.httpBody = try await encoder.encode(AnyEncodable(body))
         }
 
         return request

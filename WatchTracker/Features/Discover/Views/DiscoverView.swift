@@ -64,12 +64,12 @@ struct DiscoverView: View {
                 .font(.headline)
                 .padding(.horizontal)
 
-            ScrollView(.horizontal, showsIndicators: false) {
+            ScrollView(.horizontal) {
                 HStack(spacing: 12) {
                     ForEach(items) { item in
                         NavigationLink {
                             MediaDetailView(
-                                mediaType: item.title != nil ? "movie" : "tv",
+                                mediaType: item.mediaType,
                                 mediaId: item.id
                             )
                         } label: {
@@ -83,6 +83,7 @@ struct DiscoverView: View {
                 }
                 .padding(.horizontal)
             }
+            .scrollIndicators(.hidden)
         }
     }
 
@@ -120,7 +121,7 @@ struct DiscoverView: View {
                 .font(.headline)
                 .padding(.horizontal)
 
-            ScrollView(.horizontal, showsIndicators: false) {
+            ScrollView(.horizontal) {
                 HStack(spacing: 8) {
                     ForEach(viewModel.genres) { genre in
                         NavigationLink {
@@ -136,10 +137,12 @@ struct DiscoverView: View {
                                 .clipShape(Capsule())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Navegar por \(genre.name)")
                     }
                 }
                 .padding(.horizontal)
             }
+            .scrollIndicators(.hidden)
         }
     }
 
@@ -151,7 +154,7 @@ struct DiscoverView: View {
                 .font(.headline)
                 .padding(.horizontal)
 
-            ScrollView(.horizontal, showsIndicators: false) {
+            ScrollView(.horizontal) {
                 HStack(spacing: 12) {
                     ForEach(viewModel.providers) { provider in
                         NavigationLink {
@@ -170,7 +173,7 @@ struct DiscoverView: View {
                                     }
                                 }
                                 .frame(width: 48, height: 48)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .clipShape(.rect(cornerRadius: 10))
 
                                 Text(provider.providerName)
                                     .font(.caption2)
@@ -179,10 +182,12 @@ struct DiscoverView: View {
                             }
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Navegar por \(provider.providerName)")
                     }
                 }
                 .padding(.horizontal)
             }
+            .scrollIndicators(.hidden)
         }
     }
 
@@ -207,7 +212,7 @@ struct DiscoverView: View {
                     ForEach(viewModel.searchSuggestions) { item in
                         NavigationLink {
                             MediaDetailView(
-                                mediaType: item.title != nil ? "movie" : "tv",
+                                mediaType: item.mediaType,
                                 mediaId: item.id
                             )
                         } label: {
@@ -221,7 +226,7 @@ struct DiscoverView: View {
                                     }
                                 }
                                 .frame(width: 40, height: 60)
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .clipShape(.rect(cornerRadius: 4))
 
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.displayTitle)
@@ -263,7 +268,7 @@ struct DiscoverView: View {
                     ForEach(viewModel.searchResults) { item in
                         NavigationLink {
                             MediaDetailView(
-                                mediaType: item.title != nil ? "movie" : "tv",
+                                mediaType: item.mediaType,
                                 mediaId: item.id
                             )
                         } label: {

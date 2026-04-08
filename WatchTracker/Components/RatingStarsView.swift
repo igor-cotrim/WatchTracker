@@ -21,12 +21,26 @@ struct RatingStarsView: View {
     var body: some View {
         HStack(spacing: 4) {
             ForEach(1...starCount, id: \.self) { star in
-                starImage(for: star)
-                    .font(.body)
-                    .foregroundStyle(starColor(for: star))
-                    .onTapGesture {
-                        onRate?(star * 2) // Convert star index to rating value
-                    }
+                Button {
+                    onRate?(star * 2)
+                } label: {
+                    starImage(for: star)
+                        .font(.body)
+                        .foregroundStyle(starColor(for: star))
+                }
+                .buttonStyle(.plain)
+                .disabled(onRate == nil)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(onRate != nil ? "Avaliação" : "Avaliação do usuário")
+        .accessibilityValue(rating == 0 ? "Sem avaliação" : "\(rating) de \(maxRating)")
+        .accessibilityAdjustableAction { direction in
+            guard let onRate else { return }
+            switch direction {
+            case .increment: onRate(min(rating + 1, maxRating))
+            case .decrement: onRate(max(rating - 1, 0))
+            @unknown default: break
             }
         }
     }

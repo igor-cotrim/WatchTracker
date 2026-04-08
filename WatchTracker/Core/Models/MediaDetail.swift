@@ -15,6 +15,10 @@ struct MediaDetail: Codable, Identifiable {
     let watchProviders: WatchProviderResult?
     let seasons: [Season]?   // TV only
 
+    var mediaType: MediaType {
+        title != nil ? .movie : .tv
+    }
+
     var displayTitle: String {
         title ?? name ?? "Unknown"
     }

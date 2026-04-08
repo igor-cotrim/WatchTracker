@@ -9,6 +9,7 @@ enum MediaFilter: String, CaseIterable, Identifiable {
 }
 
 @Observable
+@MainActor
 final class WatchlistViewModel {
     var watchlist: [WatchItem] = []
     var isLoading = false
@@ -22,9 +23,9 @@ final class WatchlistViewModel {
         case .all:
             return watchlist
         case .movie:
-            return watchlist.filter { $0.mediaType == "movie" }
+            return watchlist.filter { $0.mediaType == .movie }
         case .tv:
-            return watchlist.filter { $0.mediaType == "tv" }
+            return watchlist.filter { $0.mediaType == .tv }
         }
     }
 

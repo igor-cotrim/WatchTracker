@@ -21,7 +21,7 @@ struct WatchlistCardView: View {
                     posterPlaceholder
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(.rect(cornerRadius: 8))
 
             // Title overlay
             VStack(alignment: .leading) {
@@ -40,7 +40,7 @@ struct WatchlistCardView: View {
                         )
                     )
             }
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(.rect(cornerRadius: 8))
 
             // New episodes badge
             if let count = item.newEpisodesCount, count > 0 {
@@ -56,6 +56,15 @@ struct WatchlistCardView: View {
             }
         }
         .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel({
+            var label = item.title ?? "Unknown"
+            if let count = item.newEpisodesCount, count > 0 {
+                label += ", \(count) novos episódios"
+            }
+            return label
+        }())
+        .accessibilityHint("Toque para ver detalhes")
     }
 
     private var posterPlaceholder: some View {

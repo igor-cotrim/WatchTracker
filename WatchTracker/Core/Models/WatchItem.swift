@@ -4,8 +4,8 @@ struct WatchItem: Codable, Identifiable {
     let id: Int
     let userId: String
     let tmdbId: Int
-    let mediaType: String   // "movie" or "tv"
-    let status: String       // "watching", "completed", "plan_to_watch", "dropped"
+    let mediaType: MediaType
+    let status: WatchlistStatus
     let addedAt: Date
 
     // Display fields populated from TMDB data

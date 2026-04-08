@@ -9,26 +9,29 @@ enum HTTPMethod: String {
 enum Endpoint {
     // Watchlist
     case watchlist
-    case addToWatchlist(tmdbId: Int, mediaType: String, status: String)
+    case addToWatchlist(tmdbId: Int, mediaType: MediaType, status: WatchlistStatus)
     case removeFromWatchlist(id: Int)
 
     // Media Detail
-    case mediaDetail(type: String, id: Int)
-    case rateMedia(type: String, id: Int, rating: Int)
+    case mediaDetail(type: MediaType, id: Int)
+    case rateMedia(type: MediaType, id: Int, rating: Int)
     case watchEpisode(tvId: Int, season: Int, episode: Int)
+    case unwatchEpisode(tvId: Int, season: Int, episode: Int)
+    case watchSeason(tvId: Int, season: Int)
+    case unwatchSeason(tvId: Int, season: Int)
     case seasonDetail(tvId: Int, season: Int)
 
     // Discover
-    case discover(provider: String?, type: String?, region: String?)
-    case discoverFiltered(type: String, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?)
+    case discover(provider: String?, type: MediaType?, region: String?)
+    case discoverFiltered(type: MediaType, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?)
     case trending
-    case search(query: String, type: String?, year: Int?)
+    case search(query: String, type: MediaType?, year: Int?)
     case nowPlaying
-    case topRated(type: String, page: Int?)
+    case topRated(type: MediaType, page: Int?)
     case upcoming(page: Int?)
-    case popular(type: String, page: Int?)
-    case genres(type: String)
-    case providers(type: String)
+    case popular(type: MediaType, page: Int?)
+    case genres(type: MediaType)
+    case providers(type: MediaType)
 
     var path: String {
         switch self {
@@ -39,11 +42,17 @@ enum Endpoint {
         case .removeFromWatchlist(let id):
             return "/watchlist/\(id)"
         case .mediaDetail(let type, let id):
-            return "/media/\(type)/\(id)"
+            return "/media/\(type.rawValue)/\(id)"
         case .rateMedia(let type, let id, _):
-            return "/media/\(type)/\(id)/rate"
+            return "/media/\(type.rawValue)/\(id)/rate"
         case .watchEpisode(let tvId, let season, let episode):
-            return "/media/tv/\(tvId)/season/\(season)/episode/\(episode)/watch"
+            return "/media/tv/\(tvId)/episodes/\(season)/\(episode)/watch"
+        case .unwatchEpisode(let tvId, let season, let episode):
+            return "/media/tv/\(tvId)/episodes/\(season)/\(episode)/watch"
+        case .watchSeason(let tvId, let season):
+            return "/media/tv/\(tvId)/seasons/\(season)/watch"
+        case .unwatchSeason(let tvId, let season):
+            return "/media/tv/\(tvId)/seasons/\(season)/watch"
         case .seasonDetail(let tvId, let season):
             return "/media/tv/\(tvId)/season/\(season)"
         case .discover, .discoverFiltered:
@@ -72,9 +81,9 @@ enum Endpoint {
         case .watchlist, .mediaDetail, .seasonDetail, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
              .topRated, .upcoming, .popular, .genres, .providers:
             return .GET
-        case .addToWatchlist, .rateMedia, .watchEpisode:
+        case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason:
             return .POST
-        case .removeFromWatchlist:
+        case .removeFromWatchlist, .unwatchEpisode, .unwatchSeason:
             return .DELETE
         }
     }
@@ -84,11 +93,11 @@ enum Endpoint {
         case .discover(let provider, let type, let region):
             var items: [URLQueryItem] = []
             if let provider { items.append(URLQueryItem(name: "provider", value: provider)) }
-            if let type { items.append(URLQueryItem(name: "type", value: type)) }
+            if let type { items.append(URLQueryItem(name: "type", value: type.rawValue)) }
             if let region { items.append(URLQueryItem(name: "region", value: region)) }
             return items.isEmpty ? nil : items
         case .discoverFiltered(let type, let genres, let originCountry, let providers, let watchRegion, let sortBy, let page):
-            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type)]
+            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type.rawValue)]
             if let genres { items.append(URLQueryItem(name: "with_genres", value: genres)) }
             if let originCountry { items.append(URLQueryItem(name: "with_origin_country", value: originCountry)) }
             if let providers { items.append(URLQueryItem(name: "with_watch_providers", value: providers)) }
@@ -98,11 +107,11 @@ enum Endpoint {
             return items
         case .search(let query, let type, let year):
             var items: [URLQueryItem] = [URLQueryItem(name: "query", value: query)]
-            if let type { items.append(URLQueryItem(name: "type", value: type)) }
+            if let type { items.append(URLQueryItem(name: "type", value: type.rawValue)) }
             if let year { items.append(URLQueryItem(name: "year", value: String(year))) }
             return items
         case .topRated(let type, let page):
-            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type)]
+            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type.rawValue)]
             if let page { items.append(URLQueryItem(name: "page", value: String(page))) }
             return items
         case .upcoming(let page):
@@ -110,11 +119,11 @@ enum Endpoint {
             if let page { items.append(URLQueryItem(name: "page", value: String(page))) }
             return items.isEmpty ? nil : items
         case .popular(let type, let page):
-            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type)]
+            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type.rawValue)]
             if let page { items.append(URLQueryItem(name: "page", value: String(page))) }
             return items
         case .genres(let type), .providers(let type):
-            return [URLQueryItem(name: "type", value: type)]
+            return [URLQueryItem(name: "type", value: type.rawValue)]
         default:
             return nil
         }
@@ -136,8 +145,8 @@ enum Endpoint {
 
 private struct AddToWatchlistBody: Encodable {
     let tmdbId: Int
-    let mediaType: String
-    let status: String
+    let mediaType: MediaType
+    let status: WatchlistStatus
 }
 
 private struct RateMediaBody: Encodable {

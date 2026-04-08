@@ -1,6 +1,7 @@
 import Foundation
 
 @Observable
+@MainActor
 final class ProfileViewModel {
     var episodesWatched: Int = 0
     var moviesWatched: Int = 0

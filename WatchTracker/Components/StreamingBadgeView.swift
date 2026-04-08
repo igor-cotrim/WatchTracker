@@ -20,11 +20,12 @@ struct StreamingBadgeView: View {
             }
         }
         .frame(width: 40, height: 40)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(.rect(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
                 .stroke(Color(.systemGray4), lineWidth: 0.5)
         )
+        .accessibilityLabel(provider.providerName)
     }
 
     private var placeholderBadge: some View {

@@ -24,7 +24,7 @@ struct Season: Codable, Identifiable {
     let id: Int
     let name: String
     let seasonNumber: Int
-    let episodeCount: Int
+    let episodeCount: Int?
     let posterPath: String?
     let airDate: String?
     var episodes: [Episode]?

@@ -1,6 +1,7 @@
 import Foundation
 
 @Observable
+@MainActor
 final class DiscoverViewModel {
     var trending: [MediaDetail] = []
     var searchResults: [MediaDetail] = []
@@ -16,7 +17,7 @@ final class DiscoverViewModel {
     var errorMessage: String?
 
     // Search filters
-    var selectedSearchType: String?
+    var selectedSearchType: MediaType?
     var selectedSearchYear: Int?
 
     // Search history
@@ -36,64 +37,43 @@ final class DiscoverViewModel {
     // MARK: - Topic Fetching
 
     func fetchTrending() async {
-        do {
-            trending = try await service.fetchTrending()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        await fetch(\.trending) { try await service.fetchTrending() }
     }
 
     func fetchNowPlaying() async {
-        do {
-            nowPlaying = try await service.fetchNowPlaying()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        await fetch(\.nowPlaying) { try await service.fetchNowPlaying() }
     }
 
     func fetchTopRated() async {
-        do {
-            topRated = try await service.fetchTopRated()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        await fetch(\.topRated) { try await service.fetchTopRated() }
     }
 
     func fetchUpcoming() async {
-        do {
-            upcoming = try await service.fetchUpcoming()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        await fetch(\.upcoming) { try await service.fetchUpcoming() }
     }
 
     func fetchPopular() async {
-        do {
-            popular = try await service.fetchPopular()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        await fetch(\.popular) { try await service.fetchPopular() }
     }
 
     func fetchAnime() async {
-        do {
-            anime = try await service.discoverFiltered(type: "tv", genres: "16", originCountry: "JP")
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        await fetch(\.anime) { try await service.discoverFiltered(type: .tv, genres: "16", originCountry: "JP") }
     }
 
     func fetchGenres() async {
-        do {
-            genres = try await service.fetchGenres()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        await fetch(\.genres) { try await service.fetchGenres() }
     }
 
     func fetchProviders() async {
+        await fetch(\.providers) { try await service.fetchProviders() }
+    }
+
+    // MARK: - Private Helper
+
+    private func fetch<T>(_ keyPath: ReferenceWritableKeyPath<DiscoverViewModel, T>,
+                          _ operation: () async throws -> T) async {
         do {
-            providers = try await service.fetchProviders()
+            self[keyPath: keyPath] = try await operation()
         } catch {
             errorMessage = error.localizedDescription
         }

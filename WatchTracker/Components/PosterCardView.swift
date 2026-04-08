@@ -23,7 +23,7 @@ struct PosterCardView: View {
                 }
             }
             .frame(width: width, height: width * 1.5)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(.rect(cornerRadius: 8))
             .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
 
             Text(title)
@@ -31,6 +31,9 @@ struct PosterCardView: View {
                 .lineLimit(2)
                 .frame(width: width, alignment: .leading)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(.isButton)
     }
 
     private var posterPlaceholder: some View {

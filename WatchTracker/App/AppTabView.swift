@@ -3,20 +3,15 @@ import SwiftUI
 struct AppTabView: View {
     var body: some View {
         TabView {
-            HomeView()
-                .tabItem {
-                    Label("Home", systemImage: "house.fill")
-                }
-
-            DiscoverView()
-                .tabItem {
-                    Label("Discover", systemImage: "magnifyingglass")
-                }
-
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person.fill")
-                }
+            Tab("Home", systemImage: "house.fill") {
+                HomeView()
+            }
+            Tab("Discover", systemImage: "magnifyingglass") {
+                DiscoverView()
+            }
+            Tab("Profile", systemImage: "person.fill") {
+                ProfileView()
+            }
         }
     }
 }
