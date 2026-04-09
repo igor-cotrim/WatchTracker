@@ -2,8 +2,6 @@ import SwiftUI
 
 struct DetailTitleSection: View {
     let media: MediaDetail
-    let userRating: Int?
-    let onRate: (Int) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -33,14 +31,6 @@ struct DetailTitleSection: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-
-            if let rating = userRating {
-                Text("Your rating: \(rating)/10")
-                    .font(.caption)
-                    .foregroundStyle(Color.brandAccent)
-            }
-
-            RatingStarsView(rating: userRating ?? 0, maxRating: 10, onRate: onRate)
         }
     }
 }

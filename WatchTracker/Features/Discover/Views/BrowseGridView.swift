@@ -32,7 +32,7 @@ struct BrowseGridView: View {
                                 title: item.displayTitle
                             )
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(PressedButtonStyle())
                         .onAppear {
                             if item.id == viewModel.results.last?.id {
                                 Task { await viewModel.loadMore() }

@@ -1,5 +1,9 @@
 import Foundation
 
+private struct WatchedEpisodesResponse: Decodable {
+    let watchedEpisodes: [Int]
+}
+
 @Observable
 @MainActor
 final class MediaDetailViewModel {
@@ -86,7 +90,13 @@ final class MediaDetailViewModel {
             isLoadingSeason.insert(seasonNumber)
             do {
                 let season: Season = try await api.get(.seasonDetail(tvId: mediaId, season: seasonNumber))
-                seasonEpisodes[seasonNumber] = season.episodes ?? []
+                let watched: WatchedEpisodesResponse? = try? await api.get(.watchedEpisodes(tvId: mediaId, season: seasonNumber))
+                let watchedSet = Set(watched?.watchedEpisodes ?? [])
+                seasonEpisodes[seasonNumber] = (season.episodes ?? []).map { ep in
+                    var e = ep
+                    e.isWatched = watchedSet.contains(ep.episodeNumber)
+                    return e
+                }
             } catch {
                 errorMessage = error.localizedDescription
             }

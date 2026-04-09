@@ -6,7 +6,7 @@ struct DetailSeasonsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Seasons")
+            Text("Temporadas")
                 .font(.headline)
 
             ForEach(seasons) { season in
@@ -15,8 +15,10 @@ struct DetailSeasonsSection: View {
 
                     if viewModel.expandedSeasons.contains(season.seasonNumber) {
                         SeasonContentView(season: season, viewModel: viewModel)
+                            .transition(.opacity.combined(with: .offset(y: -4)))
                     }
                 }
+                .animation(.spring(response: 0.35, dampingFraction: 0.8), value: viewModel.expandedSeasons.contains(season.seasonNumber))
             }
         }
     }

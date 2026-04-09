@@ -8,7 +8,8 @@ enum HTTPMethod: String {
 
 enum Endpoint {
     // Watchlist
-    case watchlist
+    case watchlist(status: WatchlistStatus? = nil, mediaType: String? = nil)
+    case continueWatching
     case addToWatchlist(tmdbId: Int, mediaType: MediaType, status: WatchlistStatus)
     case removeFromWatchlist(id: Int)
 
@@ -20,6 +21,7 @@ enum Endpoint {
     case watchSeason(tvId: Int, season: Int)
     case unwatchSeason(tvId: Int, season: Int)
     case seasonDetail(tvId: Int, season: Int)
+    case watchedEpisodes(tvId: Int, season: Int)
 
     // Discover
     case discover(provider: String?, type: MediaType?, region: String?)
@@ -37,6 +39,8 @@ enum Endpoint {
         switch self {
         case .watchlist:
             return "/watchlist"
+        case .continueWatching:
+            return "/watchlist/continue-watching"
         case .addToWatchlist:
             return "/watchlist"
         case .removeFromWatchlist(let id):
@@ -55,6 +59,8 @@ enum Endpoint {
             return "/media/tv/\(tvId)/seasons/\(season)/watch"
         case .seasonDetail(let tvId, let season):
             return "/media/tv/\(tvId)/season/\(season)"
+        case .watchedEpisodes(let tvId, let season):
+            return "/media/tv/\(tvId)/seasons/\(season)/watched"
         case .discover, .discoverFiltered:
             return "/discover"
         case .trending:
@@ -78,7 +84,7 @@ enum Endpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .watchlist, .mediaDetail, .seasonDetail, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
+        case .watchlist, .continueWatching, .mediaDetail, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
              .topRated, .upcoming, .popular, .genres, .providers:
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason:
@@ -90,6 +96,11 @@ enum Endpoint {
 
     var queryItems: [URLQueryItem]? {
         switch self {
+        case .watchlist(let status, let mediaType):
+            var items: [URLQueryItem] = []
+            if let status { items.append(URLQueryItem(name: "status", value: status.rawValue)) }
+            if let mediaType { items.append(URLQueryItem(name: "media_type", value: mediaType)) }
+            return items.isEmpty ? nil : items
         case .discover(let provider, let type, let region):
             var items: [URLQueryItem] = []
             if let provider { items.append(URLQueryItem(name: "provider", value: provider)) }

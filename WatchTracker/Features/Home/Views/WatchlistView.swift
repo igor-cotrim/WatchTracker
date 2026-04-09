@@ -11,28 +11,36 @@ struct WatchlistView: View {
 
     var body: some View {
         ScrollView {
-            if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: 200)
-            } else if let error = viewModel.errorMessage {
-                ErrorStateView(message: error) {
-                    await viewModel.fetchWatchlist()
-                }
-            } else if viewModel.filteredWatchlist.isEmpty {
-                emptyState
-            } else {
-                LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(viewModel.filteredWatchlist) { item in
-                        NavigationLink {
-                            MediaDetailView(mediaType: item.mediaType, mediaId: item.tmdbId)
-                        } label: {
-                            WatchlistCardView(item: item)
-                        }
-                        .buttonStyle(.plain)
+            Group {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, minHeight: 200)
+                        .transition(.opacity)
+                } else if let error = viewModel.errorMessage {
+                    ErrorStateView(message: error) {
+                        await viewModel.fetchWatchlist()
                     }
+                    .transition(.opacity)
+                } else if viewModel.filteredWatchlist.isEmpty {
+                    emptyState
+                        .transition(.opacity)
+                } else {
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(viewModel.filteredWatchlist) { item in
+                            NavigationLink {
+                                MediaDetailView(mediaType: item.mediaType, mediaId: item.tmdbId)
+                            } label: {
+                                WatchlistCardView(item: item)
+                            }
+                            .buttonStyle(PressedButtonStyle())
+                        }
+                    }
+                    .padding()
+                    .transition(.opacity)
                 }
-                .padding()
             }
+            .animation(.easeInOut(duration: 0.22), value: viewModel.isLoading)
+            .animation(.easeInOut(duration: 0.22), value: viewModel.filteredWatchlist.count)
         }
         .refreshable {
             await viewModel.fetchWatchlist()
@@ -44,9 +52,9 @@ struct WatchlistView: View {
             Image(systemName: "film.stack")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
-            Text("Nothing here yet")
+            Text(verbatim: Strings.Watchlist.emptyTitle)
                 .font(.headline)
-            Text("Start adding movies and shows from the Discover tab.")
+            Text(verbatim: Strings.Watchlist.emptySubtitle)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

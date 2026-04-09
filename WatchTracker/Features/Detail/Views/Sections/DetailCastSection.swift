@@ -5,7 +5,7 @@ struct DetailCastSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Cast")
+            Text(verbatim: Strings.Detail.cast)
                 .font(.headline)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -20,10 +20,10 @@ struct DetailCastSection: View {
                             .frame(width: 64, height: 64)
                             .clipShape(Circle())
 
-                            Text(member.name)
+                            Text(verbatim: member.name)
                                 .font(.caption2)
                                 .lineLimit(1)
-                            Text(member.character ?? "")
+                            Text(verbatim: member.character ?? "")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)

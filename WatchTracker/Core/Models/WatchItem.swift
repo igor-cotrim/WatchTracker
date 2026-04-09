@@ -12,6 +12,7 @@ struct WatchItem: Codable, Identifiable {
     var title: String?
     var posterPath: String?
     var newEpisodesCount: Int?
+    var isAnime: Bool?
 
     /// Full URL for the TMDB poster image.
     var posterURL: URL? {

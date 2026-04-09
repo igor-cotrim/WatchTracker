@@ -5,9 +5,9 @@ struct DetailSynopsisSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Synopsis")
+            Text(verbatim: Strings.Detail.synopsis)
                 .font(.headline)
-            Text(media.overview ?? "")
+            Text(verbatim: media.overview ?? "")
                 .font(.body)
                 .foregroundStyle(.secondary)
         }

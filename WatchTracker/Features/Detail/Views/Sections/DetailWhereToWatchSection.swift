@@ -5,7 +5,7 @@ struct DetailWhereToWatchSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Onde Assistir")
+            Text(verbatim: Strings.Detail.whereToWatch)
                 .font(.headline)
 
             if let providers = media.watchProviders?.results?["BR"]?.flatrate, !providers.isEmpty {
@@ -15,7 +15,7 @@ struct DetailWhereToWatchSection: View {
                     }
                 }
             } else {
-                Text("No streaming info available for your region.")
+                Text(verbatim: Strings.Detail.whereToWatchUnavailable)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

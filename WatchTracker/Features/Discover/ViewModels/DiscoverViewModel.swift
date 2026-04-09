@@ -1,32 +1,43 @@
 import Foundation
 
+enum DiscoverTab {
+    case movies
+    case tv
+}
+
 @Observable
 @MainActor
 final class DiscoverViewModel {
+    // Tab selection
+    var selectedTab: DiscoverTab = .movies
+
+    // Movies content
     var trending: [MediaDetail] = []
-    var searchResults: [MediaDetail] = []
     var nowPlaying: [MediaDetail] = []
+    var popular: [MediaDetail] = []
     var topRated: [MediaDetail] = []
     var upcoming: [MediaDetail] = []
-    var popular: [MediaDetail] = []
+
+    // TV content
+    var popularTV: [MediaDetail] = []
+    var topRatedTV: [MediaDetail] = []
     var anime: [MediaDetail] = []
+
+    // Shared
     var genres: [Genre] = []
     var providers: [StreamingProvider] = []
+
+    // Search
+    var searchResults: [MediaDetail] = []
     var searchQuery = ""
     var isLoading = false
     var errorMessage: String?
-
-    // Search filters
     var selectedSearchType: MediaType?
     var selectedSearchYear: Int?
-
-    // Search history
     var searchHistory: [String] = []
-
-    // Autocomplete
     var searchSuggestions: [MediaDetail] = []
-    private var searchTask: Task<Void, Never>?
 
+    private var searchTask: Task<Void, Never>?
     private let service = DiscoverService()
     private let searchHistoryManager = SearchHistoryManager()
 
@@ -34,7 +45,7 @@ final class DiscoverViewModel {
         !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
-    // MARK: - Topic Fetching
+    // MARK: - Movies Fetching
 
     func fetchTrending() async {
         await fetch(\.trending) { try await service.fetchTrending() }
@@ -44,21 +55,33 @@ final class DiscoverViewModel {
         await fetch(\.nowPlaying) { try await service.fetchNowPlaying() }
     }
 
+    func fetchPopular() async {
+        await fetch(\.popular) { try await service.fetchPopular(type: .movie) }
+    }
+
     func fetchTopRated() async {
-        await fetch(\.topRated) { try await service.fetchTopRated() }
+        await fetch(\.topRated) { try await service.fetchTopRated(type: .movie) }
     }
 
     func fetchUpcoming() async {
         await fetch(\.upcoming) { try await service.fetchUpcoming() }
     }
 
-    func fetchPopular() async {
-        await fetch(\.popular) { try await service.fetchPopular() }
+    // MARK: - TV Fetching
+
+    func fetchPopularTV() async {
+        await fetch(\.popularTV) { try await service.fetchPopular(type: .tv) }
+    }
+
+    func fetchTopRatedTV() async {
+        await fetch(\.topRatedTV) { try await service.fetchTopRated(type: .tv) }
     }
 
     func fetchAnime() async {
         await fetch(\.anime) { try await service.discoverFiltered(type: .tv, genres: "16", originCountry: "JP") }
     }
+
+    // MARK: - Shared Fetching
 
     func fetchGenres() async {
         await fetch(\.genres) { try await service.fetchGenres() }

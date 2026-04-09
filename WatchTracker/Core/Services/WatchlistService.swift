@@ -4,7 +4,15 @@ final class WatchlistService {
     private let api = APIClient.shared
 
     func fetchWatchlist(status: WatchlistStatus? = nil, mediaType: MediaType? = nil) async throws -> [WatchItem] {
-        try await api.get(.watchlist)
+        try await api.get(.watchlist(status: status, mediaType: mediaType?.rawValue))
+    }
+
+    func fetchContinueWatching() async throws -> [ContinueWatchingItem] {
+        try await api.get(.continueWatching)
+    }
+
+    func markEpisodeWatched(tvId: Int, season: Int, episode: Int) async throws {
+        try await api.post(.watchEpisode(tvId: tvId, season: season, episode: episode))
     }
 
     func addToWatchlist(tmdbId: Int, mediaType: MediaType, status: WatchlistStatus) async throws {

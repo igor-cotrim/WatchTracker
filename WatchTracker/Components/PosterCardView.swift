@@ -5,6 +5,10 @@ struct PosterCardView: View {
     let title: String
     var width: CGFloat = 120
 
+    /// Fixed height for the title area so cards in a row always align,
+    /// regardless of whether the title fills one line or two.
+    private var titleHeight: CGFloat { 36 }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             AsyncImage(url: url) { phase in
@@ -26,10 +30,10 @@ struct PosterCardView: View {
             .clipShape(.rect(cornerRadius: 8))
             .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
 
-            Text(title)
+            Text(verbatim: title)
                 .font(.caption)
                 .lineLimit(2)
-                .frame(width: width, alignment: .leading)
+                .frame(width: width, height: titleHeight, alignment: .topLeading)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
@@ -47,5 +51,9 @@ struct PosterCardView: View {
 }
 
 #Preview {
-    PosterCardView(url: nil, title: "Movie Title")
+    HStack {
+        PosterCardView(url: nil, title: "Short Title")
+        PosterCardView(url: nil, title: "A Very Long Movie Title That Wraps Two Lines")
+    }
+    .padding()
 }

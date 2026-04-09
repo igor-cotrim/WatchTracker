@@ -16,9 +16,9 @@ struct ProfileView: View {
                             .foregroundStyle(Color.brandPrimary)
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(authService.currentUser?.email ?? "User")
+                            Text(verbatim: authService.currentUser?.email ?? "")
                                 .font(.headline)
-                            Text("Member")
+                            Text(Strings.Profile.member)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -27,23 +27,23 @@ struct ProfileView: View {
                 }
 
                 // Stats
-                Section("Stats") {
-                    StatRow(title: "Episodes Watched", value: "\(viewModel.episodesWatched)")
-                    StatRow(title: "Movies Watched", value: "\(viewModel.moviesWatched)")
-                    StatRow(title: "Shows Tracking", value: "\(viewModel.showsTracking)")
-                    StatRow(title: "Total Hours", value: String(format: "%.0f h", viewModel.totalHours))
+                Section(Strings.Profile.stats) {
+                    StatRow(title: Strings.Profile.statsEpisodes, value: "\(viewModel.episodesWatched)")
+                    StatRow(title: Strings.Profile.statsMovies, value: "\(viewModel.moviesWatched)")
+                    StatRow(title: Strings.Profile.statsShows, value: "\(viewModel.showsTracking)")
+                    StatRow(title: "Total Hours", value: Strings.Profile.totalHours(viewModel.totalHours))
                 }
 
                 // Actions
                 Section {
-                    Button("Sign Out", role: .destructive) {
+                    Button(Strings.Profile.signOut, role: .destructive) {
                         Task {
                             try? await authService.signOut()
                         }
                     }
                 }
             }
-            .navigationTitle("Profile")
+            .navigationTitle(Strings.Profile.title)
             .task {
                 await viewModel.fetchStats()
             }
@@ -57,9 +57,9 @@ private struct StatRow: View {
 
     var body: some View {
         HStack {
-            Text(title)
+            Text(verbatim: title)
             Spacer()
-            Text(value)
+            Text(verbatim: value)
                 .foregroundStyle(.secondary)
                 .fontWeight(.medium)
         }

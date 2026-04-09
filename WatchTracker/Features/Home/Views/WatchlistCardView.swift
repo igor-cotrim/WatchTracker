@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WatchlistCardView: View {
     let item: WatchItem
+    @State private var badgeVisible = false
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -21,12 +22,12 @@ struct WatchlistCardView: View {
                     posterPlaceholder
                 }
             }
-            .clipShape(.rect(cornerRadius: 8))
+            .clipShape(.rect(cornerRadius: 10))
 
             // Title overlay
             VStack(alignment: .leading) {
                 Spacer()
-                Text(item.title ?? "Unknown")
+                Text(verbatim: item.title ?? Strings.Card.unknownTitle)
                     .font(.caption.bold())
                     .foregroundStyle(.white)
                     .lineLimit(2)
@@ -34,17 +35,17 @@ struct WatchlistCardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
                         LinearGradient(
-                            colors: [.clear, .black.opacity(0.8)],
+                            colors: [.clear, .black.opacity(0.85)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
             }
-            .clipShape(.rect(cornerRadius: 8))
+            .clipShape(.rect(cornerRadius: 10))
 
-            // New episodes badge
+            // New episodes badge with spring entrance
             if let count = item.newEpisodesCount, count > 0 {
-                Text("\(count)")
+                Text(verbatim: "\(count)")
                     .font(.caption2.bold())
                     .foregroundStyle(.white)
                     .padding(.horizontal, 6)
@@ -53,22 +54,29 @@ struct WatchlistCardView: View {
                     .clipShape(Capsule())
                     .padding(6)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    .scaleEffect(badgeVisible ? 1.0 : 0.4)
+                    .opacity(badgeVisible ? 1.0 : 0.0)
+                    .onAppear {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.55).delay(0.1)) {
+                            badgeVisible = true
+                        }
+                    }
             }
         }
-        .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
+        .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel({
-            var label = item.title ?? "Unknown"
+            var label = item.title ?? Strings.Card.unknownTitle
             if let count = item.newEpisodesCount, count > 0 {
-                label += ", \(count) novos episódios"
+                label += ", " + Strings.Card.newEpisodes(count)
             }
             return label
         }())
-        .accessibilityHint("Toque para ver detalhes")
+        .accessibilityHint(Strings.Card.accessibilityHint)
     }
 
     private var posterPlaceholder: some View {
-        RoundedRectangle(cornerRadius: 8)
+        RoundedRectangle(cornerRadius: 10)
             .fill(Color(.systemGray5))
             .aspectRatio(2/3, contentMode: .fill)
             .overlay {

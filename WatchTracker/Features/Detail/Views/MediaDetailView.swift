@@ -5,6 +5,7 @@ struct MediaDetailView: View {
     let mediaId: Int
 
     @State private var viewModel = MediaDetailViewModel()
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -16,9 +17,7 @@ struct MediaDetailView: View {
                     DetailHeaderSection(media: media)
 
                     VStack(alignment: .leading, spacing: 16) {
-                        DetailTitleSection(media: media, userRating: viewModel.userRating) { rating in
-                            Task { await viewModel.rateMedia(rating: rating) }
-                        }
+                        DetailTitleSection(media: media)
 
                         DetailWatchlistSection(viewModel: viewModel, mediaType: mediaType)
 
@@ -28,10 +27,6 @@ struct MediaDetailView: View {
 
                         if let seasons = media.seasons, !seasons.isEmpty {
                             DetailSeasonsSection(seasons: seasons, viewModel: viewModel)
-                        }
-
-                        if let cast = media.credits?.cast, !cast.isEmpty {
-                            DetailCastSection(cast: cast)
                         }
                     }
                     .padding(.horizontal)
@@ -45,6 +40,17 @@ struct MediaDetailView: View {
         }
         .navigationTitle(viewModel.media?.displayTitle ?? "")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .fontWeight(.semibold)
+                }
+            }
+        }
         .task {
             await viewModel.fetchDetails(type: mediaType, id: mediaId)
             await viewModel.checkWatchlistStatus()

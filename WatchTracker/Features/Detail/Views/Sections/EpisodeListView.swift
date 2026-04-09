@@ -5,6 +5,8 @@ struct EpisodeListView: View {
     let seasonNumber: Int
     let viewModel: MediaDetailViewModel
 
+    @State private var hapticTrigger = 0
+
     var body: some View {
         LazyVStack(spacing: 0) {
             ForEach(episodes) { episode in
@@ -18,12 +20,12 @@ struct EpisodeListView: View {
                     .clipShape(.rect(cornerRadius: 4))
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("E\(episode.episodeNumber) — \(episode.name)")
+                        Text(verbatim: Strings.Episode.label(number: episode.episodeNumber, name: episode.name))
                             .font(.subheadline)
                             .lineLimit(1)
 
                         if let airDate = episode.airDate {
-                            Text(airDate)
+                            Text(verbatim: airDate)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
@@ -32,20 +34,23 @@ struct EpisodeListView: View {
                     Spacer()
 
                     Button {
+                        hapticTrigger += 1
                         Task { await viewModel.toggleEpisodeWatched(season: seasonNumber, episode: episode.episodeNumber) }
                     } label: {
                         Image(systemName: episode.isWatched ? "checkmark.circle.fill" : "circle")
                             .font(.title3)
                             .foregroundStyle(episode.isWatched ? Color.brandPrimary : .secondary)
+                            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: episode.isWatched)
                     }
-                    .accessibilityLabel("Episódio \(episode.episodeNumber), \(episode.name)")
-                    .accessibilityValue(episode.isWatched ? "Assistido" : "Não assistido")
-                    .accessibilityHint("Toque para \(episode.isWatched ? "desmarcar" : "marcar") como assistido")
+                    .accessibilityLabel(Strings.Episode.accessibilityLabel(number: episode.episodeNumber, name: episode.name))
+                    .accessibilityValue(episode.isWatched ? Strings.Episode.accessibilityWatched : Strings.Episode.accessibilityNotWatched)
+                    .accessibilityHint(episode.isWatched ? Strings.Episode.accessibilityMarkUnwatched : Strings.Episode.accessibilityMarkWatched)
                 }
                 .padding(.vertical, 6)
                 .padding(.leading, 8)
             }
         }
         .padding(.top, 8)
+        .sensoryFeedback(.selection, trigger: hapticTrigger)
     }
 }

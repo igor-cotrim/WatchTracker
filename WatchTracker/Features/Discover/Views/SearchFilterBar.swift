@@ -5,9 +5,9 @@ struct SearchFilterBar: View {
     @Binding var selectedYear: Int?
 
     private let types: [(label: String, value: MediaType?)] = [
-        ("All", nil),
-        ("Movies", .movie),
-        ("TV Shows", .tv)
+        (Strings.SearchFilter.all, nil),
+        (Strings.SearchFilter.movies, .movie),
+        (Strings.SearchFilter.tv, .tv)
     ]
 
     private var years: [Int] {
@@ -36,7 +36,7 @@ struct SearchFilterBar: View {
         return Button {
             selectedType = value
         } label: {
-            Text(label)
+            Text(verbatim: label)
                 .font(.caption)
                 .fontWeight(.medium)
                 .padding(.horizontal, 12)
@@ -50,9 +50,9 @@ struct SearchFilterBar: View {
 
     private var yearMenu: some View {
         let isSelected = selectedYear != nil
-        let label = selectedYear.map { String($0) } ?? "Year"
+        let label = selectedYear.map { String($0) } ?? Strings.SearchFilter.year
         return Menu {
-            Button("Any Year") { selectedYear = nil }
+            Button(Strings.SearchFilter.anyYear) { selectedYear = nil }
             Divider()
             ForEach(years, id: \.self) { year in
                 Button(String(year)) { selectedYear = year }
@@ -60,7 +60,7 @@ struct SearchFilterBar: View {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "calendar")
-                Text(label)
+                Text(verbatim: label)
             }
             .font(.caption)
             .fontWeight(.medium)

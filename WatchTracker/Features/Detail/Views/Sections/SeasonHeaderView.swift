@@ -5,6 +5,8 @@ struct SeasonHeaderView: View {
     let viewModel: MediaDetailViewModel
 
     var body: some View {
+        let isExpanded = viewModel.expandedSeasons.contains(season.seasonNumber)
+
         Button {
             Task { await viewModel.toggleSeason(season.seasonNumber) }
         } label: {
@@ -15,21 +17,24 @@ struct SeasonHeaderView: View {
                     SkeletonView()
                 }
                 .frame(width: 50, height: 75)
-                .clipShape(.rect(cornerRadius: 4))
+                .clipShape(.rect(cornerRadius: 6))
 
                 VStack(alignment: .leading) {
-                    Text(season.name)
+                    Text(verbatim: season.name)
                         .font(.subheadline.bold())
-                    Text("\(season.episodeCount ?? season.episodes?.count ?? 0) episodes")
+                    Text(verbatim: Strings.Detail.seasonEpisodesCount(season.episodeCount ?? season.episodes?.count ?? 0))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                Image(systemName: viewModel.expandedSeasons.contains(season.seasonNumber) ? "chevron.up" : "chevron.down")
+                Image(systemName: "chevron.down")
                     .foregroundStyle(.secondary)
                     .font(.caption)
+                    .fontWeight(.semibold)
+                    .rotationEffect(.degrees(isExpanded ? -180 : 0))
+                    .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isExpanded)
             }
         }
         .buttonStyle(.plain)

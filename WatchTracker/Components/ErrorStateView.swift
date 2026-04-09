@@ -15,13 +15,13 @@ struct ErrorStateView: View {
                 .font(.system(size: 36))
                 .foregroundStyle(.secondary)
 
-            Text(message)
+            Text(verbatim: message)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
             if let retryAction {
-                Button("Tentar novamente") {
+                Button(Strings.Common.retry) {
                     Task { await retryAction() }
                 }
                 .buttonStyle(.bordered)
