@@ -7,14 +7,34 @@ struct EpisodeListView: View {
 
     @State private var hapticTrigger = 0
 
+    private var episodePlaceholder: some View {
+        Rectangle()
+            .fill(Color(.systemGray5))
+            .overlay {
+                Image(systemName: "play.rectangle")
+                    .foregroundStyle(.secondary)
+            }
+    }
+
     var body: some View {
         LazyVStack(spacing: 0) {
             ForEach(episodes) { episode in
                 HStack(spacing: 12) {
-                    AsyncImage(url: episode.stillURL) { image in
-                        image.resizable().aspectRatio(16/9, contentMode: .fill)
-                    } placeholder: {
-                        SkeletonView()
+                    Group {
+                        if let stillURL = episode.stillURL {
+                            AsyncImage(url: stillURL) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image.resizable().aspectRatio(16/9, contentMode: .fill)
+                                case .empty:
+                                    SkeletonView()
+                                default:
+                                    episodePlaceholder
+                                }
+                            }
+                        } else {
+                            episodePlaceholder
+                        }
                     }
                     .frame(width: 80, height: 45)
                     .clipShape(.rect(cornerRadius: 4))

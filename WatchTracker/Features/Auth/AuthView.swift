@@ -10,39 +10,86 @@ struct AuthView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationStack {
+        ZStack {
+            // Layer 0: dark cinematic background
+            LinearGradient(
+                colors: [
+                    Color(red: 0.07, green: 0.07, blue: 0.12),
+                    Color(red: 0.12, green: 0.08, blue: 0.10),
+                    Color(red: 0.05, green: 0.05, blue: 0.08),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            // Layer 1: red glow orb behind the logo area
+            RadialGradient(
+                colors: [Color.brandPrimary.opacity(0.35), .clear],
+                center: .center,
+                startRadius: 0,
+                endRadius: 180
+            )
+            .frame(width: 360, height: 360)
+            .offset(y: -200)
+            .blur(radius: 20)
+            .allowsHitTesting(false)
+
+            // Layer 2: main content
             VStack(spacing: 32) {
                 Spacer()
 
                 // Logo / Title
-                VStack(spacing: 8) {
+                VStack(spacing: 10) {
                     Image(systemName: "play.tv.fill")
                         .font(.system(size: 64))
-                        .foregroundStyle(Color.brandPrimary)
+                        .foregroundStyle(.white)
+                        .shadow(color: Color.brandPrimary.opacity(0.8), radius: 20)
 
                     Text(verbatim: "WatchTracker")
                         .font(.largeTitle.bold())
+                        .foregroundStyle(.white)
+
+                    Text("Track what you watch.")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.5))
                 }
 
-                // Form
-                VStack(spacing: 16) {
+                // Glass form card
+                VStack(spacing: 14) {
                     TextField(Strings.Auth.email, text: $email)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.plain)
                         .textContentType(.emailAddress)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .keyboardType(.emailAddress)
+                        .padding(14)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .foregroundStyle(.white)
 
                     SecureField(Strings.Auth.password, text: $password)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.plain)
                         .textContentType(isSignUp ? .newPassword : .password)
+                        .padding(14)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .foregroundStyle(.white)
                 }
-                .padding(.horizontal, 32)
+                .padding(24)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                }
+                .colorScheme(.dark)
+                .padding(.horizontal, 24)
 
                 if let errorMessage {
                     Text(verbatim: errorMessage)
                         .font(.caption)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color(red: 1, green: 0.4, blue: 0.4))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
@@ -51,18 +98,27 @@ struct AuthView: View {
                 Button {
                     Task { await authenticate() }
                 } label: {
-                    if isLoading {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        Text(verbatim: isSignUp ? Strings.Auth.signUp : Strings.Auth.signIn)
-                            .frame(maxWidth: .infinity)
+                    Group {
+                        if isLoading {
+                            ProgressView().tint(.white)
+                        } else {
+                            Text(verbatim: isSignUp ? Strings.Auth.signUp : Strings.Auth.signIn)
+                                .fontWeight(.semibold)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .foregroundStyle(.white)
+                    .background(
+                        isLoading || email.isEmpty || password.isEmpty
+                            ? Color.brandPrimary.opacity(0.4)
+                            : Color.brandPrimary
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .shadow(color: Color.brandPrimary.opacity(0.5), radius: 10, y: 4)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.brandPrimary)
-                .padding(.horizontal, 32)
                 .disabled(isLoading || email.isEmpty || password.isEmpty)
+                .padding(.horizontal, 24)
 
                 // Toggle
                 Button(isSignUp ? Strings.Auth.haveAccount : Strings.Auth.noAccount) {
@@ -70,10 +126,12 @@ struct AuthView: View {
                     errorMessage = nil
                 }
                 .font(.footnote)
+                .foregroundStyle(.white.opacity(0.65))
 
                 Spacer()
             }
         }
+        .preferredColorScheme(.dark)
     }
 
     private func authenticate() async {

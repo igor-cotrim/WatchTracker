@@ -28,10 +28,30 @@ struct ProfileView: View {
 
                 // Stats
                 Section(Strings.Profile.stats) {
-                    StatRow(title: Strings.Profile.statsEpisodes, value: "\(viewModel.episodesWatched)")
-                    StatRow(title: Strings.Profile.statsMovies, value: "\(viewModel.moviesWatched)")
-                    StatRow(title: Strings.Profile.statsShows, value: "\(viewModel.showsTracking)")
-                    StatRow(title: "Total Hours", value: Strings.Profile.totalHours(viewModel.totalHours))
+                    if viewModel.isLoading {
+                        ForEach(0..<4, id: \.self) { _ in
+                            HStack {
+                                SkeletonView()
+                                    .frame(width: 120, height: 14)
+                                    .clipShape(Capsule())
+                                Spacer()
+                                SkeletonView()
+                                    .frame(width: 40, height: 14)
+                                    .clipShape(Capsule())
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    } else if let errorMessage = viewModel.errorMessage {
+                        Text(verbatim: errorMessage)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    } else {
+                        StatRow(title: Strings.Profile.statsEpisodes, value: "\(viewModel.episodesWatched)")
+                        StatRow(title: Strings.Profile.statsMovies, value: "\(viewModel.moviesWatched)")
+                        StatRow(title: Strings.Profile.statsWatchlist, value: "\(viewModel.moviesInWatchlist)")
+                        StatRow(title: Strings.Profile.statsShows, value: "\(viewModel.showsTracking)")
+                        StatRow(title: Strings.Profile.statsShowsCompleted, value: "\(viewModel.showsCompleted)")
+                    }
                 }
 
                 // Actions

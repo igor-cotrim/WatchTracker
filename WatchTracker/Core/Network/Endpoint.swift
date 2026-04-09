@@ -23,6 +23,9 @@ enum Endpoint {
     case seasonDetail(tvId: Int, season: Int)
     case watchedEpisodes(tvId: Int, season: Int)
 
+    // Profile
+    case profileStats
+
     // Discover
     case discover(provider: String?, type: MediaType?, region: String?)
     case discoverFiltered(type: MediaType, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?)
@@ -61,6 +64,8 @@ enum Endpoint {
             return "/media/tv/\(tvId)/season/\(season)"
         case .watchedEpisodes(let tvId, let season):
             return "/media/tv/\(tvId)/seasons/\(season)/watched"
+        case .profileStats:
+            return "/profile/stats"
         case .discover, .discoverFiltered:
             return "/discover"
         case .trending:
@@ -85,7 +90,7 @@ enum Endpoint {
     var method: HTTPMethod {
         switch self {
         case .watchlist, .continueWatching, .mediaDetail, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
-             .topRated, .upcoming, .popular, .genres, .providers:
+             .topRated, .upcoming, .popular, .genres, .providers, .profileStats:
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason:
             return .POST

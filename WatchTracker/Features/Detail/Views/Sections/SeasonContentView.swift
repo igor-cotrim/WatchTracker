@@ -15,7 +15,7 @@ struct SeasonContentView: View {
             } label: {
                 let allWatched = viewModel.isSeasonAllWatched(season.seasonNumber)
                 Label(
-                    allWatched ? "Desmarcar Temporada" : "Marcar Temporada",
+                    allWatched ? Strings.Detail.seasonUnmarkWatched : Strings.Detail.seasonMarkWatched,
                     systemImage: allWatched ? "eye.slash" : "eye"
                 )
                 .font(.caption.bold())

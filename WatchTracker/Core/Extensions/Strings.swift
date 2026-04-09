@@ -74,10 +74,12 @@ enum Strings {
         static var title: String          { String(localized: "profile.title") }
         static var member: String         { String(localized: "profile.member") }
         static var stats: String          { String(localized: "profile.stats") }
-        static var statsEpisodes: String  { String(localized: "profile.stats.episodes") }
-        static var statsMovies: String    { String(localized: "profile.stats.movies") }
-        static var statsShows: String     { String(localized: "profile.stats.shows") }
-        static var signOut: String        { String(localized: "profile.sign_out") }
+        static var statsEpisodes: String       { String(localized: "profile.stats.episodes") }
+        static var statsMovies: String         { String(localized: "profile.stats.movies") }
+        static var statsWatchlist: String      { String(localized: "profile.stats.watchlist") }
+        static var statsShows: String          { String(localized: "profile.stats.shows") }
+        static var statsShowsCompleted: String { String(localized: "profile.stats.shows_completed") }
+        static var signOut: String             { String(localized: "profile.sign_out") }
         
         static func totalHours(_ hours: Double) -> String {
             String(format: String(localized: "profile.stats.hours"), hours)
@@ -165,6 +167,9 @@ enum Strings {
         static func seasonEpisodesCount(_ count: Int) -> String {
             String(format: String(localized: "detail.season.episodes_count"), count)
         }
+
+        static var seasonMarkWatched: String   { String(localized: "detail.season.mark_watched") }
+        static var seasonUnmarkWatched: String { String(localized: "detail.season.unmark_watched") }
     }
     
     // MARK: - Episode
