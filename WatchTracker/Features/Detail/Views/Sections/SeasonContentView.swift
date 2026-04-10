@@ -8,21 +8,30 @@ struct SeasonContentView: View {
         if viewModel.isLoadingSeason.contains(season.seasonNumber) {
             ProgressView()
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .padding(.vertical, 16)
         } else if let episodes = viewModel.seasonEpisodes[season.seasonNumber] {
-            Button {
-                Task { await viewModel.toggleSeasonWatched(season.seasonNumber) }
-            } label: {
-                let allWatched = viewModel.isSeasonAllWatched(season.seasonNumber)
-                Label(
-                    allWatched ? Strings.Detail.seasonUnmarkWatched : Strings.Detail.seasonMarkWatched,
-                    systemImage: allWatched ? "eye.slash" : "eye"
-                )
-                .font(.caption.bold())
-                .foregroundStyle(allWatched ? .secondary : Color.brandAccent)
+            Divider()
+
+            let allWatched = viewModel.isSeasonAllWatched(season.seasonNumber)
+            HStack {
+                Spacer()
+                Button {
+                    Task { await viewModel.toggleSeasonWatched(season.seasonNumber) }
+                } label: {
+                    Label(
+                        allWatched ? Strings.Detail.seasonUnmarkWatched : Strings.Detail.seasonMarkWatched,
+                        systemImage: allWatched ? "eye.slash" : "eye"
+                    )
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(allWatched ? Color(.secondaryLabel) : Color.brandAccent)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(allWatched ? Color(.systemGray5) : Color.brandAccent.opacity(0.12))
+                    .clipShape(Capsule())
+                }
+                Spacer()
             }
-            .padding(.top, 8)
-            .padding(.leading, 8)
+            .padding(.vertical, 10)
 
             EpisodeListView(episodes: episodes, seasonNumber: season.seasonNumber, viewModel: viewModel)
         }

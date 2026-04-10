@@ -8,7 +8,13 @@ struct SeasonHeaderView: View {
         let isExpanded = viewModel.expandedSeasons.contains(season.seasonNumber)
 
         Button {
-            Task { await viewModel.toggleSeason(season.seasonNumber) }
+            let willExpand = !isExpanded
+            withAnimation(.easeInOut(duration: 0.25)) {
+                viewModel.toggleExpanded(season.seasonNumber)
+            }
+            if willExpand {
+                Task { await viewModel.loadSeasonIfNeeded(season.seasonNumber) }
+            }
         } label: {
             HStack {
                 AsyncImage(url: season.posterURL) { image in
@@ -16,12 +22,13 @@ struct SeasonHeaderView: View {
                 } placeholder: {
                     SkeletonView()
                 }
-                .frame(width: 50, height: 75)
-                .clipShape(.rect(cornerRadius: 6))
+                .frame(width: 60, height: 90)
+                .clipShape(.rect(cornerRadius: 8))
+                .allowsHitTesting(false)
 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: season.name)
-                        .font(.subheadline.bold())
+                        .font(.callout.bold())
                     Text(verbatim: Strings.Detail.seasonEpisodesCount(season.episodeCount ?? season.episodes?.count ?? 0))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -29,13 +36,15 @@ struct SeasonHeaderView: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.down")
-                    .foregroundStyle(.secondary)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .rotationEffect(.degrees(isExpanded ? -180 : 0))
-                    .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isExpanded)
+                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                    .foregroundStyle(.tertiary)
+                    .font(.footnote)
+                    .fontWeight(.bold)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

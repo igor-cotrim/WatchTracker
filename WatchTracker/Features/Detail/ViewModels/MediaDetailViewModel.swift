@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 private struct WatchedEpisodesResponse: Decodable {
     let watchedEpisodes: [Int]
@@ -78,28 +79,32 @@ final class MediaDetailViewModel {
         }
     }
 
-    func toggleSeason(_ seasonNumber: Int) async {
+    /// Synchronously toggles the expanded state. Call this inside `withAnimation` from the view.
+    func toggleExpanded(_ seasonNumber: Int) {
         if expandedSeasons.contains(seasonNumber) {
             expandedSeasons.remove(seasonNumber)
-            return
+        } else {
+            expandedSeasons.insert(seasonNumber)
         }
+    }
 
-        expandedSeasons.insert(seasonNumber)
-
-        if seasonEpisodes[seasonNumber] == nil {
-            isLoadingSeason.insert(seasonNumber)
-            do {
-                let season: Season = try await api.get(.seasonDetail(tvId: mediaId, season: seasonNumber))
-                let watched: WatchedEpisodesResponse? = try? await api.get(.watchedEpisodes(tvId: mediaId, season: seasonNumber))
-                let watchedSet = Set(watched?.watchedEpisodes ?? [])
-                seasonEpisodes[seasonNumber] = (season.episodes ?? []).map { ep in
-                    var e = ep
-                    e.isWatched = watchedSet.contains(ep.episodeNumber)
-                    return e
-                }
-            } catch {
-                errorMessage = error.localizedDescription
+    /// Loads episode data for a season if not already cached.
+    func loadSeasonIfNeeded(_ seasonNumber: Int) async {
+        guard seasonEpisodes[seasonNumber] == nil else { return }
+        isLoadingSeason.insert(seasonNumber)
+        do {
+            let season: Season = try await api.get(.seasonDetail(tvId: mediaId, season: seasonNumber))
+            let watched: WatchedEpisodesResponse? = try? await api.get(.watchedEpisodes(tvId: mediaId, season: seasonNumber))
+            let watchedSet = Set(watched?.watchedEpisodes ?? [])
+            let episodes = (season.episodes ?? []).map { ep in
+                var e = ep
+                e.isWatched = watchedSet.contains(ep.episodeNumber)
+                return e
             }
+            seasonEpisodes[seasonNumber] = episodes
+            isLoadingSeason.remove(seasonNumber)
+        } catch {
+            errorMessage = error.localizedDescription
             isLoadingSeason.remove(seasonNumber)
         }
     }
