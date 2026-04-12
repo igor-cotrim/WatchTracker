@@ -5,9 +5,7 @@ struct ContinueWatchingSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Continuar Assistindo")
-                .font(.headline)
-                .padding(.horizontal)
+            SectionHeaderView(title: "Continuar Assistindo")
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
