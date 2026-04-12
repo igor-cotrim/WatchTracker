@@ -22,8 +22,9 @@ enum Strings {
     // MARK: - Home
     
     enum Home {
-        static var title: String       { String(localized: "home.title") }
-        static var filterAll: String   { String(localized: "home.filter.all") }
+        static var title: String              { String(localized: "home.title") }
+        static var filterAll: String          { String(localized: "home.filter.all") }
+        static var continueWatching: String   { String(localized: "home.continue_watching") }
     }
     
     // MARK: - Watchlist Status
@@ -93,6 +94,7 @@ enum Strings {
         static var emptyTitle: String     { String(localized: "watching.empty.title") }
         static var emptySubtitle: String  { String(localized: "watching.empty.subtitle") }
         static var markWatched: String    { String(localized: "watching.mark_watched") }
+        static var viewDetails: String   { String(localized: "watching.view_details") }
         
         static func episodeLabel(season: Int, episode: Int) -> String {
             String(format: String(localized: "watching.episode_label"), season, episode)

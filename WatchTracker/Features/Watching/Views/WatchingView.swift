@@ -89,7 +89,7 @@ struct WatchingView: View {
                     NavigationLink {
                         MediaDetailView(mediaType: .tv, mediaId: item.tmdbId)
                     } label: {
-                        Label("Ver detalhes", systemImage: "info.circle")
+                        Label(Strings.Watching.viewDetails, systemImage: "info.circle")
                     }
                 }
                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
