@@ -99,6 +99,22 @@ enum Strings {
         }
     }
     
+    // MARK: - Upcoming
+
+    enum Upcoming {
+        static var tabWatching: String   { String(localized: "watching.tab.watching") }
+        static var tabUpcoming: String   { String(localized: "watching.tab.upcoming") }
+        static var emptyTitle: String    { String(localized: "upcoming.empty.title") }
+        static var emptySubtitle: String { String(localized: "upcoming.empty.subtitle") }
+        static var today: String         { String(localized: "upcoming.section.today") }
+        static var tomorrow: String      { String(localized: "upcoming.section.tomorrow") }
+        static var later: String         { String(localized: "upcoming.section.later") }
+
+        static func daysAway(_ days: Int) -> String {
+            String(format: String(localized: "upcoming.days_away"), days)
+        }
+    }
+
     // MARK: - Discover
     
     enum Discover {

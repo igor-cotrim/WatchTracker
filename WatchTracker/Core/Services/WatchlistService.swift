@@ -11,6 +11,10 @@ final class WatchlistService {
         try await api.get(.continueWatching)
     }
 
+    func fetchUpcoming() async throws -> [UpcomingItem] {
+        try await api.get(.watchlistUpcoming)
+    }
+
     func markEpisodeWatched(tvId: Int, season: Int, episode: Int) async throws {
         try await api.post(.watchEpisode(tvId: tvId, season: season, episode: episode))
     }

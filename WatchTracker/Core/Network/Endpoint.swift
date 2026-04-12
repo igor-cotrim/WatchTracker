@@ -10,6 +10,7 @@ enum Endpoint {
     // Watchlist
     case watchlist(status: WatchlistStatus? = nil, mediaType: String? = nil)
     case continueWatching
+    case watchlistUpcoming
     case addToWatchlist(tmdbId: Int, mediaType: MediaType, status: WatchlistStatus)
     case removeFromWatchlist(id: Int)
 
@@ -44,6 +45,8 @@ enum Endpoint {
             return "/watchlist"
         case .continueWatching:
             return "/watchlist/continue-watching"
+        case .watchlistUpcoming:
+            return "/watchlist/upcoming"
         case .addToWatchlist:
             return "/watchlist"
         case .removeFromWatchlist(let id):
@@ -89,7 +92,7 @@ enum Endpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .watchlist, .continueWatching, .mediaDetail, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
+        case .watchlist, .continueWatching, .watchlistUpcoming, .mediaDetail, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
              .topRated, .upcoming, .popular, .genres, .providers, .profileStats:
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason:
