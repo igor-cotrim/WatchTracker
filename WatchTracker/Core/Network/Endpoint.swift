@@ -1,12 +1,12 @@
 import Foundation
 
-enum HTTPMethod: String {
+enum HTTPMethod: String, Sendable {
     case GET
     case POST
     case DELETE
 }
 
-enum Endpoint {
+enum Endpoint: Sendable {
     // Watchlist
     case watchlist(status: WatchlistStatus? = nil, mediaType: String? = nil)
     case continueWatching
@@ -148,7 +148,7 @@ enum Endpoint {
         }
     }
 
-    var body: (any Encodable)? {
+    var body: (any Encodable & Sendable)? {
         switch self {
         case .addToWatchlist(let tmdbId, let mediaType, let status):
             return AddToWatchlistBody(tmdbId: tmdbId, mediaType: mediaType, status: status)
@@ -162,12 +162,12 @@ enum Endpoint {
 
 // MARK: - Request Bodies
 
-private struct AddToWatchlistBody: Encodable {
+private struct AddToWatchlistBody: Encodable, Sendable {
     let tmdbId: Int
     let mediaType: MediaType
     let status: WatchlistStatus
 }
 
-private struct RateMediaBody: Encodable {
+private struct RateMediaBody: Encodable, Sendable {
     let rating: Int
 }

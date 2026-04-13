@@ -42,8 +42,8 @@ actor APIClient {
     // MARK: - Private Helpers
 
     private func buildRequest(for endpoint: Endpoint) async throws -> URLRequest {
-        let baseURL = Config.apiBaseURL
-        let fullURLString = baseURL.absoluteString + endpoint.path
+        let baseURL = await Config.apiBaseURL
+        let fullURLString = await baseURL.absoluteString + endpoint.path
         var components = URLComponents(string: fullURLString)!
         components.queryItems = await endpoint.queryItems
 
@@ -61,7 +61,7 @@ actor APIClient {
         }
 
         if let body = await endpoint.body {
-            request.httpBody = try await encoder.encode(AnyEncodable(body))
+            request.httpBody = try encodeBody(body)
         }
 
         return request
@@ -96,18 +96,12 @@ actor APIClient {
             throw APIError.unknown
         }
     }
-}
 
-// MARK: - Type Erasure for Encodable
 
-private struct AnyEncodable: Encodable {
-    private let _encode: (Encoder) throws -> Void
-
-    init(_ wrapped: any Encodable) {
-        _encode = wrapped.encode
-    }
-
-    func encode(to encoder: Encoder) throws {
-        try _encode(encoder)
+    private func encodeBody(_ value: any Encodable & Sendable) throws -> Data {
+        func encode<T: Encodable>(_ value: T) throws -> Data {
+            try encoder.encode(value)
+        }
+        return try encode(value)
     }
 }
