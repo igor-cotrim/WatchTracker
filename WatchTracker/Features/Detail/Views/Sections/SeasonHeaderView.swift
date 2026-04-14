@@ -17,10 +17,13 @@ struct SeasonHeaderView: View {
             }
         } label: {
             HStack {
-                AsyncImage(url: season.posterURL) { image in
-                    image.resizable().aspectRatio(2/3, contentMode: .fill)
-                } placeholder: {
-                    SkeletonView()
+                AsyncImage(url: season.posterURL) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().aspectRatio(2/3, contentMode: .fill)
+                    default:
+                        posterPlaceholder
+                    }
                 }
                 .frame(width: 60, height: 90)
                 .clipShape(.rect(cornerRadius: 8))
@@ -47,5 +50,15 @@ struct SeasonHeaderView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    private var posterPlaceholder: some View {
+        Rectangle()
+            .fill(Color(.systemGray5))
+            .overlay {
+                Image(systemName: "film")
+                    .font(.caption)
+                    .foregroundStyle(Color(.systemGray3))
+            }
     }
 }

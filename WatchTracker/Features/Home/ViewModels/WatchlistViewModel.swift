@@ -28,9 +28,14 @@ final class WatchlistViewModel {
     var errorMessage: String?
 
     private let service = WatchlistService()
+    private let store = WatchlistStore.shared
+
+    init() {
+        // Pre-populate from cache for instant display — no loading state on re-appearance
+        allItems = store.cachedItems
+    }
 
     /// Returns items filtered by the current status pill and the given media filter.
-    /// All filtering is done in-memory — no network call.
     func items(for filter: MediaFilter) -> [WatchItem] {
         let byStatus: [WatchItem]
         if let status = selectedStatus {
@@ -51,22 +56,18 @@ final class WatchlistViewModel {
         allItems.filter { $0.status == status }.count
     }
 
-    /// Fetches the full watchlist once. Status/media filtering is done in-memory.
-    func fetchWatchlist() async {
+    /// Fetches the full watchlist. Skips the network if cache is valid unless `forceRefresh` is true.
+    func fetchWatchlist(forceRefresh: Bool = false) async {
+        guard forceRefresh || store.needsRefresh || store.cachedItems.isEmpty else { return }
+
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         do {
-            allItems = try await service.fetchWatchlist()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isLoading = false
-    }
-
-    func removeItem(id: Int) async {
-        do {
-            try await service.removeFromWatchlist(id: id)
-            allItems.removeAll { $0.id == id }
+            let items = try await service.fetchWatchlist()
+            allItems = items
+            store.cachedItems = items
+            store.needsRefresh = false
         } catch {
             errorMessage = error.localizedDescription
         }

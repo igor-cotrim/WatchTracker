@@ -48,7 +48,7 @@ struct WatchlistView: View {
             .animation(.easeInOut(duration: 0.22), value: items.count)
         }
         .refreshable {
-            await viewModel.fetchWatchlist()
+            await viewModel.fetchWatchlist(forceRefresh: true)
         }
     }
 

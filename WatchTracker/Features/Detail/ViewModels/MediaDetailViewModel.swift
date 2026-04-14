@@ -15,6 +15,7 @@ final class MediaDetailViewModel {
 
     // Watchlist state
     var isOnWatchlist = false
+    var isCheckingStatus = false
     var watchlistItemId: Int?
     var watchlistStatus: WatchlistStatus?
 
@@ -42,6 +43,8 @@ final class MediaDetailViewModel {
     }
 
     func checkWatchlistStatus() async {
+        isCheckingStatus = true
+        defer { isCheckingStatus = false }
         do {
             let items = try await watchlistService.fetchWatchlist()
             if let item = items.first(where: { $0.tmdbId == mediaId && $0.mediaType == mediaType }) {
@@ -61,6 +64,7 @@ final class MediaDetailViewModel {
     func addToWatchlist(status: WatchlistStatus) async {
         do {
             try await watchlistService.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: status)
+            WatchlistStore.shared.needsRefresh = true
             await checkWatchlistStatus()
         } catch {
             errorMessage = error.localizedDescription
@@ -74,6 +78,7 @@ final class MediaDetailViewModel {
             isOnWatchlist = false
             watchlistItemId = nil
             watchlistStatus = nil
+            WatchlistStore.shared.needsRefresh = true
         } catch {
             errorMessage = error.localizedDescription
         }

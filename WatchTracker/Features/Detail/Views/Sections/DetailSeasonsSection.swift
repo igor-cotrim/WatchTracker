@@ -9,7 +9,7 @@ struct DetailSeasonsSection: View {
             Text(Strings.Detail.seasons)
                 .font(.headline)
 
-            ForEach(seasons) { season in
+            ForEach(seasons.filter { ($0.episodeCount ?? 0) > 0 }) { season in
                 VStack(alignment: .leading, spacing: 0) {
                     SeasonHeaderView(season: season, viewModel: viewModel)
 

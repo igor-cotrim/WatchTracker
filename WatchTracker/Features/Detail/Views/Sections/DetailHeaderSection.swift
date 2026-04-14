@@ -6,17 +6,18 @@ struct DetailHeaderSection: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             // Backdrop image
-            AsyncImage(url: media.backdropURL) { image in
-                image
-                    .resizable()
-                    .aspectRatio(16/9, contentMode: .fill)
-            } placeholder: {
-                SkeletonView()
-                    .aspectRatio(16/9, contentMode: .fill)
+            AsyncImage(url: media.backdropURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(16/9, contentMode: .fill)
+                default:
+                    backdropPlaceholder
+                }
             }
             .clipped()
             .overlay(alignment: .bottom) {
-                // Fade into the page background for a seamless transition
                 LinearGradient(
                     colors: [.clear, Color(.systemBackground)],
                     startPoint: .init(x: 0.5, y: 0.25),
@@ -26,11 +27,13 @@ struct DetailHeaderSection: View {
             }
 
             // Poster overlapping the backdrop
-            AsyncImage(url: media.posterURL) { image in
-                image.resizable().aspectRatio(2/3, contentMode: .fill)
-            } placeholder: {
-                SkeletonView()
-                    .clipShape(.rect(cornerRadius: 10))
+            AsyncImage(url: media.posterURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().aspectRatio(2/3, contentMode: .fill)
+                default:
+                    posterPlaceholder
+                }
             }
             .frame(width: 100, height: 150)
             .clipShape(.rect(cornerRadius: 10))
@@ -39,5 +42,27 @@ struct DetailHeaderSection: View {
             .offset(y: 40)
         }
         .padding(.bottom, 40)
+    }
+
+    private var backdropPlaceholder: some View {
+        Rectangle()
+            .fill(Color(.systemGray5))
+            .aspectRatio(16/9, contentMode: .fill)
+            .overlay {
+                Image(systemName: "photo")
+                    .font(.largeTitle)
+                    .foregroundStyle(Color(.systemGray3))
+            }
+    }
+
+    private var posterPlaceholder: some View {
+        Rectangle()
+            .fill(Color(.systemGray5))
+            .aspectRatio(2/3, contentMode: .fill)
+            .overlay {
+                Image(systemName: "film")
+                    .font(.title2)
+                    .foregroundStyle(Color(.systemGray3))
+            }
     }
 }

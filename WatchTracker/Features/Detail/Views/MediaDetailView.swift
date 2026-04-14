@@ -30,6 +30,7 @@ struct MediaDetailView: View {
                         }
                     }
                     .padding(.horizontal)
+                    .padding(.bottom, 32)
                 }
             } else if let error = viewModel.errorMessage {
                 ErrorStateView(message: error) {
