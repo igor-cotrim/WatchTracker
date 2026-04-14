@@ -21,7 +21,7 @@ enum MediaFilter: String, CaseIterable, Identifiable {
 @Observable
 @MainActor
 final class WatchlistViewModel {
-    var watchlist: [WatchItem] = []
+    var allItems: [WatchItem] = []
     var isLoading = false
     var selectedFilter: MediaFilter = .all
     var selectedStatus: WatchlistStatus? = nil
@@ -29,24 +29,34 @@ final class WatchlistViewModel {
 
     private let service = WatchlistService()
 
-    var filteredWatchlist: [WatchItem] {
-        switch selectedFilter {
-        case .all:
-            return watchlist
-        case .movie:
-            return watchlist.filter { $0.mediaType == .movie }
-        case .tv:
-            return watchlist.filter { $0.mediaType == .tv && $0.isAnime != true }
-        case .anime:
-            return watchlist.filter { $0.mediaType == .tv && $0.isAnime == true }
+    /// Returns items filtered by the current status pill and the given media filter.
+    /// All filtering is done in-memory — no network call.
+    func items(for filter: MediaFilter) -> [WatchItem] {
+        let byStatus: [WatchItem]
+        if let status = selectedStatus {
+            byStatus = allItems.filter { $0.status == status }
+        } else {
+            byStatus = allItems
+        }
+        switch filter {
+        case .all:   return byStatus
+        case .movie: return byStatus.filter { $0.mediaType == .movie }
+        case .tv:    return byStatus.filter { $0.mediaType == .tv && $0.isAnime != true }
+        case .anime: return byStatus.filter { $0.mediaType == .tv && $0.isAnime == true }
         }
     }
 
+    /// Count of all items (regardless of media type) for a given status — used for pill badges.
+    func count(for status: WatchlistStatus) -> Int {
+        allItems.filter { $0.status == status }.count
+    }
+
+    /// Fetches the full watchlist once. Status/media filtering is done in-memory.
     func fetchWatchlist() async {
         isLoading = true
         errorMessage = nil
         do {
-            watchlist = try await service.fetchWatchlist(status: selectedStatus)
+            allItems = try await service.fetchWatchlist()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -56,7 +66,7 @@ final class WatchlistViewModel {
     func removeItem(id: Int) async {
         do {
             try await service.removeFromWatchlist(id: id)
-            watchlist.removeAll { $0.id == id }
+            allItems.removeAll { $0.id == id }
         } catch {
             errorMessage = error.localizedDescription
         }

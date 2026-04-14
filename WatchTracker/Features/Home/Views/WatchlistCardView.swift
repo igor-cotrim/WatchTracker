@@ -16,8 +16,7 @@ struct WatchlistCardView: View {
                 case .failure:
                     posterPlaceholder
                 case .empty:
-                    SkeletonView()
-                        .aspectRatio(2/3, contentMode: .fill)
+                    posterPlaceholder
                 @unknown default:
                     posterPlaceholder
                 }
