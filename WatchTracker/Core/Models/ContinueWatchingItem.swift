@@ -29,4 +29,14 @@ struct NextEpisode: Codable {
     var displayLabel: String {
         "T\(seasonNumber) E\(episodeNumber) · \(name)"
     }
+
+    /// `true` if the episode has already aired or the air date is unknown.
+    var isReleased: Bool {
+        guard let airDate else { return true }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        guard let date = formatter.date(from: airDate) else { return true }
+        return date <= Calendar.current.startOfDay(for: Date())
+    }
 }

@@ -14,6 +14,7 @@ final class ContinueWatchingViewModel {
         errorMessage = nil
         do {
             items = try await service.fetchContinueWatching()
+                .filter { $0.nextEpisode?.isReleased != false }
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -33,7 +33,6 @@ private struct ContinueWatchingCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Still image or poster fallback
             ZStack(alignment: .bottomTrailing) {
                 AsyncImage(url: item.stillURL ?? item.posterURL) { phase in
                     switch phase {
@@ -42,7 +41,7 @@ private struct ContinueWatchingCard: View {
                             .resizable()
                             .aspectRatio(16 / 9, contentMode: .fill)
                     default:
-                        SkeletonView()
+                        Color(.systemGray5)
                             .aspectRatio(16 / 9, contentMode: .fill)
                     }
                 }
@@ -57,15 +56,14 @@ private struct ContinueWatchingCard: View {
                 }
             }
 
-            // Title and episode info
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.title)
+                Text(verbatim: item.title)
                     .font(.caption)
                     .fontWeight(.semibold)
                     .lineLimit(1)
 
                 if let next = item.nextEpisode {
-                    Text(next.displayLabel)
+                    Text(verbatim: next.displayLabel)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
