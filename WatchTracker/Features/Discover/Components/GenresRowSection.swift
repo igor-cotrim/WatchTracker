@@ -10,7 +10,7 @@ struct GenresRowSection: View {
                 .padding(.horizontal)
 
             ScrollView(.horizontal) {
-                HStack(spacing: 8) {
+                HStack(spacing: 12) {
                     ForEach(genres) { genre in
                         NavigationLink {
                             GenreBrowseView(genre: genre)

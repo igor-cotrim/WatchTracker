@@ -32,6 +32,7 @@ struct DiscoverView: View {
 
                             GenresRowSection(genres: viewModel.genres)
                             ProvidersRowSection(providers: viewModel.providers)
+                                .padding(.top, 8)
                         }
                         .animation(.easeInOut(duration: 0.2), value: viewModel.selectedTab)
                         .transition(.opacity.combined(with: .offset(y: 8)))
