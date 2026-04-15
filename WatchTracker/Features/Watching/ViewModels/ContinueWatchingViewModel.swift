@@ -24,14 +24,32 @@ final class ContinueWatchingViewModel {
     func markAsWatched(_ item: ContinueWatchingItem) async {
         guard let next = item.nextEpisode else { return }
         do {
-            try await service.markEpisodeWatched(
+            let statusChanged = try await service.markEpisodeWatched(
                 tvId: item.tmdbId,
                 season: next.seasonNumber,
                 episode: next.episodeNumber
             )
+            // When the backend transitions the show's status (e.g. watching → completed),
+            // refresh the shared cache so Home and Detail reflect the change immediately.
+            if statusChanged != nil {
+                await refreshWatchlistCache()
+            }
             await fetch()
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Private
+
+    private func refreshWatchlistCache() async {
+        do {
+            let items = try await service.fetchWatchlist()
+            let store = WatchlistStore.shared
+            store.cachedItems = items
+            store.needsRefresh = false
+        } catch {
+            WatchlistStore.shared.needsRefresh = true
         }
     }
 }

@@ -31,7 +31,6 @@ final class WatchlistViewModel {
     private let store = WatchlistStore.shared
 
     init() {
-        // Pre-populate from cache for instant display — no loading state on re-appearance
         allItems = store.cachedItems
     }
 
@@ -70,6 +69,16 @@ final class WatchlistViewModel {
             store.needsRefresh = false
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Instantly refreshes `allItems` from the shared cache.
+    /// Called on every appearance so the grid reflects mutations made in the Detail view
+    /// (which already refreshed the cache via `refreshStoreCache()`).
+    func syncFromCache() {
+        let cached = store.cachedItems
+        if !cached.isEmpty {
+            allItems = cached
         }
     }
 }

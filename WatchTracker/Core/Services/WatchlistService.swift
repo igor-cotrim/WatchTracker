@@ -15,8 +15,12 @@ final class WatchlistService {
         try await api.get(.watchlistUpcoming)
     }
 
-    func markEpisodeWatched(tvId: Int, season: Int, episode: Int) async throws {
-        try await api.post(.watchEpisode(tvId: tvId, season: season, episode: episode))
+    /// Marks an episode as watched and returns `statusChanged` when the backend
+    /// automatically transitions the show's status (e.g. watching → completed).
+    @discardableResult
+    func markEpisodeWatched(tvId: Int, season: Int, episode: Int) async throws -> WatchlistStatus? {
+        let response: EpisodeWatchedResponse = try await api.post(.watchEpisode(tvId: tvId, season: season, episode: episode))
+        return response.statusChanged
     }
 
     func markAllEpisodesWatched(tvId: Int) async throws {

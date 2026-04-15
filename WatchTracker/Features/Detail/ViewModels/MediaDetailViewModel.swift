@@ -5,9 +5,6 @@ private struct WatchedEpisodesResponse: Decodable {
     let watchedEpisodes: [Int]
 }
 
-private struct EpisodeStatusResponse: Decodable {
-    let statusChanged: WatchlistStatus?
-}
 
 private struct SeasonStatusResponse: Decodable {
     let message: String
@@ -32,6 +29,7 @@ final class MediaDetailViewModel {
     var isCheckingStatus = false
     var watchlistItemId: Int?
     var watchlistStatus: WatchlistStatus?
+    private var hasLoadedInitialStatus = false
 
     // Season expansion
     var expandedSeasons: Set<Int> = []
@@ -53,7 +51,9 @@ final class MediaDetailViewModel {
             media = detail
             // If the backend updated the status (e.g. completed → watching due to new episodes),
             // sync it to local state without a separate watchlist fetch.
-            if let backendStatus = detail.watchlistStatus, backendStatus != watchlistStatus {
+            if hasLoadedInitialStatus,
+               let backendStatus = detail.watchlistStatus,
+               backendStatus != watchlistStatus {
                 watchlistStatus = backendStatus
                 WatchlistStore.shared.needsRefresh = true
             }
@@ -65,20 +65,21 @@ final class MediaDetailViewModel {
 
     func checkWatchlistStatus() async {
         isCheckingStatus = true
-        defer { isCheckingStatus = false }
-        do {
-            let items = try await watchlistService.fetchWatchlist()
-            if let item = items.first(where: { $0.tmdbId == mediaId && $0.mediaType == mediaType }) {
-                isOnWatchlist = true
-                watchlistItemId = item.id
-                watchlistStatus = item.status
-            } else {
-                isOnWatchlist = false
-                watchlistItemId = nil
-                watchlistStatus = nil
-            }
-        } catch {
-            // Silently fail — watchlist status is non-critical
+        defer {
+            isCheckingStatus = false
+            hasLoadedInitialStatus = true
+        }
+
+        // Read from in-memory cache — no network call needed.
+        let cachedItems = WatchlistStore.shared.cachedItems
+        if let item = cachedItems.first(where: { $0.tmdbId == mediaId && $0.mediaType == mediaType }) {
+            isOnWatchlist = true
+            watchlistItemId = item.id
+            watchlistStatus = item.status
+        } else {
+            isOnWatchlist = false
+            watchlistItemId = nil
+            watchlistStatus = nil
         }
     }
 
@@ -95,8 +96,10 @@ final class MediaDetailViewModel {
                     }
                 }
             }
-            WatchlistStore.shared.needsRefresh = true
-            await checkWatchlistStatus()
+            // Refresh the store cache so other screens (Home) see the change immediately.
+            await refreshStoreCache()
+            // Read back from the updated cache to get the server-assigned id.
+            syncLocalStateFromCache()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -109,7 +112,8 @@ final class MediaDetailViewModel {
             isOnWatchlist = false
             watchlistItemId = nil
             watchlistStatus = nil
-            WatchlistStore.shared.needsRefresh = true
+            // Refresh the store cache so Home sees the change immediately.
+            await refreshStoreCache()
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -165,7 +169,7 @@ final class MediaDetailViewModel {
                 let response: SeasonStatusResponse = try await api.delete(.unwatchEpisode(tvId: mediaId, season: season, episode: episode))
                 applyStatusChange(response.statusChanged)
             } else {
-                let response: EpisodeStatusResponse = try await api.post(.watchEpisode(tvId: mediaId, season: season, episode: episode))
+                let response: EpisodeWatchedResponse = try await api.post(.watchEpisode(tvId: mediaId, season: season, episode: episode))
                 applyStatusChange(response.statusChanged)
             }
             // Flip local state
@@ -210,7 +214,40 @@ final class MediaDetailViewModel {
     private func applyStatusChange(_ newStatus: WatchlistStatus?) {
         guard let newStatus, newStatus != watchlistStatus else { return }
         watchlistStatus = newStatus
+        // WatchItem.status is `let`, so we can't update the cache in-place.
+        // Mark the store dirty so Home refetches on next appearance.
         WatchlistStore.shared.needsRefresh = true
+    }
+
+    // MARK: - Cache Helpers
+
+    /// Fetches the full watchlist from the API, updates the shared store cache,
+    /// and clears the `needsRefresh` flag so Home won't refetch redundantly.
+    private func refreshStoreCache() async {
+        do {
+            let items = try await watchlistService.fetchWatchlist()
+            let store = WatchlistStore.shared
+            store.cachedItems = items
+            store.needsRefresh = false
+        } catch {
+            // If the refresh fails, mark dirty so Home retries later.
+            WatchlistStore.shared.needsRefresh = true
+        }
+    }
+
+    /// Reads the current media's watchlist entry from the shared cache and
+    /// updates this ViewModel's local state (id, status, isOnWatchlist).
+    private func syncLocalStateFromCache() {
+        let cachedItems = WatchlistStore.shared.cachedItems
+        if let item = cachedItems.first(where: { $0.tmdbId == mediaId && $0.mediaType == mediaType }) {
+            isOnWatchlist = true
+            watchlistItemId = item.id
+            watchlistStatus = item.status
+        } else {
+            isOnWatchlist = false
+            watchlistItemId = nil
+            watchlistStatus = nil
+        }
     }
 
     // MARK: - Helpers

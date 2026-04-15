@@ -21,6 +21,9 @@ struct HomeView: View {
             .task {
                 await viewModel.fetchWatchlist()
             }
+            .onAppear {
+                viewModel.syncFromCache()
+            }
         }
     }
 }
