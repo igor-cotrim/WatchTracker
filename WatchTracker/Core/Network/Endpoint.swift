@@ -4,6 +4,7 @@ enum HTTPMethod: String, Sendable {
     case GET
     case POST
     case DELETE
+    case PATCH
 }
 
 enum Endpoint: Sendable {
@@ -13,6 +14,7 @@ enum Endpoint: Sendable {
     case watchlistUpcoming
     case addToWatchlist(tmdbId: Int, mediaType: MediaType, status: WatchlistStatus)
     case removeFromWatchlist(id: Int)
+    case updateWatchlistStatus(id: Int, status: WatchlistStatus)
 
     // Media Detail
     case mediaDetail(type: MediaType, id: Int)
@@ -21,6 +23,7 @@ enum Endpoint: Sendable {
     case unwatchEpisode(tvId: Int, season: Int, episode: Int)
     case watchSeason(tvId: Int, season: Int)
     case unwatchSeason(tvId: Int, season: Int)
+    case watchAllEpisodes(tvId: Int)
     case seasonDetail(tvId: Int, season: Int)
     case watchedEpisodes(tvId: Int, season: Int)
 
@@ -51,6 +54,8 @@ enum Endpoint: Sendable {
             return "/watchlist"
         case .removeFromWatchlist(let id):
             return "/watchlist/\(id)"
+        case .updateWatchlistStatus(let id, _):
+            return "/watchlist/\(id)/status"
         case .mediaDetail(let type, let id):
             return "/media/\(type.rawValue)/\(id)"
         case .rateMedia(let type, let id, _):
@@ -63,6 +68,8 @@ enum Endpoint: Sendable {
             return "/media/tv/\(tvId)/seasons/\(season)/watch"
         case .unwatchSeason(let tvId, let season):
             return "/media/tv/\(tvId)/seasons/\(season)/watch"
+        case .watchAllEpisodes(let tvId):
+            return "/media/tv/\(tvId)/watch-all"
         case .seasonDetail(let tvId, let season):
             return "/media/tv/\(tvId)/season/\(season)"
         case .watchedEpisodes(let tvId, let season):
@@ -95,10 +102,12 @@ enum Endpoint: Sendable {
         case .watchlist, .continueWatching, .watchlistUpcoming, .mediaDetail, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
              .topRated, .upcoming, .popular, .genres, .providers, .profileStats:
             return .GET
-        case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason:
+        case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason, .watchAllEpisodes:
             return .POST
         case .removeFromWatchlist, .unwatchEpisode, .unwatchSeason:
             return .DELETE
+        case .updateWatchlistStatus:
+            return .PATCH
         }
     }
 
@@ -154,6 +163,8 @@ enum Endpoint: Sendable {
             return AddToWatchlistBody(tmdbId: tmdbId, mediaType: mediaType, status: status)
         case .rateMedia(_, _, let rating):
             return RateMediaBody(rating: rating)
+        case .updateWatchlistStatus(_, let status):
+            return UpdateWatchlistStatusBody(status: status)
         default:
             return nil
         }
@@ -170,4 +181,8 @@ private struct AddToWatchlistBody: Encodable, Sendable {
 
 private struct RateMediaBody: Encodable, Sendable {
     let rating: Int
+}
+
+private struct UpdateWatchlistStatusBody: Encodable, Sendable {
+    let status: WatchlistStatus
 }

@@ -14,6 +14,7 @@ struct MediaDetail: Codable, Identifiable {
     let credits: Credits?
     let watchProviders: WatchProviderResult?
     let seasons: [Season]?   // TV only
+    let watchlistStatus: WatchlistStatus?  // Present when authenticated and show is in watchlist
 
     var mediaType: MediaType {
         title != nil ? .movie : .tv

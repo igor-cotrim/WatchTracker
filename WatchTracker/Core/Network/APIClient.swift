@@ -33,7 +33,23 @@ actor APIClient {
         try validateResponse(response)
     }
 
+    func delete<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+        let request = try await buildRequest(for: endpoint)
+        return try await perform(request)
+    }
+
     func delete(_ endpoint: Endpoint) async throws {
+        let request = try await buildRequest(for: endpoint)
+        let (_, response) = try await URLSession.shared.data(for: request)
+        try validateResponse(response)
+    }
+
+    func patch<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+        let request = try await buildRequest(for: endpoint)
+        return try await perform(request)
+    }
+
+    func patch(_ endpoint: Endpoint) async throws {
         let request = try await buildRequest(for: endpoint)
         let (_, response) = try await URLSession.shared.data(for: request)
         try validateResponse(response)

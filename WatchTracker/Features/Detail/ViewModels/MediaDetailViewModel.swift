@@ -5,6 +5,20 @@ private struct WatchedEpisodesResponse: Decodable {
     let watchedEpisodes: [Int]
 }
 
+private struct EpisodeStatusResponse: Decodable {
+    let statusChanged: WatchlistStatus?
+}
+
+private struct SeasonStatusResponse: Decodable {
+    let message: String
+    let statusChanged: WatchlistStatus?
+}
+
+private struct WatchAllStatusResponse: Decodable {
+    let markedCount: Int
+    let statusChanged: WatchlistStatus?
+}
+
 @Observable
 @MainActor
 final class MediaDetailViewModel {
@@ -35,7 +49,14 @@ final class MediaDetailViewModel {
         isLoading = true
         errorMessage = nil
         do {
-            media = try await api.get(.mediaDetail(type: type, id: id))
+            let detail: MediaDetail = try await api.get(.mediaDetail(type: type, id: id))
+            media = detail
+            // If the backend updated the status (e.g. completed → watching due to new episodes),
+            // sync it to local state without a separate watchlist fetch.
+            if let backendStatus = detail.watchlistStatus, backendStatus != watchlistStatus {
+                watchlistStatus = backendStatus
+                WatchlistStore.shared.needsRefresh = true
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -64,6 +85,16 @@ final class MediaDetailViewModel {
     func addToWatchlist(status: WatchlistStatus) async {
         do {
             try await watchlistService.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: status)
+            if status == .completed && mediaType == .tv {
+                try? await watchlistService.markAllEpisodesWatched(tvId: mediaId)
+                for seasonNumber in seasonEpisodes.keys {
+                    seasonEpisodes[seasonNumber] = seasonEpisodes[seasonNumber]?.map { ep in
+                        var updated = ep
+                        updated.isWatched = true
+                        return updated
+                    }
+                }
+            }
             WatchlistStore.shared.needsRefresh = true
             await checkWatchlistStatus()
         } catch {
@@ -131,9 +162,11 @@ final class MediaDetailViewModel {
 
         do {
             if isCurrentlyWatched {
-                try await api.delete(.unwatchEpisode(tvId: mediaId, season: season, episode: episode))
+                let response: SeasonStatusResponse = try await api.delete(.unwatchEpisode(tvId: mediaId, season: season, episode: episode))
+                applyStatusChange(response.statusChanged)
             } else {
-                try await api.post(.watchEpisode(tvId: mediaId, season: season, episode: episode))
+                let response: EpisodeStatusResponse = try await api.post(.watchEpisode(tvId: mediaId, season: season, episode: episode))
+                applyStatusChange(response.statusChanged)
             }
             // Flip local state
             if var episodes = seasonEpisodes[season],
@@ -153,14 +186,16 @@ final class MediaDetailViewModel {
 
         do {
             if allWatched {
-                try await api.delete(.unwatchSeason(tvId: mediaId, season: seasonNumber))
+                let response: SeasonStatusResponse = try await api.delete(.unwatchSeason(tvId: mediaId, season: seasonNumber))
+                applyStatusChange(response.statusChanged)
                 seasonEpisodes[seasonNumber] = seasonEpisodes[seasonNumber]?.map { ep in
                     var e = ep
                     e.isWatched = false
                     return e
                 }
             } else {
-                try await api.post(.watchSeason(tvId: mediaId, season: seasonNumber))
+                let response: SeasonStatusResponse = try await api.post(.watchSeason(tvId: mediaId, season: seasonNumber))
+                applyStatusChange(response.statusChanged)
                 seasonEpisodes[seasonNumber] = seasonEpisodes[seasonNumber]?.map { ep in
                     var e = ep
                     e.isWatched = true
@@ -170,6 +205,12 @@ final class MediaDetailViewModel {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func applyStatusChange(_ newStatus: WatchlistStatus?) {
+        guard let newStatus, newStatus != watchlistStatus else { return }
+        watchlistStatus = newStatus
+        WatchlistStore.shared.needsRefresh = true
     }
 
     // MARK: - Helpers
