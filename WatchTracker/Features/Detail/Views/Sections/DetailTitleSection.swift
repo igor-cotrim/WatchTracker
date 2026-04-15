@@ -25,11 +25,19 @@ struct DetailTitleSection: View {
 
                 Text("  |  ")
                     .foregroundStyle(.secondary)
+                
+                Text((media.releaseYear ?? "–"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                
+                Text("  |  ")
+                    .foregroundStyle(.secondary)
 
                 Text((media.genres?.map(\.name).joined(separator: ", ")) ?? "–")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
             }
         }
     }
