@@ -21,10 +21,10 @@ final class UpcomingViewModel {
     }
 
     /// Items agrupados por seção de data.
-    /// daysUntilAir == 0 → "today", 1 → "tomorrow",
+    /// localDaysUntilAir == 0 → "today", 1 → "tomorrow",
     /// 2–6 → nome do dia da semana (chave localizada), ≥7 → "later"
     var groupedItems: [(sectionKey: String, items: [UpcomingItem])] {
-        let grouped = Dictionary(grouping: items) { sectionKey(for: $0.nextEpisode.daysUntilAir) }
+        let grouped = Dictionary(grouping: items) { sectionKey(for: $0.nextEpisode.localDaysUntilAir) }
         let nearDayKeys = (2...6).map { dayName(offset: $0) }
         let sortOrder = ["today", "tomorrow"] + nearDayKeys + ["later"]
         return sortOrder.compactMap { key -> (String, [UpcomingItem])? in
@@ -35,10 +35,10 @@ final class UpcomingViewModel {
 
     private func sectionKey(for days: Int) -> String {
         switch days {
-        case 0: return "today"
-        case 1: return "tomorrow"
+        case ...0: return "today"
+        case 1:    return "tomorrow"
         case 2...6: return dayName(offset: days)
-        default: return "later"
+        default:   return "later"
         }
     }
 

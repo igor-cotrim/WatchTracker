@@ -67,7 +67,7 @@ struct UpcomingRow: View {
 
     @ViewBuilder
     private var airDateIndicator: some View {
-        let days = item.nextEpisode.daysUntilAir
+        let days = item.nextEpisode.localDaysUntilAir
         let provider = item.watchProviders.first
 
         VStack(alignment: .trailing, spacing: 4) {
@@ -79,7 +79,7 @@ struct UpcomingRow: View {
             }
 
             switch days {
-            case 0:
+            case ...0:
                 Text(Strings.Upcoming.today)
                     .font(.caption.bold())
                     .foregroundStyle(.white)
