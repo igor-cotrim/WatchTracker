@@ -43,3 +43,5 @@ final class DiscoverService {
         try await api.get(.providers(type: type))
     }
 }
+
+extension DiscoverService: DiscoverServiceProtocol {}

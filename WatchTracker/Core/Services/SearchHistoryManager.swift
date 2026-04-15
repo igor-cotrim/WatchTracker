@@ -3,9 +3,14 @@ import Foundation
 final class SearchHistoryManager {
     private let key = "search_history"
     private let maxItems = 20
+    private let defaults: UserDefaults
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.defaults = userDefaults
+    }
 
     func load() -> [String] {
-        UserDefaults.standard.stringArray(forKey: key) ?? []
+        defaults.stringArray(forKey: key) ?? []
     }
 
     func save(query: String) {
@@ -15,16 +20,16 @@ final class SearchHistoryManager {
         if history.count > maxItems {
             history = Array(history.prefix(maxItems))
         }
-        UserDefaults.standard.set(history, forKey: key)
+        defaults.set(history, forKey: key)
     }
 
     func remove(query: String) {
         var history = load()
         history.removeAll { $0 == query }
-        UserDefaults.standard.set(history, forKey: key)
+        defaults.set(history, forKey: key)
     }
 
     func clearAll() {
-        UserDefaults.standard.removeObject(forKey: key)
+        defaults.removeObject(forKey: key)
     }
 }

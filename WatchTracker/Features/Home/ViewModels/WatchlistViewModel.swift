@@ -27,10 +27,15 @@ final class WatchlistViewModel {
     var selectedStatus: WatchlistStatus? = nil
     var errorMessage: String?
 
-    private let service = WatchlistService()
-    private let store = WatchlistStore.shared
+    private let service: any WatchlistServiceProtocol
+    private let store: WatchlistStore
 
-    init() {
+    init(
+        service: any WatchlistServiceProtocol = WatchlistService(),
+        store: WatchlistStore = .shared
+    ) {
+        self.service = service
+        self.store = store
         allItems = store.cachedItems
     }
 
@@ -63,7 +68,7 @@ final class WatchlistViewModel {
         errorMessage = nil
         defer { isLoading = false }
         do {
-            let items = try await service.fetchWatchlist()
+            let items = try await service.fetchWatchlist(status: nil, mediaType: nil)
             allItems = items
             store.cachedItems = items
             store.needsRefresh = false

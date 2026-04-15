@@ -1,21 +1,6 @@
 import Foundation
 import SwiftUI
 
-private struct WatchedEpisodesResponse: Decodable {
-    let watchedEpisodes: [Int]
-}
-
-
-private struct SeasonStatusResponse: Decodable {
-    let message: String
-    let statusChanged: WatchlistStatus?
-}
-
-private struct WatchAllStatusResponse: Decodable {
-    let markedCount: Int
-    let statusChanged: WatchlistStatus?
-}
-
 @Observable
 @MainActor
 final class MediaDetailViewModel {
@@ -38,8 +23,19 @@ final class MediaDetailViewModel {
 
     private var mediaType: MediaType = .movie
     private var mediaId: Int = 0
-    private let api = APIClient.shared
-    private let watchlistService = WatchlistService()
+    private let mediaDetailService: any MediaDetailServiceProtocol
+    private let watchlistService: any WatchlistServiceProtocol
+    private let store: WatchlistStore
+
+    init(
+        mediaDetailService: any MediaDetailServiceProtocol = MediaDetailService(),
+        watchlistService: any WatchlistServiceProtocol = WatchlistService(),
+        store: WatchlistStore = .shared
+    ) {
+        self.mediaDetailService = mediaDetailService
+        self.watchlistService = watchlistService
+        self.store = store
+    }
 
     func fetchDetails(type: MediaType, id: Int) async {
         self.mediaType = type
@@ -47,7 +43,7 @@ final class MediaDetailViewModel {
         isLoading = true
         errorMessage = nil
         do {
-            let detail: MediaDetail = try await api.get(.mediaDetail(type: type, id: id))
+            let detail = try await mediaDetailService.fetchMediaDetail(type: type, id: id)
             media = detail
             // If the backend updated the status (e.g. completed → watching due to new episodes),
             // sync it to local state without a separate watchlist fetch.
@@ -55,7 +51,7 @@ final class MediaDetailViewModel {
                let backendStatus = detail.watchlistStatus,
                backendStatus != watchlistStatus {
                 watchlistStatus = backendStatus
-                WatchlistStore.shared.needsRefresh = true
+                store.needsRefresh = true
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -71,7 +67,7 @@ final class MediaDetailViewModel {
         }
 
         // Read from in-memory cache — no network call needed.
-        let cachedItems = WatchlistStore.shared.cachedItems
+        let cachedItems = store.cachedItems
         if let item = cachedItems.first(where: { $0.tmdbId == mediaId && $0.mediaType == mediaType }) {
             isOnWatchlist = true
             watchlistItemId = item.id
@@ -133,9 +129,9 @@ final class MediaDetailViewModel {
         guard seasonEpisodes[seasonNumber] == nil else { return }
         isLoadingSeason.insert(seasonNumber)
         do {
-            let season: Season = try await api.get(.seasonDetail(tvId: mediaId, season: seasonNumber))
-            let watched: WatchedEpisodesResponse? = try? await api.get(.watchedEpisodes(tvId: mediaId, season: seasonNumber))
-            let watchedSet = Set(watched?.watchedEpisodes ?? [])
+            let season = try await mediaDetailService.fetchSeasonDetail(tvId: mediaId, season: seasonNumber)
+            let watchedNumbers = (try? await mediaDetailService.fetchWatchedEpisodes(tvId: mediaId, season: seasonNumber)) ?? []
+            let watchedSet = Set(watchedNumbers)
             let episodes = (season.episodes ?? []).map { ep in
                 var e = ep
                 e.isWatched = watchedSet.contains(ep.episodeNumber)
@@ -151,7 +147,7 @@ final class MediaDetailViewModel {
 
     func rateMedia(rating: Int) async {
         do {
-            try await api.post(.rateMedia(type: mediaType, id: mediaId, rating: rating))
+            try await mediaDetailService.rateMedia(type: mediaType, id: mediaId, rating: rating)
             userRating = rating
         } catch {
             errorMessage = error.localizedDescription
@@ -165,13 +161,13 @@ final class MediaDetailViewModel {
             .first(where: { $0.episodeNumber == episode })?.isWatched ?? false
 
         do {
+            let statusChanged: WatchlistStatus?
             if isCurrentlyWatched {
-                let response: SeasonStatusResponse = try await api.delete(.unwatchEpisode(tvId: mediaId, season: season, episode: episode))
-                applyStatusChange(response.statusChanged)
+                statusChanged = try await mediaDetailService.unmarkEpisodeWatched(tvId: mediaId, season: season, episode: episode)
             } else {
-                let response: EpisodeWatchedResponse = try await api.post(.watchEpisode(tvId: mediaId, season: season, episode: episode))
-                applyStatusChange(response.statusChanged)
+                statusChanged = try await mediaDetailService.markEpisodeWatched(tvId: mediaId, season: season, episode: episode)
             }
+            applyStatusChange(statusChanged)
             // Flip local state
             if var episodes = seasonEpisodes[season],
                let index = episodes.firstIndex(where: { $0.episodeNumber == episode }) {
@@ -189,23 +185,23 @@ final class MediaDetailViewModel {
         let allWatched = seasonEpisodes[seasonNumber]?.allSatisfy(\.isWatched) ?? false
 
         do {
+            let statusChanged: WatchlistStatus?
             if allWatched {
-                let response: SeasonStatusResponse = try await api.delete(.unwatchSeason(tvId: mediaId, season: seasonNumber))
-                applyStatusChange(response.statusChanged)
+                statusChanged = try await mediaDetailService.unmarkSeasonWatched(tvId: mediaId, season: seasonNumber)
                 seasonEpisodes[seasonNumber] = seasonEpisodes[seasonNumber]?.map { ep in
                     var e = ep
                     e.isWatched = false
                     return e
                 }
             } else {
-                let response: SeasonStatusResponse = try await api.post(.watchSeason(tvId: mediaId, season: seasonNumber))
-                applyStatusChange(response.statusChanged)
+                statusChanged = try await mediaDetailService.markSeasonWatched(tvId: mediaId, season: seasonNumber)
                 seasonEpisodes[seasonNumber] = seasonEpisodes[seasonNumber]?.map { ep in
                     var e = ep
                     e.isWatched = true
                     return e
                 }
             }
+            applyStatusChange(statusChanged)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -216,7 +212,7 @@ final class MediaDetailViewModel {
         watchlistStatus = newStatus
         // WatchItem.status is `let`, so we can't update the cache in-place.
         // Mark the store dirty so Home refetches on next appearance.
-        WatchlistStore.shared.needsRefresh = true
+        store.needsRefresh = true
     }
 
     // MARK: - Cache Helpers
@@ -225,20 +221,19 @@ final class MediaDetailViewModel {
     /// and clears the `needsRefresh` flag so Home won't refetch redundantly.
     private func refreshStoreCache() async {
         do {
-            let items = try await watchlistService.fetchWatchlist()
-            let store = WatchlistStore.shared
+            let items = try await watchlistService.fetchWatchlist(status: nil, mediaType: nil)
             store.cachedItems = items
             store.needsRefresh = false
         } catch {
             // If the refresh fails, mark dirty so Home retries later.
-            WatchlistStore.shared.needsRefresh = true
+            store.needsRefresh = true
         }
     }
 
     /// Reads the current media's watchlist entry from the shared cache and
     /// updates this ViewModel's local state (id, status, isOnWatchlist).
     private func syncLocalStateFromCache() {
-        let cachedItems = WatchlistStore.shared.cachedItems
+        let cachedItems = store.cachedItems
         if let item = cachedItems.first(where: { $0.tmdbId == mediaId && $0.mediaType == mediaType }) {
             isOnWatchlist = true
             watchlistItemId = item.id

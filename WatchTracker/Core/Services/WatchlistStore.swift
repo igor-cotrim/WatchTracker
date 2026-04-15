@@ -5,7 +5,7 @@ import Foundation
 @Observable
 final class WatchlistStore {
     static let shared = WatchlistStore()
-    private init() {}
+    init() {}
 
     var cachedItems: [WatchItem] = []
     /// Set to `true` whenever the watchlist is mutated (add/remove) so the next Home appearance re-fetches.

@@ -39,3 +39,5 @@ final class WatchlistService {
         try await api.patch(.updateWatchlistStatus(id: id, status: status))
     }
 }
+
+extension WatchlistService: WatchlistServiceProtocol {}

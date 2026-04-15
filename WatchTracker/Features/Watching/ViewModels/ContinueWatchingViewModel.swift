@@ -7,7 +7,16 @@ final class ContinueWatchingViewModel {
     var isLoading = false
     var errorMessage: String?
 
-    private let service = WatchlistService()
+    private let service: any WatchlistServiceProtocol
+    private let store: WatchlistStore
+
+    init(
+        service: any WatchlistServiceProtocol = WatchlistService(),
+        store: WatchlistStore = .shared
+    ) {
+        self.service = service
+        self.store = store
+    }
 
     func fetch() async {
         isLoading = true
@@ -44,12 +53,11 @@ final class ContinueWatchingViewModel {
 
     private func refreshWatchlistCache() async {
         do {
-            let items = try await service.fetchWatchlist()
-            let store = WatchlistStore.shared
+            let items = try await service.fetchWatchlist(status: nil, mediaType: nil)
             store.cachedItems = items
             store.needsRefresh = false
         } catch {
-            WatchlistStore.shared.needsRefresh = true
+            store.needsRefresh = true
         }
     }
 }

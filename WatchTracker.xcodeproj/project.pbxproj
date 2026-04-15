@@ -10,11 +10,27 @@
 		81F8D3482F842A2A00AD08B5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 81F8D3472F842A2A00AD08B5 /* Supabase */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		81B30BED2F90263300C5B285 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 81F8D28C2F84293500AD08B5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 81F8D2932F84293500AD08B5;
+			remoteInfo = WatchTracker;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		81B30BE92F90263300C5B285 /* WatchTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WatchTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		81F8D2942F84293500AD08B5 /* WatchTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WatchTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		81B30BEA2F90263300C5B285 /* WatchTrackerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = WatchTrackerTests;
+			sourceTree = "<group>";
+		};
 		81F8D3272F8429AC00AD08B5 /* WatchTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = WatchTracker;
@@ -23,6 +39,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		81B30BE62F90263300C5B285 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		81F8D2912F84293500AD08B5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -38,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				81F8D3272F8429AC00AD08B5 /* WatchTracker */,
+				81B30BEA2F90263300C5B285 /* WatchTrackerTests */,
 				81F8D2952F84293500AD08B5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				81F8D2942F84293500AD08B5 /* WatchTracker.app */,
+				81B30BE92F90263300C5B285 /* WatchTrackerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,6 +78,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		81B30BE82F90263300C5B285 /* WatchTrackerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 81B30BF12F90263300C5B285 /* Build configuration list for PBXNativeTarget "WatchTrackerTests" */;
+			buildPhases = (
+				81B30BE52F90263300C5B285 /* Sources */,
+				81B30BE62F90263300C5B285 /* Frameworks */,
+				81B30BE72F90263300C5B285 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				81B30BEE2F90263300C5B285 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				81B30BEA2F90263300C5B285 /* WatchTrackerTests */,
+			);
+			name = WatchTrackerTests;
+			packageProductDependencies = (
+			);
+			productName = WatchTrackerTests;
+			productReference = 81B30BE92F90263300C5B285 /* WatchTrackerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		81F8D2932F84293500AD08B5 /* WatchTracker */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 81F8D29F2F84293600AD08B5 /* Build configuration list for PBXNativeTarget "WatchTracker" */;
@@ -86,6 +134,10 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
+					81B30BE82F90263300C5B285 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 81F8D2932F84293500AD08B5;
+					};
 					81F8D2932F84293500AD08B5 = {
 						CreatedOnToolsVersion = 26.3;
 					};
@@ -109,11 +161,19 @@
 			projectRoot = "";
 			targets = (
 				81F8D2932F84293500AD08B5 /* WatchTracker */,
+				81B30BE82F90263300C5B285 /* WatchTrackerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		81B30BE72F90263300C5B285 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		81F8D2922F84293500AD08B5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,6 +184,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		81B30BE52F90263300C5B285 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		81F8D2902F84293500AD08B5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -133,7 +200,64 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		81B30BEE2F90263300C5B285 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 81F8D2932F84293500AD08B5 /* WatchTracker */;
+			targetProxy = 81B30BED2F90263300C5B285 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		81B30BEF2F90263300C5B285 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FBC3L63M29;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.igorcotrim.WatchTrackerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WatchTracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WatchTracker";
+			};
+			name = Debug;
+		};
+		81B30BF02F90263300C5B285 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FBC3L63M29;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.igorcotrim.WatchTrackerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WatchTracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WatchTracker";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		81F8D29D2F84293600AD08B5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -343,6 +467,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		81B30BF12F90263300C5B285 /* Build configuration list for PBXNativeTarget "WatchTrackerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				81B30BEF2F90263300C5B285 /* Debug */,
+				81B30BF02F90263300C5B285 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		81F8D28F2F84293500AD08B5 /* Build configuration list for PBXProject "WatchTracker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -38,8 +38,16 @@ final class DiscoverViewModel {
     var searchSuggestions: [MediaDetail] = []
 
     private var searchTask: Task<Void, Never>?
-    private let service = DiscoverService()
-    private let searchHistoryManager = SearchHistoryManager()
+    private let service: any DiscoverServiceProtocol
+    private let searchHistoryManager: SearchHistoryManager
+
+    init(
+        service: any DiscoverServiceProtocol = DiscoverService(),
+        searchHistoryManager: SearchHistoryManager = SearchHistoryManager()
+    ) {
+        self.service = service
+        self.searchHistoryManager = searchHistoryManager
+    }
 
     var isSearching: Bool {
         !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty
@@ -48,47 +56,47 @@ final class DiscoverViewModel {
     // MARK: - Movies Fetching
 
     func fetchTrending() async {
-        await fetch(\.trending) { try await service.fetchTrending() }
+        await fetch(\.trending) { try await self.service.fetchTrending() }
     }
 
     func fetchNowPlaying() async {
-        await fetch(\.nowPlaying) { try await service.fetchNowPlaying() }
+        await fetch(\.nowPlaying) { try await self.service.fetchNowPlaying() }
     }
 
     func fetchPopular() async {
-        await fetch(\.popular) { try await service.fetchPopular(type: .movie) }
+        await fetch(\.popular) { try await self.service.fetchPopular(type: .movie, page: nil) }
     }
 
     func fetchTopRated() async {
-        await fetch(\.topRated) { try await service.fetchTopRated(type: .movie) }
+        await fetch(\.topRated) { try await self.service.fetchTopRated(type: .movie, page: nil) }
     }
 
     func fetchUpcoming() async {
-        await fetch(\.upcoming) { try await service.fetchUpcoming() }
+        await fetch(\.upcoming) { try await self.service.fetchUpcoming(page: nil) }
     }
 
     // MARK: - TV Fetching
 
     func fetchPopularTV() async {
-        await fetch(\.popularTV) { try await service.fetchPopular(type: .tv) }
+        await fetch(\.popularTV) { try await self.service.fetchPopular(type: .tv, page: nil) }
     }
 
     func fetchTopRatedTV() async {
-        await fetch(\.topRatedTV) { try await service.fetchTopRated(type: .tv) }
+        await fetch(\.topRatedTV) { try await self.service.fetchTopRated(type: .tv, page: nil) }
     }
 
     func fetchAnime() async {
-        await fetch(\.anime) { try await service.discoverFiltered(type: .tv, genres: "16", originCountry: "JP") }
+        await fetch(\.anime) { try await self.service.discoverFiltered(type: .tv, genres: "16", originCountry: "JP", providers: nil, watchRegion: nil, sortBy: nil, page: nil) }
     }
 
     // MARK: - Shared Fetching
 
     func fetchGenres() async {
-        await fetch(\.genres) { try await service.fetchGenres() }
+        await fetch(\.genres) { try await self.service.fetchGenres(type: .movie) }
     }
 
     func fetchProviders() async {
-        await fetch(\.providers) { try await service.fetchProviders() }
+        await fetch(\.providers) { try await self.service.fetchProviders(type: .movie) }
     }
 
     // MARK: - Private Helper
@@ -136,7 +144,7 @@ final class DiscoverViewModel {
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
             do {
-                let results = try await service.search(query: query)
+                let results = try await service.search(query: query, type: nil, year: nil)
                 if !Task.isCancelled {
                     searchSuggestions = Array(results.prefix(5))
                 }

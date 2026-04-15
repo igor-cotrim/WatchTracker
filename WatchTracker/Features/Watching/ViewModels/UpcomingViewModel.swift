@@ -7,7 +7,11 @@ final class UpcomingViewModel {
     var isLoading = false
     var errorMessage: String?
 
-    private let service = WatchlistService()
+    private let service: any WatchlistServiceProtocol
+
+    init(service: any WatchlistServiceProtocol = WatchlistService()) {
+        self.service = service
+    }
 
     func fetch() async {
         isLoading = true
