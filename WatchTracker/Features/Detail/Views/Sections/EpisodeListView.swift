@@ -7,6 +7,11 @@ struct EpisodeListView: View {
 
     @State private var hapticTrigger = 0
 
+    private func watchButtonColor(for episode: Episode) -> Color {
+        guard episode.hasAired else { return Color.secondary.opacity(0.4) }
+        return episode.isWatched ? Color.brandPrimary : Color.secondary
+    }
+
     private var episodePlaceholder: some View {
         Rectangle()
             .fill(Color(.systemGray5))
@@ -59,21 +64,28 @@ struct EpisodeListView: View {
                         hapticTrigger += 1
                         Task { await viewModel.toggleEpisodeWatched(season: seasonNumber, episode: episode.episodeNumber) }
                     } label: {
-                        Image(systemName: episode.isWatched ? "checkmark.circle.fill" : "circle")
+                        Image(systemName: episode.hasAired
+                              ? (episode.isWatched ? "checkmark.circle.fill" : "circle")
+                              : "lock.circle")
                             .font(.title3)
-                            .foregroundStyle(episode.isWatched ? Color.brandPrimary : .secondary)
+                            .foregroundStyle(watchButtonColor(for: episode))
                             .contentTransition(.symbolEffect(.replace))
                     }
+                    .disabled(!episode.hasAired)
                     .accessibilityLabel(Strings.Episode.accessibilityLabel(number: episode.episodeNumber, name: episode.name))
-                    .accessibilityValue(episode.isWatched ? Strings.Episode.accessibilityWatched : Strings.Episode.accessibilityNotWatched)
-                    .accessibilityHint(episode.isWatched ? Strings.Episode.accessibilityMarkUnwatched : Strings.Episode.accessibilityMarkWatched)
+                    .accessibilityValue(episode.hasAired
+                                        ? (episode.isWatched ? Strings.Episode.accessibilityWatched : Strings.Episode.accessibilityNotWatched)
+                                        : Strings.Episode.accessibilityNotReleased)
+                    .accessibilityHint(episode.hasAired
+                                       ? (episode.isWatched ? Strings.Episode.accessibilityMarkUnwatched : Strings.Episode.accessibilityMarkWatched)
+                                       : "")
                 }
                 .padding(.vertical, 8)
                 .padding(.horizontal, 12)
 
                 if episode.id != episodes.last?.id {
                     Divider()
-                        .padding(.leading, 120) // 96pt thumbnail + 12pt spacing + 12pt left padding
+                        .padding(.leading, 120)
                 }
             }
         }

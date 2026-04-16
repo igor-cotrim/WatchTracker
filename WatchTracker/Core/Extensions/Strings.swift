@@ -198,10 +198,11 @@ enum Strings {
     // MARK: - Episode
     
     enum Episode {
-        static var accessibilityWatched: String    { String(localized: "episode.accessibility.watched") }
-        static var accessibilityNotWatched: String { String(localized: "episode.accessibility.not_watched") }
+        static var accessibilityWatched: String       { String(localized: "episode.accessibility.watched") }
+        static var accessibilityNotWatched: String    { String(localized: "episode.accessibility.not_watched") }
         static var accessibilityMarkWatched: String   { String(localized: "episode.accessibility.mark_watched") }
         static var accessibilityMarkUnwatched: String { String(localized: "episode.accessibility.mark_unwatched") }
+        static var accessibilityNotReleased: String   { String(localized: "episode.accessibility.not_released") }
         
         static func label(number: Int, name: String) -> String {
             String(format: String(localized: "episode.label"), number, name)

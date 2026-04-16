@@ -818,6 +818,23 @@
         }
       }
     },
+    "episode.accessibility.not_released" : {
+      "comment" : "VoiceOver value when an episode has not released yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not released yet"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não lançado"
+          }
+        }
+      }
+    },
     "episode.accessibility.watched" : {
       "comment" : "VoiceOver value when an episode has been watched",
       "localizations" : {

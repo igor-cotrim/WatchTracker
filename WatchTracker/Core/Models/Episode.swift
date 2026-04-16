@@ -14,6 +14,15 @@ struct Episode: Codable, Identifiable {
         case id, name, overview, episodeNumber, seasonNumber, stillPath, airDate
     }
 
+    var hasAired: Bool {
+        guard let airDate else { return true } // unknown air date → allow marking
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        guard let date = formatter.date(from: airDate) else { return true }
+        return Calendar.current.startOfDay(for: date) <= Calendar.current.startOfDay(for: Date())
+    }
+
     var stillURL: URL? {
         guard let stillPath else { return nil }
         return URL(string: "https://image.tmdb.org/t/p/w300\(stillPath)")
