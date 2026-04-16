@@ -1,6 +1,12 @@
 import SwiftUI
+import FoundationModels
 
 struct AppTabView: View {
+    private var isAIAvailable: Bool {
+        if case .available = SystemLanguageModel.default.availability { return true }
+        return false
+    }
+
     var body: some View {
         TabView {
             Tab(Strings.Tab.home, systemImage: "house.fill") {
@@ -11,6 +17,11 @@ struct AppTabView: View {
             }
             Tab(Strings.Tab.discover, systemImage: "magnifyingglass") {
                 DiscoverView()
+            }
+            if isAIAvailable {
+                Tab(Strings.Tab.ai, systemImage: "sparkles") {
+                    AISuggestionsView()
+                }
             }
             Tab(Strings.Tab.profile, systemImage: "person.fill") {
                 ProfileView()

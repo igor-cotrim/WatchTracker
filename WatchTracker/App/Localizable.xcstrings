@@ -28,6 +28,330 @@
         }
       }
     },
+    "ai.empty_watchlist.subtitle" : {
+      "comment" : "Message when watchlist is empty and AI cannot generate suggestions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add movies and shows to your watchlist first so we can learn your taste."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicione filmes e séries à sua lista primeiro para que possamos aprender seu gosto."
+          }
+        }
+      }
+    },
+    "ai.empty_watchlist.title" : {
+      "comment" : "Title when watchlist is empty and AI cannot generate suggestions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Watchlist Is Empty"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua Lista Está Vazia"
+          }
+        }
+      }
+    },
+    "ai.empty.subtitle" : {
+      "comment" : "Empty state subtitle when AI generates no suggestions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try adding more items to your watchlist for better suggestions."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tente adicionar mais itens à sua lista para melhores sugestões."
+          }
+        }
+      }
+    },
+    "ai.empty.title" : {
+      "comment" : "Empty state title when AI generates no suggestions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Suggestions"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem Sugestões"
+          }
+        }
+      }
+    },
+    "ai.example.anime" : {
+      "comment" : "Example chip on the AI idle screen — anime suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anime like Solo Leveling"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anime tipo Solo Leveling"
+          }
+        }
+      }
+    },
+    "ai.example.mood" : {
+      "comment" : "Example chip on the AI idle screen — mood suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thrilling crime movies"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filmes de crime emocionantes"
+          }
+        }
+      }
+    },
+    "ai.example.movie" : {
+      "comment" : "Example chip on the AI idle screen — movie suggestion",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sci-fi movies like Interstellar"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filmes de ficção científica como Interestelar"
+          }
+        }
+      }
+    },
+    "ai.idle.subtitle" : {
+      "comment" : "Subtitle on the AI idle screen before the user generates suggestions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type what you're in the mood for, or tap ✦ to get suggestions based on your watching, plan to watch, and completed lists."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digite o que você quer assistir, ou toque em ✦ para receber sugestões baseadas nas suas listas de assistindo, quero assistir e concluídos."
+          }
+        }
+      }
+    },
+    "ai.idle.title" : {
+      "comment" : "Title on the AI idle screen before the user generates suggestions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What are you in the mood for?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O que você quer assistir hoje?"
+          }
+        }
+      }
+    },
+    "ai.loading" : {
+      "comment" : "Loading message while AI generates suggestions",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generating suggestions…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gerando sugestões…"
+          }
+        }
+      }
+    },
+    "ai.prompt.placeholder" : {
+      "comment" : "Placeholder text for the AI prompt input field",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask for something specific…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peça algo específico…"
+          }
+        }
+      }
+    },
+    "ai.send_button" : {
+      "comment" : "Send button label in the AI prompt input bar",
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar"
+          }
+        }
+      }
+    },
+    "ai.title" : {
+      "comment" : "Navigation title for the AI suggestions screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For You"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para Você"
+          }
+        }
+      }
+    },
+    "ai.unavailable.not_eligible" : {
+      "comment" : "Title when device does not support Apple Intelligence",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device Not Supported"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo Não Suportado"
+          }
+        }
+      }
+    },
+    "ai.unavailable.not_eligible.subtitle" : {
+      "comment" : "Subtitle when device does not support Apple Intelligence",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI suggestions require a device that supports Apple Intelligence."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugestões por IA requerem um dispositivo compatível com Apple Intelligence."
+          }
+        }
+      }
+    },
+    "ai.unavailable.not_enabled" : {
+      "comment" : "Title when Apple Intelligence is not enabled on the device",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence Disabled"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence Desativada"
+          }
+        }
+      }
+    },
+    "ai.unavailable.not_enabled.subtitle" : {
+      "comment" : "Subtitle when Apple Intelligence is not enabled",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable Apple Intelligence in Settings to get personalized suggestions."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ative a Apple Intelligence nos Ajustes para receber sugestões personalizadas."
+          }
+        }
+      }
+    },
+    "ai.unavailable.not_ready" : {
+      "comment" : "Title when the AI model is still downloading",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Model Downloading"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelo em Download"
+          }
+        }
+      }
+    },
+    "ai.unavailable.not_ready.subtitle" : {
+      "comment" : "Subtitle when the AI model is still downloading",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The AI model is still downloading. Please try again later."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O modelo de IA ainda está sendo baixado. Tente novamente mais tarde."
+          }
+        }
+      }
+    },
     "auth.email" : {
       "comment" : "Email text field placeholder",
       "localizations" : {
@@ -801,23 +1125,6 @@
         }
       }
     },
-    "episode.accessibility.not_watched" : {
-      "comment" : "VoiceOver value when an episode has not been watched",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not watched"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não assistido"
-          }
-        }
-      }
-    },
     "episode.accessibility.not_released" : {
       "comment" : "VoiceOver value when an episode has not released yet",
       "localizations" : {
@@ -831,6 +1138,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ainda não lançado"
+          }
+        }
+      }
+    },
+    "episode.accessibility.not_watched" : {
+      "comment" : "VoiceOver value when an episode has not been watched",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not watched"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não assistido"
           }
         }
       }
@@ -1311,6 +1635,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Assistindo"
+          }
+        }
+      }
+    },
+    "tab.ai" : {
+      "comment" : "Tab bar label for the AI suggestions tab",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For You"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para Você"
           }
         }
       }
