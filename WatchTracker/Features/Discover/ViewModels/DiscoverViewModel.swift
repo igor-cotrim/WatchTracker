@@ -38,12 +38,12 @@ final class DiscoverViewModel {
     var searchSuggestions: [MediaDetail] = []
 
     private var searchTask: Task<Void, Never>?
-    private let service: any DiscoverServiceProtocol
+    private let service: DiscoverServiceProtocol
     private let searchHistoryManager: SearchHistoryManager
 
     init(
-        service: any DiscoverServiceProtocol = DiscoverService(),
-        searchHistoryManager: SearchHistoryManager = SearchHistoryManager()
+        service: DiscoverServiceProtocol,
+        searchHistoryManager: SearchHistoryManager
     ) {
         self.service = service
         self.searchHistoryManager = searchHistoryManager

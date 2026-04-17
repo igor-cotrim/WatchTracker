@@ -11,7 +11,7 @@ struct ContinueWatchingViewModelTests {
         let item = TestFixtures.continueWatchingItem(nextEpisode: releasedEpisode)
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .success([item])
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.fetch()
         #expect(vm.items.count == 1)
     }
@@ -21,7 +21,7 @@ struct ContinueWatchingViewModelTests {
         let item = TestFixtures.continueWatchingItem(nextEpisode: futureEpisode)
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .success([item])
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.fetch()
         #expect(vm.items.isEmpty, "Items with unreleased episodes should be filtered out")
     }
@@ -30,7 +30,7 @@ struct ContinueWatchingViewModelTests {
         let item = TestFixtures.continueWatchingItem(nextEpisode: nil)
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .success([item])
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.fetch()
         #expect(vm.items.count == 1)
     }
@@ -38,7 +38,7 @@ struct ContinueWatchingViewModelTests {
     @Test func `fetch sets errorMessage on failure`() async {
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .failure(MockError.generic("network error"))
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.fetch()
         #expect(vm.errorMessage != nil)
         #expect(vm.items.isEmpty)
@@ -47,7 +47,7 @@ struct ContinueWatchingViewModelTests {
     @Test func `isLoading is false after fetch`() async {
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .success([])
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.fetch()
         #expect(vm.isLoading == false)
     }
@@ -57,7 +57,7 @@ struct ContinueWatchingViewModelTests {
     @Test func `markAsWatched does nothing when item has no next episode`() async {
         let mock = MockWatchlistService()
         let item = TestFixtures.continueWatchingItem(nextEpisode: nil)
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.markAsWatched(item)
         #expect(mock.markEpisodeWatchedCalls.isEmpty)
     }
@@ -80,7 +80,7 @@ struct ContinueWatchingViewModelTests {
         let mock = MockWatchlistService()
         mock.markEpisodeWatchedResult = .success(nil)  // no status change
         mock.fetchContinueWatchingResult = .success([])
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.markAsWatched(item)
         // fetchWatchlist should NOT have been called (only fetchContinueWatching for re-fetch)
         #expect(mock.fetchWatchlistCallCount == 0)
@@ -105,7 +105,7 @@ struct ContinueWatchingViewModelTests {
         let mock = MockWatchlistService()
         mock.markEpisodeWatchedResult = .success(nil)
         mock.fetchContinueWatchingResult = .success([])
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.markAsWatched(item)
         #expect(mock.fetchContinueWatchingCallCount >= 1)
     }
@@ -115,7 +115,7 @@ struct ContinueWatchingViewModelTests {
         let item = TestFixtures.continueWatchingItem(nextEpisode: episode)
         let mock = MockWatchlistService()
         mock.markEpisodeWatchedResult = .failure(MockError.generic("error"))
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.markAsWatched(item)
         #expect(vm.errorMessage != nil)
     }
@@ -124,7 +124,7 @@ struct ContinueWatchingViewModelTests {
 
     private func vm_markAsWatched(item: ContinueWatchingItem, mock: MockWatchlistService) async {
         mock.fetchContinueWatchingResult = .success([])
-        let vm = ContinueWatchingViewModel(service: mock)
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
         await vm.markAsWatched(item)
     }
 }

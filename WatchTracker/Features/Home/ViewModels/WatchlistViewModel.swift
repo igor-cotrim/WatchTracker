@@ -27,12 +27,12 @@ final class WatchlistViewModel {
     var selectedStatus: WatchlistStatus = .watching
     var errorMessage: String?
 
-    private let service: any WatchlistServiceProtocol
+    private let service: WatchlistServiceProtocol
     private let store: WatchlistStore
 
     init(
-        service: any WatchlistServiceProtocol = WatchlistService(),
-        store: WatchlistStore = .shared
+        service: WatchlistServiceProtocol,
+        store: WatchlistStore
     ) {
         self.service = service
         self.store = store

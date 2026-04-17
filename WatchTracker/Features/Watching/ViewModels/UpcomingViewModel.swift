@@ -7,9 +7,9 @@ final class UpcomingViewModel {
     var isLoading = false
     var errorMessage: String?
 
-    private let service: any WatchlistServiceProtocol
+    private let service: WatchlistServiceProtocol
 
-    init(service: any WatchlistServiceProtocol = WatchlistService()) {
+    init(service: WatchlistServiceProtocol) {
         self.service = service
     }
 

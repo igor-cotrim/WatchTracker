@@ -5,8 +5,13 @@ private enum WatchingTab {
 }
 
 struct WatchingView: View {
-    @State private var viewModel = ContinueWatchingViewModel()
-    @State private var upcomingViewModel = UpcomingViewModel()
+    @State private var viewModel = ContinueWatchingViewModel(
+        service: WatchlistService(),
+        store: WatchlistStore()
+    )
+    @State private var upcomingViewModel = UpcomingViewModel(
+        service: WatchlistService()
+    )
     @State private var selectedTab: WatchingTab = .watching
 
     var body: some View {

@@ -15,7 +15,7 @@ struct UpcomingViewModelTests {
         (100, "later"),
     ])
     func `groupedItems places item in correct section`(offset: Int, expectedSection: String) {
-        let vm = UpcomingViewModel()
+        let vm = UpcomingViewModel(service: MockWatchlistService())
         vm.items = [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: offset)]
         let sections = vm.groupedItems
         let sectionKey = try! #require(sections.first?.sectionKey)
@@ -23,7 +23,7 @@ struct UpcomingViewModelTests {
     }
 
     @Test func `groupedItems day 2 through 6 map to weekday names`() {
-        let vm = UpcomingViewModel()
+        let vm = UpcomingViewModel(service: MockWatchlistService())
         for offset in 2...6 {
             vm.items = [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: offset)]
             let sections = vm.groupedItems
@@ -37,7 +37,7 @@ struct UpcomingViewModelTests {
     }
 
     @Test func `groupedItems groups multiple items in same section`() {
-        let vm = UpcomingViewModel()
+        let vm = UpcomingViewModel(service: MockWatchlistService())
         vm.items = [
             TestFixtures.upcomingItem(tmdbId: 1, nextEpisodeDaysFromToday: 0),
             TestFixtures.upcomingItem(tmdbId: 2, nextEpisodeDaysFromToday: 0),
@@ -48,7 +48,7 @@ struct UpcomingViewModelTests {
     }
 
     @Test func `groupedItems orders sections today before tomorrow before later`() {
-        let vm = UpcomingViewModel()
+        let vm = UpcomingViewModel(service: MockWatchlistService())
         vm.items = [
             TestFixtures.upcomingItem(tmdbId: 1, nextEpisodeDaysFromToday: 7),   // later
             TestFixtures.upcomingItem(tmdbId: 2, nextEpisodeDaysFromToday: 0),   // today
@@ -64,14 +64,14 @@ struct UpcomingViewModelTests {
     }
 
     @Test func `groupedItems omits empty sections`() {
-        let vm = UpcomingViewModel()
+        let vm = UpcomingViewModel(service: MockWatchlistService())
         vm.items = [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: 0)]
         let sections = vm.groupedItems
         #expect(sections.allSatisfy { !$0.items.isEmpty })
     }
 
     @Test func `groupedItems is empty when items is empty`() {
-        let vm = UpcomingViewModel()
+        let vm = UpcomingViewModel(service: MockWatchlistService())
         vm.items = []
         #expect(vm.groupedItems.isEmpty)
     }

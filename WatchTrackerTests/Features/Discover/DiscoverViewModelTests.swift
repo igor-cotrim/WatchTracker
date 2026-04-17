@@ -9,25 +9,25 @@ struct DiscoverViewModelTests {
     // MARK: - isSearching
 
     @Test func `isSearching is false for empty string`() {
-        let vm = DiscoverViewModel()
+        let vm = DiscoverViewModel(service: MockDiscoverService(), searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = ""
         #expect(vm.isSearching == false)
     }
 
     @Test func `isSearching is false for whitespace only`() {
-        let vm = DiscoverViewModel()
+        let vm = DiscoverViewModel(service: MockDiscoverService(), searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "   "
         #expect(vm.isSearching == false)
     }
 
     @Test func `isSearching is true for non-empty query`() {
-        let vm = DiscoverViewModel()
+        let vm = DiscoverViewModel(service: MockDiscoverService(), searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "batman"
         #expect(vm.isSearching == true)
     }
 
     @Test func `isSearching is true for padded query`() {
-        let vm = DiscoverViewModel()
+        let vm = DiscoverViewModel(service: MockDiscoverService(), searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "  batman  "
         #expect(vm.isSearching == true)
     }
@@ -36,7 +36,7 @@ struct DiscoverViewModelTests {
 
     @Test func `search with empty trimmed query clears results without calling service`() async {
         let mock = MockDiscoverService()
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         vm.searchResults = [TestFixtures.mediaDetail()]
         vm.searchQuery = "   "
         await vm.search()
@@ -47,7 +47,7 @@ struct DiscoverViewModelTests {
     @Test func `search calls service with trimmed query`() async {
         let mock = MockDiscoverService()
         mock.searchResult = .success([])
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "  batman  "
         await vm.search()
         #expect(mock.lastSearchQuery == "batman")
@@ -56,7 +56,7 @@ struct DiscoverViewModelTests {
     @Test func `search populates searchResults on success`() async {
         let mock = MockDiscoverService()
         mock.searchResult = .success([TestFixtures.mediaDetail()])
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "batman"
         await vm.search()
         #expect(vm.searchResults.count == 1)
@@ -80,7 +80,7 @@ struct DiscoverViewModelTests {
     @Test func `search sets errorMessage on failure`() async {
         let mock = MockDiscoverService()
         mock.searchResult = .failure(MockError.generic("network fail"))
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "batman"
         await vm.search()
         #expect(vm.errorMessage != nil)
@@ -90,7 +90,7 @@ struct DiscoverViewModelTests {
     @Test func `isLoading is false after search completes`() async {
         let mock = MockDiscoverService()
         mock.searchResult = .success([])
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "batman"
         await vm.search()
         #expect(vm.isLoading == false)
@@ -100,7 +100,7 @@ struct DiscoverViewModelTests {
 
     @Test func `fetchSuggestions with empty query clears suggestions without service call`() async {
         let mock = MockDiscoverService()
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         vm.searchSuggestions = [TestFixtures.mediaDetail()]
         vm.searchQuery = ""
         vm.fetchSuggestions()
@@ -111,7 +111,7 @@ struct DiscoverViewModelTests {
     @Test func `fetchSuggestions after debounce calls service and caps at 5`() async throws {
         let mock = MockDiscoverService()
         mock.searchResult = .success(Array(repeating: TestFixtures.mediaDetail(), count: 10))
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "batman"
         vm.fetchSuggestions()
         try await Task.sleep(for: .milliseconds(600))
@@ -125,7 +125,7 @@ struct DiscoverViewModelTests {
         mock.searchResult = .success([TestFixtures.mediaDetail()])
 
         // Track which queries reach the service
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         vm.searchQuery = "first"
         vm.fetchSuggestions()
         vm.searchQuery = "second"
@@ -141,7 +141,7 @@ struct DiscoverViewModelTests {
     @Test func `fetchAnime calls discoverFiltered with genre 16 and JP origin`() async {
         let mock = MockDiscoverService()
         mock.discoverFilteredResult = .success([])
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         await vm.fetchAnime()
         let call = mock.discoverFilteredCalls.first
         #expect(call?.type == .tv)
@@ -158,7 +158,7 @@ struct DiscoverViewModelTests {
 
         let historyManager = SearchHistoryManager(userDefaults: defaults)
         historyManager.save(query: "batman")
-        let vm = DiscoverViewModel(searchHistoryManager: historyManager)
+        let vm = DiscoverViewModel(service: MockDiscoverService(), searchHistoryManager: historyManager)
         vm.loadSearchHistory()
         vm.clearSearchHistory()
         #expect(vm.searchHistory.isEmpty)
@@ -172,7 +172,7 @@ struct DiscoverViewModelTests {
         let historyManager = SearchHistoryManager(userDefaults: defaults)
         historyManager.save(query: "batman")
         historyManager.save(query: "superman")
-        let vm = DiscoverViewModel(searchHistoryManager: historyManager)
+        let vm = DiscoverViewModel(service: MockDiscoverService(), searchHistoryManager: historyManager)
         vm.loadSearchHistory()
         vm.removeSearchHistoryItem("superman")
         #expect(vm.searchHistory.contains("superman") == false)
@@ -184,7 +184,7 @@ struct DiscoverViewModelTests {
     @Test func `fetchTrending populates trending on success`() async {
         let mock = MockDiscoverService()
         mock.fetchTrendingResult = .success([TestFixtures.mediaDetail(id: 1), TestFixtures.mediaDetail(id: 2)])
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         await vm.fetchTrending()
         #expect(vm.trending.count == 2)
         #expect(vm.errorMessage == nil)
@@ -193,7 +193,7 @@ struct DiscoverViewModelTests {
     @Test func `fetchTrending sets errorMessage on failure`() async {
         let mock = MockDiscoverService()
         mock.fetchTrendingResult = .failure(MockError.generic("error"))
-        let vm = DiscoverViewModel(service: mock)
+        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
         await vm.fetchTrending()
         #expect(vm.errorMessage != nil)
     }

@@ -102,7 +102,7 @@ struct WatchlistViewModelTests {
     @Test func `syncFromCache updates allItems from non-empty store`() {
         let store = WatchlistStore()
         store.cachedItems = [TestFixtures.watchItem()]
-        let vm = WatchlistViewModel(store: store)
+        let vm = WatchlistViewModel(service: MockWatchlistService(), store: store)
         store.cachedItems = [TestFixtures.watchItem(), TestFixtures.watchItem(id: 2)]
         vm.syncFromCache()
         #expect(vm.allItems.count == 2)
@@ -110,7 +110,7 @@ struct WatchlistViewModelTests {
 
     @Test func `syncFromCache does not clear allItems when store is empty`() {
         let store = WatchlistStore()
-        let vm = WatchlistViewModel(store: store)
+        let vm = WatchlistViewModel(service: MockWatchlistService(), store: store)
         vm.allItems = [TestFixtures.watchItem()]
         store.cachedItems = []
         vm.syncFromCache()

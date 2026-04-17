@@ -4,7 +4,11 @@ struct MediaDetailView: View {
     let mediaType: MediaType
     let mediaId: Int
 
-    @State private var viewModel = MediaDetailViewModel()
+    @State private var viewModel = MediaDetailViewModel(
+        mediaDetailService: MediaDetailService(),
+        watchlistService: WatchlistService(),
+        store: .shared
+    )
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {

@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var viewModel = WatchlistViewModel()
+    @State private var viewModel = WatchlistViewModel(
+        service: WatchlistService(),
+        store: WatchlistStore()
+    )
 
     var body: some View {
         NavigationStack {

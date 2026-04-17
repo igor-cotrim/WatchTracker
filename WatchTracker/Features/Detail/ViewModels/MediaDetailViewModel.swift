@@ -23,14 +23,14 @@ final class MediaDetailViewModel {
 
     private var mediaType: MediaType = .movie
     private var mediaId: Int = 0
-    private let mediaDetailService: any MediaDetailServiceProtocol
-    private let watchlistService: any WatchlistServiceProtocol
+    private let mediaDetailService: MediaDetailServiceProtocol
+    private let watchlistService: WatchlistServiceProtocol
     private let store: WatchlistStore
 
     init(
-        mediaDetailService: any MediaDetailServiceProtocol = MediaDetailService(),
-        watchlistService: any WatchlistServiceProtocol = WatchlistService(),
-        store: WatchlistStore = .shared
+        mediaDetailService: MediaDetailServiceProtocol,
+        watchlistService: WatchlistServiceProtocol,
+        store: WatchlistStore
     ) {
         self.mediaDetailService = mediaDetailService
         self.watchlistService = watchlistService

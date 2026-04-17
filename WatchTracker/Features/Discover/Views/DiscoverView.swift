@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct DiscoverView: View {
-    @State private var viewModel = DiscoverViewModel()
+    @State private var viewModel = DiscoverViewModel(
+        service: DiscoverService(),
+        searchHistoryManager: SearchHistoryManager()
+    )
 
     private let service = DiscoverService()
 
