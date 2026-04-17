@@ -6,7 +6,15 @@ struct DiscoverView: View {
         searchHistoryManager: SearchHistoryManager()
     )
 
-    private let service = DiscoverService()
+    // Stored once per view lifetime — prevents allocating new @Observable instances on every body evaluation.
+    @State private var trendingGridVM = BrowseGridViewModel { _ in try await DiscoverService().fetchTrending() }
+    @State private var nowPlayingGridVM = BrowseGridViewModel { _ in try await DiscoverService().fetchNowPlaying() }
+    @State private var popularMoviesGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchPopular(type: .movie, page: page) }
+    @State private var topRatedMoviesGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchTopRated(type: .movie, page: page) }
+    @State private var upcomingGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchUpcoming(page: page) }
+    @State private var popularTVGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchPopular(type: .tv, page: page) }
+    @State private var topRatedTVGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchTopRated(type: .tv, page: page) }
+    @State private var animeGridVM = BrowseGridViewModel { page in try await DiscoverService().discoverFiltered(type: .tv, genres: "16", originCountry: "JP", page: page) }
 
     var body: some View {
         NavigationStack {
@@ -81,27 +89,27 @@ struct DiscoverView: View {
             MediaRowSection(
                 title: Strings.Discover.trending,
                 items: viewModel.trending,
-                seeAllViewModel: BrowseGridViewModel { [service] _ in try await service.fetchTrending() }
+                seeAllViewModel: trendingGridVM
             )
             MediaRowSection(
                 title: Strings.Discover.nowPlaying,
                 items: viewModel.nowPlaying,
-                seeAllViewModel: BrowseGridViewModel { [service] page in try await service.fetchNowPlaying() }
+                seeAllViewModel: nowPlayingGridVM
             )
             MediaRowSection(
                 title: Strings.Discover.popular,
                 items: viewModel.popular,
-                seeAllViewModel: BrowseGridViewModel { [service] page in try await service.fetchPopular(type: .movie, page: page) }
+                seeAllViewModel: popularMoviesGridVM
             )
             MediaRowSection(
                 title: Strings.Discover.topRated,
                 items: viewModel.topRated,
-                seeAllViewModel: BrowseGridViewModel { [service] page in try await service.fetchTopRated(type: .movie, page: page) }
+                seeAllViewModel: topRatedMoviesGridVM
             )
             MediaRowSection(
                 title: Strings.Discover.upcoming,
                 items: viewModel.upcoming,
-                seeAllViewModel: BrowseGridViewModel { [service] page in try await service.fetchUpcoming(page: page) }
+                seeAllViewModel: upcomingGridVM
             )
         }
     }
@@ -111,19 +119,17 @@ struct DiscoverView: View {
             MediaRowSection(
                 title: Strings.Discover.popularTV,
                 items: viewModel.popularTV,
-                seeAllViewModel: BrowseGridViewModel { [service] page in try await service.fetchPopular(type: .tv, page: page) }
+                seeAllViewModel: popularTVGridVM
             )
             MediaRowSection(
                 title: Strings.Discover.topRatedTV,
                 items: viewModel.topRatedTV,
-                seeAllViewModel: BrowseGridViewModel { [service] page in try await service.fetchTopRated(type: .tv, page: page) }
+                seeAllViewModel: topRatedTVGridVM
             )
             MediaRowSection(
                 title: Strings.Discover.anime,
                 items: viewModel.anime,
-                seeAllViewModel: BrowseGridViewModel { [service] page in
-                    try await service.discoverFiltered(type: .tv, genres: "16", originCountry: "JP", page: page)
-                }
+                seeAllViewModel: animeGridVM
             )
         }
     }

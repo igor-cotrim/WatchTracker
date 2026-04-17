@@ -3,7 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var viewModel = WatchlistViewModel(
         service: WatchlistService(),
-        store: WatchlistStore()
+        store: .shared
     )
 
     var body: some View {

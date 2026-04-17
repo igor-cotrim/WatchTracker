@@ -21,11 +21,28 @@ enum MediaFilter: String, CaseIterable, Identifiable {
 @Observable
 @MainActor
 final class WatchlistViewModel {
-    var allItems: [WatchItem] = []
+    var allItems: [WatchItem] = [] {
+        didSet { rebuildDerived() }
+    }
     var isLoading = false
     var selectedFilter: MediaFilter = .all
-    var selectedStatus: WatchlistStatus = .watching
+    var selectedStatus: WatchlistStatus = .watching {
+        didSet { rebuildDerived() }
+    }
     var errorMessage: String?
+
+    // Precomputed per-filter lists for the current selectedStatus.
+    // Updated atomically whenever allItems or selectedStatus changes,
+    // so each WatchlistView tab reads a stored array instead of filtering on every render.
+    private(set) var filteredAll: [WatchItem] = []
+    private(set) var filteredMovies: [WatchItem] = []
+    private(set) var filteredTV: [WatchItem] = []
+    private(set) var filteredAnime: [WatchItem] = []
+
+    // Precomputed item counts per status — used by StatusFilterBar pills.
+    private(set) var countWatching: Int = 0
+    private(set) var countPlanToWatch: Int = 0
+    private(set) var countCompleted: Int = 0
 
     private let service: WatchlistServiceProtocol
     private let store: WatchlistStore
@@ -37,22 +54,26 @@ final class WatchlistViewModel {
         self.service = service
         self.store = store
         allItems = store.cachedItems
+        rebuildDerived()
     }
 
-    /// Returns items filtered by the current status pill and the given media filter.
+    /// Returns precomputed items for the given filter under the current selectedStatus.
     func items(for filter: MediaFilter) -> [WatchItem] {
-        let byStatus = allItems.filter { $0.status == selectedStatus }
         switch filter {
-        case .all:   return byStatus
-        case .movie: return byStatus.filter { $0.mediaType == .movie }
-        case .tv:    return byStatus.filter { $0.mediaType == .tv && $0.isAnime != true }
-        case .anime: return byStatus.filter { $0.mediaType == .tv && $0.isAnime == true }
+        case .all:   return filteredAll
+        case .movie: return filteredMovies
+        case .tv:    return filteredTV
+        case .anime: return filteredAnime
         }
     }
 
-    /// Count of all items (regardless of media type) for a given status — used for pill badges.
+    /// Returns the precomputed count for the given status.
     func count(for status: WatchlistStatus) -> Int {
-        allItems.filter { $0.status == status }.count
+        switch status {
+        case .watching:    return countWatching
+        case .planToWatch: return countPlanToWatch
+        case .completed:   return countCompleted
+        }
     }
 
     /// Fetches the full watchlist. Skips the network if cache is valid unless `forceRefresh` is true.
@@ -80,5 +101,19 @@ final class WatchlistViewModel {
         if !cached.isEmpty {
             allItems = cached
         }
+    }
+
+    // MARK: - Private
+
+    private func rebuildDerived() {
+        let byStatus = allItems.filter { $0.status == selectedStatus }
+        filteredAll = byStatus
+        filteredMovies = byStatus.filter { $0.mediaType == .movie }
+        filteredTV = byStatus.filter { $0.mediaType == .tv && $0.isAnime != true }
+        filteredAnime = byStatus.filter { $0.mediaType == .tv && $0.isAnime == true }
+
+        countWatching = allItems.filter { $0.status == .watching }.count
+        countPlanToWatch = allItems.filter { $0.status == .planToWatch }.count
+        countCompleted = allItems.filter { $0.status == .completed }.count
     }
 }

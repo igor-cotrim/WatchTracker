@@ -46,11 +46,15 @@ final class UpcomingViewModel {
         }
     }
 
+    private static let dayNameFormatter: DateFormatter = {
+        let fmt = DateFormatter()
+        fmt.locale = .current
+        fmt.dateFormat = "EEEE"
+        return fmt
+    }()
+
     private func dayName(offset: Int) -> String {
         let date = Calendar.current.date(byAdding: .day, value: offset, to: Date()) ?? Date()
-        let fmt = DateFormatter()
-        fmt.locale = Locale.current
-        fmt.dateFormat = "EEEE"
-        return fmt.string(from: date).lowercased()
+        return Self.dayNameFormatter.string(from: date).lowercased()
     }
 }

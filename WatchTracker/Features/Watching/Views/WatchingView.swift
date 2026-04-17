@@ -7,7 +7,7 @@ private enum WatchingTab {
 struct WatchingView: View {
     @State private var viewModel = ContinueWatchingViewModel(
         service: WatchlistService(),
-        store: WatchlistStore()
+        store: .shared
     )
     @State private var upcomingViewModel = UpcomingViewModel(
         service: WatchlistService()

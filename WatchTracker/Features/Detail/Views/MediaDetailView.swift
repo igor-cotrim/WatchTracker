@@ -56,8 +56,6 @@ struct MediaDetailView: View {
                 }
             }
         }
-        .onAppear { UIScrollView.appearance().bounces = false }
-        .onDisappear { UIScrollView.appearance().bounces = true }
         .task {
             await viewModel.fetchDetails(type: mediaType, id: mediaId)
             await viewModel.checkWatchlistStatus()
