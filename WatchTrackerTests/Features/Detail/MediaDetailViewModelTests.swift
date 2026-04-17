@@ -275,13 +275,19 @@ struct MediaDetailViewModelTests {
         let mediaMock = MockMediaDetailService()
         mediaMock.fetchMediaDetailResult = .success(TestFixtures.tvDetail(id: 5))
         mediaMock.markEpisodeWatchedResult = .success(.completed)
+        let watchlistMock = MockWatchlistService()
+
+        watchlistMock.fetchWatchlistResult = .success([
+            TestFixtures.watchItem(id: 7, tmdbId: 5, mediaType: .tv, status: .completed)
+        ])
         let store = WatchlistStore()
-        let vm = makeVM(mediaDetailService: mediaMock, store: store)
+        let vm = makeVM(mediaDetailService: mediaMock, watchlistService: watchlistMock, store: store)
         await vm.fetchDetails(type: .tv, id: 5)
         vm.seasonEpisodes[1] = [TestFixtures.episode(episodeNumber: 1, isWatched: false)]
         await vm.toggleEpisodeWatched(season: 1, episode: 1)
         #expect(vm.watchlistStatus == .completed)
-        #expect(store.needsRefresh == true)
+        #expect(vm.isOnWatchlist == true)
+        #expect(vm.watchlistItemId == 7)
     }
 
     // MARK: - toggleSeasonWatched

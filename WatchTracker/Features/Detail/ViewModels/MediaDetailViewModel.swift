@@ -167,13 +167,13 @@ final class MediaDetailViewModel {
             } else {
                 statusChanged = try await mediaDetailService.markEpisodeWatched(tvId: mediaId, season: season, episode: episode)
             }
-            applyStatusChange(statusChanged)
             // Flip local state
             if var episodes = seasonEpisodes[season],
                let index = episodes.firstIndex(where: { $0.episodeNumber == episode }) {
                 episodes[index].isWatched = !isCurrentlyWatched
                 seasonEpisodes[season] = episodes
             }
+            await applyStatusChange(statusChanged)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -201,18 +201,19 @@ final class MediaDetailViewModel {
                     return e
                 }
             }
-            applyStatusChange(statusChanged)
+            await applyStatusChange(statusChanged)
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    private func applyStatusChange(_ newStatus: WatchlistStatus?) {
+    private func applyStatusChange(_ newStatus: WatchlistStatus?) async {
         guard let newStatus, newStatus != watchlistStatus else { return }
         watchlistStatus = newStatus
-        // WatchItem.status is `let`, so we can't update the cache in-place.
-        // Mark the store dirty so Home refetches on next appearance.
-        store.needsRefresh = true
+        isOnWatchlist = true
+        // Refresh cache to get the server-assigned watchlistItemId and propagate to Home.
+        await refreshStoreCache()
+        syncLocalStateFromCache()
     }
 
     // MARK: - Cache Helpers
