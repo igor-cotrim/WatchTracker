@@ -7,17 +7,6 @@ struct StatusFilterBar: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                StatusPill(
-                    label: Strings.Home.filterAll,
-                    count: nil,
-                    isSelected: viewModel.selectedStatus == nil,
-                    namespace: pillNamespace,
-                    pillID: "all"
-                ) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                        viewModel.selectedStatus = nil
-                    }
-                }
                 ForEach(WatchlistStatus.allCases, id: \.self) { status in
                     StatusPill(
                         label: status.displayName,

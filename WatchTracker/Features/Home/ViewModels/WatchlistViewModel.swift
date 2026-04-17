@@ -24,7 +24,7 @@ final class WatchlistViewModel {
     var allItems: [WatchItem] = []
     var isLoading = false
     var selectedFilter: MediaFilter = .all
-    var selectedStatus: WatchlistStatus? = nil
+    var selectedStatus: WatchlistStatus = .watching
     var errorMessage: String?
 
     private let service: any WatchlistServiceProtocol
@@ -41,12 +41,7 @@ final class WatchlistViewModel {
 
     /// Returns items filtered by the current status pill and the given media filter.
     func items(for filter: MediaFilter) -> [WatchItem] {
-        let byStatus: [WatchItem]
-        if let status = selectedStatus {
-            byStatus = allItems.filter { $0.status == status }
-        } else {
-            byStatus = allItems
-        }
+        let byStatus = allItems.filter { $0.status == selectedStatus }
         switch filter {
         case .all:   return byStatus
         case .movie: return byStatus.filter { $0.mediaType == .movie }

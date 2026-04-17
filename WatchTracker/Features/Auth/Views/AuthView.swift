@@ -11,8 +11,6 @@ struct AuthView: View {
 
     var body: some View {
         ZStack {
-            AuthBackground()
-
             VStack(spacing: 32) {
                 Spacer()
 

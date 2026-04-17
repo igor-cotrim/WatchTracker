@@ -71,8 +71,6 @@ struct WatchlistView: View {
 
     private var emptyStateContent: (title: String, subtitle: String, icon: String) {
         switch viewModel.selectedStatus {
-        case nil:
-            return (Strings.Watchlist.emptyTitle, Strings.Watchlist.emptySubtitle, "film.stack")
         case .watching:
             return (Strings.Watchlist.emptyWatchingTitle, Strings.Watchlist.emptyWatchingSubtitle, "play.circle")
         case .planToWatch:

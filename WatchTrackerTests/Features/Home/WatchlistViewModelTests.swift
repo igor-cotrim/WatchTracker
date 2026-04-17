@@ -14,8 +14,8 @@ struct WatchlistViewModelTests {
     @Test func `items for all returns all items`() {
         let vm = makeVM()
         vm.allItems = [
-            TestFixtures.watchItem(mediaType: .movie),
-            TestFixtures.watchItem(id: 2, mediaType: .tv),
+            TestFixtures.watchItem(mediaType: .movie, status: .watching),
+            TestFixtures.watchItem(id: 2, mediaType: .tv, status: .watching),
         ]
         #expect(vm.items(for: .all).count == 2)
     }
@@ -23,8 +23,8 @@ struct WatchlistViewModelTests {
     @Test func `items for movie returns only movies`() {
         let vm = makeVM()
         vm.allItems = [
-            TestFixtures.watchItem(id: 1, mediaType: .movie),
-            TestFixtures.watchItem(id: 2, mediaType: .tv),
+            TestFixtures.watchItem(id: 1, mediaType: .movie, status: .watching),
+            TestFixtures.watchItem(id: 2, mediaType: .tv, status: .watching),
         ]
         let result = vm.items(for: .movie)
         #expect(result.count == 1)
@@ -34,9 +34,9 @@ struct WatchlistViewModelTests {
     @Test func `items for tv excludes anime`() {
         let vm = makeVM()
         vm.allItems = [
-            TestFixtures.watchItem(id: 1, mediaType: .tv, isAnime: false),
-            TestFixtures.watchItem(id: 2, mediaType: .tv, isAnime: true),
-            TestFixtures.watchItem(id: 3, mediaType: .tv, isAnime: nil),
+            TestFixtures.watchItem(id: 1, mediaType: .tv, status: .watching, isAnime: false),
+            TestFixtures.watchItem(id: 2, mediaType: .tv, status: .watching, isAnime: true),
+            TestFixtures.watchItem(id: 3, mediaType: .tv, status: .watching, isAnime: nil),
         ]
         let result = vm.items(for: .tv)
         // isAnime == true → excluded; isAnime == nil → included (not true); isAnime == false → included
@@ -47,9 +47,9 @@ struct WatchlistViewModelTests {
     @Test func `items for anime returns only anime tv shows`() {
         let vm = makeVM()
         vm.allItems = [
-            TestFixtures.watchItem(id: 1, mediaType: .tv, isAnime: true),
-            TestFixtures.watchItem(id: 2, mediaType: .tv, isAnime: false),
-            TestFixtures.watchItem(id: 3, mediaType: .movie),
+            TestFixtures.watchItem(id: 1, mediaType: .tv, status: .watching, isAnime: true),
+            TestFixtures.watchItem(id: 2, mediaType: .tv, status: .watching, isAnime: false),
+            TestFixtures.watchItem(id: 3, mediaType: .movie, status: .watching),
         ]
         let result = vm.items(for: .anime)
         #expect(result.count == 1)
