@@ -9,6 +9,8 @@ struct DiscoverFilteredCall {
     let watchRegion: String?
     let sortBy: String?
     let page: Int?
+    let releaseDateGte: String?
+    let firstAirDateGte: String?
 }
 
 @MainActor
@@ -35,7 +37,7 @@ final class MockDiscoverService: DiscoverServiceProtocol {
 
     // MARK: - Protocol conformance
 
-    func fetchTrending() async throws -> [MediaDetail] {
+    func fetchTrending(page: Int?) async throws -> [MediaDetail] {
         try fetchTrendingResult.get()
     }
 
@@ -49,7 +51,7 @@ final class MockDiscoverService: DiscoverServiceProtocol {
         try discoverResult.get()
     }
 
-    func discoverFiltered(type: MediaType, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?) async throws -> [MediaDetail] {
+    func discoverFiltered(type: MediaType, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?, releaseDateGte: String?, firstAirDateGte: String?) async throws -> [MediaDetail] {
         discoverFilteredCalls.append(DiscoverFilteredCall(
             type: type,
             genres: genres,
@@ -57,12 +59,14 @@ final class MockDiscoverService: DiscoverServiceProtocol {
             providers: providers,
             watchRegion: watchRegion,
             sortBy: sortBy,
-            page: page
+            page: page,
+            releaseDateGte: releaseDateGte,
+            firstAirDateGte: firstAirDateGte
         ))
         return try discoverFilteredResult.get()
     }
 
-    func fetchNowPlaying() async throws -> [MediaDetail] {
+    func fetchNowPlaying(page: Int?) async throws -> [MediaDetail] {
         try fetchNowPlayingResult.get()
     }
 

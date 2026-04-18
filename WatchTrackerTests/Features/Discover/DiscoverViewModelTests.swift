@@ -136,19 +136,6 @@ struct DiscoverViewModelTests {
         #expect(mock.lastSearchQuery == "second")
     }
 
-    // MARK: - fetchAnime
-
-    @Test func `fetchAnime calls discoverFiltered with genre 16 and JP origin`() async {
-        let mock = MockDiscoverService()
-        mock.discoverFilteredResult = .success([])
-        let vm = DiscoverViewModel(service: mock, searchHistoryManager: SearchHistoryManager())
-        await vm.fetchAnime()
-        let call = mock.discoverFilteredCalls.first
-        #expect(call?.type == .tv)
-        #expect(call?.genres == "16")
-        #expect(call?.originCountry == "JP")
-    }
-
     // MARK: - History management
 
     @Test func `clearSearchHistory empties searchHistory`() {

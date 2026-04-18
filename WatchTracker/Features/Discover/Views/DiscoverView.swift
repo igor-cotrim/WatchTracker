@@ -7,14 +7,11 @@ struct DiscoverView: View {
     )
 
     // Stored once per view lifetime — prevents allocating new @Observable instances on every body evaluation.
-    @State private var trendingGridVM = BrowseGridViewModel { _ in try await DiscoverService().fetchTrending() }
-    @State private var nowPlayingGridVM = BrowseGridViewModel { _ in try await DiscoverService().fetchNowPlaying() }
+    @State private var trendingGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchTrending(page: page) }
+    @State private var nowPlayingGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchNowPlaying(page: page) }
     @State private var popularMoviesGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchPopular(type: .movie, page: page) }
     @State private var topRatedMoviesGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchTopRated(type: .movie, page: page) }
     @State private var upcomingGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchUpcoming(page: page) }
-    @State private var popularTVGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchPopular(type: .tv, page: page) }
-    @State private var topRatedTVGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchTopRated(type: .tv, page: page) }
-    @State private var animeGridVM = BrowseGridViewModel { page in try await DiscoverService().discoverFiltered(type: .tv, genres: "16", originCountry: "JP", page: page) }
 
     var body: some View {
         NavigationStack {
@@ -24,29 +21,7 @@ struct DiscoverView: View {
                         searchSection
                             .transition(.opacity.combined(with: .offset(y: 8)))
                     } else {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Picker("", selection: $viewModel.selectedTab) {
-                                Text(verbatim: Strings.Discover.tabMovies).tag(DiscoverTab.movies)
-                                Text(verbatim: Strings.Discover.tabTV).tag(DiscoverTab.tv)
-                            }
-                            .pickerStyle(.segmented)
-                            .padding(.horizontal)
-                            .padding(.bottom, 24)
-
-                            if viewModel.selectedTab == .movies {
-                                moviesContent
-                                    .transition(.opacity.combined(with: .offset(y: 8)))
-                            } else {
-                                tvContent
-                                    .transition(.opacity.combined(with: .offset(y: 8)))
-                            }
-
-                            GenresRowSection(genres: viewModel.genres)
-                            ProvidersRowSection(providers: viewModel.providers)
-                                .padding(.top, 8)
-                        }
-                        .animation(.easeInOut(duration: 0.2), value: viewModel.selectedTab)
-                        .transition(.opacity.combined(with: .offset(y: 8)))
+                        browseContent
                     }
                 }
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isSearching)
@@ -71,65 +46,129 @@ struct DiscoverView: View {
                 async let p: () = viewModel.fetchPopular()
                 async let tr: () = viewModel.fetchTopRated()
                 async let u: () = viewModel.fetchUpcoming()
-                async let pt: () = viewModel.fetchPopularTV()
-                async let trt: () = viewModel.fetchTopRatedTV()
-                async let a: () = viewModel.fetchAnime()
-                async let g: () = viewModel.fetchGenres()
                 async let pr: () = viewModel.fetchProviders()
-                _ = await (t, n, p, tr, u, pt, trt, a, g, pr)
+                _ = await (t, n, p, tr, u, pr)
                 viewModel.loadSearchHistory()
+                await viewModel.restoreLastProviderIfNeeded()
             }
         }
     }
 
-    // MARK: - Tab Content
+    // MARK: - Browse (non-search) content
 
-    private var moviesContent: some View {
+    private var browseContent: some View {
         VStack(alignment: .leading, spacing: 24) {
-            MediaRowSection(
-                title: Strings.Discover.trending,
-                items: viewModel.trending,
-                seeAllViewModel: trendingGridVM
-            )
-            MediaRowSection(
-                title: Strings.Discover.nowPlaying,
-                items: viewModel.nowPlaying,
-                seeAllViewModel: nowPlayingGridVM
-            )
-            MediaRowSection(
-                title: Strings.Discover.popular,
-                items: viewModel.popular,
-                seeAllViewModel: popularMoviesGridVM
-            )
-            MediaRowSection(
-                title: Strings.Discover.topRated,
-                items: viewModel.topRated,
-                seeAllViewModel: topRatedMoviesGridVM
-            )
-            MediaRowSection(
-                title: Strings.Discover.upcoming,
-                items: viewModel.upcoming,
-                seeAllViewModel: upcomingGridVM
-            )
+            ProviderStripView(
+                providers: viewModel.providers,
+                selectedProviderId: viewModel.selectedProvider?.providerId
+            ) { provider in
+                Task { await viewModel.selectProvider(provider) }
+            }
+
+            MoodStripView()
+
+            if viewModel.selectedProvider != nil {
+                providerScopedSections
+                    .transition(.opacity)
+            } else {
+                genericSections
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.selectedProvider?.providerId)
+    }
+
+    // MARK: - Generic Sections
+
+    @ViewBuilder
+    private var genericSections: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            if !viewModel.trending.isEmpty {
+                MediaRowSection(
+                    title: Strings.Discover.trending,
+                    items: viewModel.trending,
+                    seeAllViewModel: trendingGridVM
+                )
+            }
+            if !viewModel.nowPlaying.isEmpty {
+                MediaRowSection(
+                    title: Strings.Discover.nowPlaying,
+                    items: viewModel.nowPlaying,
+                    seeAllViewModel: nowPlayingGridVM
+                )
+            }
+            if !viewModel.popular.isEmpty {
+                MediaRowSection(
+                    title: Strings.Discover.popular,
+                    items: viewModel.popular,
+                    seeAllViewModel: popularMoviesGridVM
+                )
+            }
+            if !viewModel.topRated.isEmpty {
+                MediaRowSection(
+                    title: Strings.Discover.topRated,
+                    items: viewModel.topRated,
+                    seeAllViewModel: topRatedMoviesGridVM
+                )
+            }
+            if !viewModel.upcoming.isEmpty {
+                MediaRowSection(
+                    title: Strings.Discover.upcoming,
+                    items: viewModel.upcoming,
+                    seeAllViewModel: upcomingGridVM
+                )
+            }
         }
     }
 
-    private var tvContent: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            MediaRowSection(
-                title: Strings.Discover.popularTV,
-                items: viewModel.popularTV,
-                seeAllViewModel: popularTVGridVM
-            )
-            MediaRowSection(
-                title: Strings.Discover.topRatedTV,
-                items: viewModel.topRatedTV,
-                seeAllViewModel: topRatedTVGridVM
-            )
-            MediaRowSection(
-                title: Strings.Discover.anime,
-                items: viewModel.anime,
-                seeAllViewModel: animeGridVM
+    // MARK: - Provider-Scoped Sections
+
+    @ViewBuilder
+    private var providerScopedSections: some View {
+        if let provider = viewModel.selectedProvider {
+            VStack(alignment: .leading, spacing: 24) {
+                if !viewModel.newOnProvider.isEmpty {
+                    MediaRowSection(
+                        title: Strings.Discover.newOnProvider(provider.providerName),
+                        items: viewModel.newOnProvider,
+                        seeAllViewModel: providerSeeAllViewModel(for: provider, sortBy: "primary_release_date.desc")
+                    )
+                }
+                if !viewModel.topTenOnProvider.isEmpty {
+                    RankedMediaRowSection(
+                        title: Strings.Discover.topTenOnProvider(provider.providerName),
+                        items: viewModel.topTenOnProvider,
+                        seeAllViewModel: providerSeeAllViewModel(for: provider, sortBy: "popularity.desc")
+                    )
+                }
+                if !viewModel.trendingOnProvider.isEmpty {
+                    MediaRowSection(
+                        title: Strings.Discover.trendingOnProvider(provider.providerName),
+                        items: viewModel.trendingOnProvider,
+                        seeAllViewModel: providerSeeAllViewModel(for: provider, sortBy: "popularity.desc")
+                    )
+                }
+                if !viewModel.acclaimedOnProvider.isEmpty {
+                    MediaRowSection(
+                        title: Strings.Discover.acclaimedOnProvider(provider.providerName),
+                        items: viewModel.acclaimedOnProvider,
+                        seeAllViewModel: providerSeeAllViewModel(for: provider, sortBy: "vote_average.desc")
+                    )
+                }
+            }
+        }
+    }
+
+    private func providerSeeAllViewModel(for provider: StreamingProvider, sortBy: String) -> BrowseGridViewModel {
+        let service = DiscoverService()
+        let providerId = provider.providerId
+        return BrowseGridViewModel { page in
+            try await service.discoverFiltered(
+                type: .movie,
+                providers: String(providerId),
+                watchRegion: "BR",
+                sortBy: sortBy,
+                page: page
             )
         }
     }

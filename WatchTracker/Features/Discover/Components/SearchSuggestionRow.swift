@@ -14,6 +14,11 @@ struct SearchSuggestionRow: View {
                         image.resizable().aspectRatio(contentMode: .fill)
                     default:
                         Color(.systemGray5)
+                            .overlay {
+                                Image(systemName: "film")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                     }
                 }
                 .frame(width: 40, height: 60)

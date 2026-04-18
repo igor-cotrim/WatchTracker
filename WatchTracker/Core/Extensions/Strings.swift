@@ -13,44 +13,44 @@ enum Strings {
     // MARK: - Tabs
 
     enum Tab {
-        static var home: String        { String(localized: "tab.home") }
-        static var watching: String    { String(localized: "tab.watching") }
-        static var discover: String    { String(localized: "tab.discover") }
-        static var ai: String          { String(localized: "tab.ai") }
-        static var profile: String     { String(localized: "tab.profile") }
+        static var home: String { String(localized: "tab.home") }
+        static var watching: String { String(localized: "tab.watching") }
+        static var discover: String { String(localized: "tab.discover") }
+        static var ai: String { String(localized: "tab.ai") }
+        static var profile: String { String(localized: "tab.profile") }
     }
     
     // MARK: - Home
     
     enum Home {
-        static var title: String              { String(localized: "home.title") }
-        static var filterAll: String          { String(localized: "home.filter.all") }
-        static var continueWatching: String   { String(localized: "home.continue_watching") }
+        static var title: String { String(localized: "home.title") }
+        static var filterAll: String { String(localized: "home.filter.all") }
+        static var continueWatching: String { String(localized: "home.continue_watching") }
     }
     
     // MARK: - Watchlist Status
     
     enum Status {
         static var planToWatch: String { String(localized: "status.plan_to_watch") }
-        static var watching: String    { String(localized: "status.watching") }
-        static var completed: String   { String(localized: "status.completed") }
+        static var watching: String { String(localized: "status.watching") }
+        static var completed: String { String(localized: "status.completed") }
     }
     
     // MARK: - Watchlist / Cards
     
     enum Watchlist {
-        static var emptyTitle: String    { String(localized: "watchlist.empty.title") }
+        static var emptyTitle: String { String(localized: "watchlist.empty.title") }
         static var emptySubtitle: String { String(localized: "watchlist.empty.subtitle") }
-        static var emptyWatchingTitle: String    { String(localized: "watchlist.empty.watching.title") }
+        static var emptyWatchingTitle: String { String(localized: "watchlist.empty.watching.title") }
         static var emptyWatchingSubtitle: String { String(localized: "watchlist.empty.watching.subtitle") }
-        static var emptyPlanTitle: String    { String(localized: "watchlist.empty.plan_to_watch.title") }
+        static var emptyPlanTitle: String { String(localized: "watchlist.empty.plan_to_watch.title") }
         static var emptyPlanSubtitle: String { String(localized: "watchlist.empty.plan_to_watch.subtitle") }
-        static var emptyCompletedTitle: String    { String(localized: "watchlist.empty.completed.title") }
+        static var emptyCompletedTitle: String { String(localized: "watchlist.empty.completed.title") }
         static var emptyCompletedSubtitle: String { String(localized: "watchlist.empty.completed.subtitle") }
     }
     
     enum Card {
-        static var unknownTitle: String  { String(localized: "card.unknown_title") }
+        static var unknownTitle: String { String(localized: "card.unknown_title") }
         static var accessibilityHint: String { String(localized: "card.accessibility.hint") }
         
         static func newEpisodes(_ count: Int) -> String {
@@ -67,26 +67,31 @@ enum Strings {
     // MARK: - Auth
     
     enum Auth {
-        static var email: String      { String(localized: "auth.email") }
-        static var password: String   { String(localized: "auth.password") }
-        static var signIn: String     { String(localized: "auth.sign_in") }
-        static var signUp: String     { String(localized: "auth.sign_up") }
-        static var haveAccount: String  { String(localized: "auth.have_account") }
-        static var noAccount: String    { String(localized: "auth.no_account") }
+        static var email: String { String(localized: "auth.email") }
+        static var password: String { String(localized: "auth.password") }
+        static var signIn: String { String(localized: "auth.sign_in") }
+        static var signUp: String { String(localized: "auth.sign_up") }
+        static var haveAccount: String { String(localized: "auth.have_account") }
+        static var noAccount: String { String(localized: "auth.no_account") }
+        static var trackYourShows: String { String(localized: "auth.track_your_shows") }
     }
     
     // MARK: - Profile
     
     enum Profile {
-        static var title: String          { String(localized: "profile.title") }
-        static var member: String         { String(localized: "profile.member") }
-        static var stats: String          { String(localized: "profile.stats") }
-        static var statsEpisodes: String       { String(localized: "profile.stats.episodes") }
-        static var statsMovies: String         { String(localized: "profile.stats.movies") }
-        static var statsWatchlist: String      { String(localized: "profile.stats.watchlist") }
-        static var statsShows: String          { String(localized: "profile.stats.shows") }
+        static var title: String { String(localized: "profile.title") }
+        static var member: String { String(localized: "profile.member") }
+        static var stats: String { String(localized: "profile.stats") }
+        static var statsEpisodes: String { String(localized: "profile.stats.episodes") }
+        static var statsMovies: String { String(localized: "profile.stats.movies") }
+        static var statsWatchlist: String { String(localized: "profile.stats.watchlist") }
+        static var statsShows: String { String(localized: "profile.stats.shows") }
         static var statsShowsCompleted: String { String(localized: "profile.stats.shows_completed") }
-        static var signOut: String             { String(localized: "profile.sign_out") }
+        static var signOut: String { String(localized: "profile.sign_out") }
+        static var preferencesSection: String { String(localized: "profile.preferences.section") }
+        static var language: String { String(localized: "profile.preferences.language") }
+        static var languageEnglish: String { String(localized: "profile.preferences.language.english") }
+        static var languagePortuguese: String { String(localized: "profile.preferences.language.portuguese") }
         
         static func totalHours(_ hours: Double) -> String {
             String(format: String(localized: "profile.stats.hours"), hours)
@@ -96,11 +101,11 @@ enum Strings {
     // MARK: - Watching
     
     enum Watching {
-        static var title: String          { String(localized: "watching.title") }
-        static var emptyTitle: String     { String(localized: "watching.empty.title") }
-        static var emptySubtitle: String  { String(localized: "watching.empty.subtitle") }
-        static var markWatched: String    { String(localized: "watching.mark_watched") }
-        static var viewDetails: String   { String(localized: "watching.view_details") }
+        static var title: String { String(localized: "watching.title") }
+        static var emptyTitle: String { String(localized: "watching.empty.title") }
+        static var emptySubtitle: String { String(localized: "watching.empty.subtitle") }
+        static var markWatched: String { String(localized: "watching.mark_watched") }
+        static var viewDetails: String { String(localized: "watching.view_details") }
         
         static func episodeLabel(season: Int, episode: Int) -> String {
             String(format: String(localized: "watching.episode_label"), season, episode)
@@ -110,13 +115,13 @@ enum Strings {
     // MARK: - Upcoming
 
     enum Upcoming {
-        static var tabWatching: String   { String(localized: "watching.tab.watching") }
-        static var tabUpcoming: String   { String(localized: "watching.tab.upcoming") }
-        static var emptyTitle: String    { String(localized: "upcoming.empty.title") }
+        static var tabWatching: String { String(localized: "watching.tab.watching") }
+        static var tabUpcoming: String { String(localized: "watching.tab.upcoming") }
+        static var emptyTitle: String { String(localized: "upcoming.empty.title") }
         static var emptySubtitle: String { String(localized: "upcoming.empty.subtitle") }
-        static var today: String         { String(localized: "upcoming.section.today") }
-        static var tomorrow: String      { String(localized: "upcoming.section.tomorrow") }
-        static var later: String         { String(localized: "upcoming.section.later") }
+        static var today: String { String(localized: "upcoming.section.today") }
+        static var tomorrow: String { String(localized: "upcoming.section.tomorrow") }
+        static var later: String { String(localized: "upcoming.section.later") }
 
         static func daysAway(_ days: Int) -> String {
             String(format: String(localized: "upcoming.days_away"), days)
@@ -126,107 +131,133 @@ enum Strings {
     // MARK: - Discover
     
     enum Discover {
-        static var title: String           { String(localized: "discover.title") }
-        static var searchPrompt: String    { String(localized: "discover.search.prompt") }
-        static var trending: String        { String(localized: "discover.section.trending") }
-        static var nowPlaying: String      { String(localized: "discover.section.now_playing") }
-        static var popular: String         { String(localized: "discover.section.popular") }
-        static var topRated: String        { String(localized: "discover.section.top_rated") }
-        static var upcoming: String        { String(localized: "discover.section.upcoming") }
-        static var anime: String           { String(localized: "discover.section.anime") }
-        static var genres: String          { String(localized: "discover.section.genres") }
-        static var providers: String       { String(localized: "discover.section.providers") }
-        static var suggestions: String     { String(localized: "discover.search.suggestions") }
-        static var recentSearches: String  { String(localized: "discover.search.recent") }
-        static var clear: String           { String(localized: "discover.search.clear") }
-        static var seeAll: String          { String(localized: "discover.see_all") }
-        static var tabMovies: String       { String(localized: "discover.tab.movies") }
-        static var tabTV: String           { String(localized: "discover.tab.tv") }
-        static var popularTV: String       { String(localized: "discover.section.popular_tv") }
-        static var topRatedTV: String      { String(localized: "discover.section.top_rated_tv") }
-        
+        static var title: String { String(localized: "discover.title") }
+        static var searchPrompt: String { String(localized: "discover.search.prompt") }
+        static var trending: String { String(localized: "discover.section.trending") }
+        static var nowPlaying: String { String(localized: "discover.section.now_playing") }
+        static var popular: String { String(localized: "discover.section.popular") }
+        static var topRated: String { String(localized: "discover.section.top_rated") }
+        static var upcoming: String { String(localized: "discover.section.upcoming") }
+        static var anime: String { String(localized: "discover.section.anime") }
+        static var genres: String { String(localized: "discover.section.genres") }
+        static var providers: String { String(localized: "discover.section.providers") }
+        static var suggestions: String { String(localized: "discover.search.suggestions") }
+        static var recentSearches: String { String(localized: "discover.search.recent") }
+        static var clear: String { String(localized: "discover.search.clear") }
+        static var seeAll: String { String(localized: "discover.see_all") }
+        static var tabMovies: String { String(localized: "discover.tab.movies") }
+        static var tabTV: String { String(localized: "discover.tab.tv") }
+        static var popularTV: String { String(localized: "discover.section.popular_tv") }
+        static var topRatedTV: String { String(localized: "discover.section.top_rated_tv") }
+        static var allProviders: String { String(localized: "discover.providers.all") }
+        static var moodsTitle: String { String(localized: "discover.moods.title") }
+        static var moodRelax: String { String(localized: "discover.mood.relax") }
+        static var moodAdrenaline: String { String(localized: "discover.mood.adrenaline") }
+        static var moodCry: String { String(localized: "discover.mood.cry") }
+        static var moodScare: String { String(localized: "discover.mood.scare") }
+        static var moodFeelGood: String { String(localized: "discover.mood.feel_good") }
+        static var moodHeavy: String { String(localized: "discover.mood.heavy") }
+
         static func browseAccessibility(_ name: String) -> String {
             String(format: String(localized: "discover.browse.accessibility"), name)
+        }
+
+        static func newOnProvider(_ name: String) -> String {
+            String(format: String(localized: "discover.section.new_on_provider"), name)
+        }
+
+        static func topTenOnProvider(_ name: String) -> String {
+            String(format: String(localized: "discover.section.top_ten_on_provider"), name)
+        }
+
+        static func trendingOnProvider(_ name: String) -> String {
+            String(format: String(localized: "discover.section.trending_on_provider"), name)
+        }
+
+        static func acclaimedOnProvider(_ name: String) -> String {
+            String(format: String(localized: "discover.section.acclaimed_on_provider"), name)
+        }
+
+        static func topTenRank(_ rank: Int, title: String) -> String {
+            String(format: String(localized: "discover.top_ten.rank_accessibility"), rank, title)
         }
     }
     
     // MARK: - Media Filter (Watchlist segmented picker)
     
     enum MediaFilter {
-        static var all: String    { String(localized: "media_filter.all") }
+        static var all: String { String(localized: "media_filter.all") }
         static var movies: String { String(localized: "media_filter.movies") }
-        static var tv: String     { String(localized: "media_filter.tv") }
-        static var anime: String  { String(localized: "media_filter.anime") }
+        static var tv: String { String(localized: "media_filter.tv") }
+        static var anime: String { String(localized: "media_filter.anime") }
     }
     
     // MARK: - Search Filter
     
     enum SearchFilter {
-        static var all: String     { String(localized: "search.filter.all") }
-        static var movies: String  { String(localized: "search.filter.movies") }
-        static var tv: String      { String(localized: "search.filter.tv") }
+        static var all: String { String(localized: "search.filter.all") }
+        static var movies: String { String(localized: "search.filter.movies") }
+        static var tv: String { String(localized: "search.filter.tv") }
         static var anyYear: String { String(localized: "search.filter.any_year") }
-        static var year: String    { String(localized: "search.filter.year") }
+        static var year: String { String(localized: "search.filter.year") }
     }
     
     // MARK: - Detail
     
     enum Detail {
-        static var watchlistAdd: String     { String(localized: "detail.watchlist.add") }
-        static var watchlistRemove: String  { String(localized: "detail.watchlist.remove") }
+        static var watchlistAdd: String { String(localized: "detail.watchlist.add") }
+        static var watchlistRemove: String { String(localized: "detail.watchlist.remove") }
         static var watchlistWatched: String { String(localized: "detail.watchlist.watched") }
-        static var watchlistAccessibilityAdd: String  { String(localized: "detail.watchlist.accessibility.add") }
+        static var watchlistAccessibilityAdd: String { String(localized: "detail.watchlist.accessibility.add") }
         static var watchlistAccessibilityHint: String { String(localized: "detail.watchlist.accessibility.hint") }
+        static var seasons: String { String(localized: "detail.seasons.title") }
+        static var synopsis: String { String(localized: "detail.synopsis.title") }
+        static var cast: String { String(localized: "detail.cast.title") }
+        static var whereToWatch: String { String(localized: "detail.where_to_watch.title") }
+        static var whereToWatchUnavailable: String { String(localized: "detail.where_to_watch.unavailable") }
+        static var seasonMarkWatched: String { String(localized: "detail.season.mark_watched") }
+        static var seasonUnmarkWatched: String { String(localized: "detail.season.unmark_watched") }
         
         static func watchlistAccessibilityOnList(_ status: String) -> String {
             String(format: String(localized: "detail.watchlist.accessibility.on_list"), status)
         }
         
-        static var seasons: String            { String(localized: "detail.seasons.title") }
-        static var synopsis: String           { String(localized: "detail.synopsis.title") }
-        static var cast: String               { String(localized: "detail.cast.title") }
-        static var whereToWatch: String       { String(localized: "detail.where_to_watch.title") }
-        static var whereToWatchUnavailable: String { String(localized: "detail.where_to_watch.unavailable") }
-        
         static func seasonEpisodesCount(_ count: Int) -> String {
             String(format: String(localized: "detail.season.episodes_count"), count)
         }
-
-        static var seasonMarkWatched: String   { String(localized: "detail.season.mark_watched") }
-        static var seasonUnmarkWatched: String { String(localized: "detail.season.unmark_watched") }
     }
     
     // MARK: - AI
 
     enum AI {
-        static var title: String                          { String(localized: "ai.title") }
-        static var loading: String                        { String(localized: "ai.loading") }
-        static var emptyTitle: String                     { String(localized: "ai.empty.title") }
-        static var emptySubtitle: String                  { String(localized: "ai.empty.subtitle") }
-        static var emptyWatchlistTitle: String             { String(localized: "ai.empty_watchlist.title") }
-        static var emptyWatchlistSubtitle: String          { String(localized: "ai.empty_watchlist.subtitle") }
-        static var unavailableNotEligible: String          { String(localized: "ai.unavailable.not_eligible") }
-        static var unavailableNotEligibleSubtitle: String  { String(localized: "ai.unavailable.not_eligible.subtitle") }
-        static var unavailableNotEnabled: String           { String(localized: "ai.unavailable.not_enabled") }
-        static var unavailableNotEnabledSubtitle: String   { String(localized: "ai.unavailable.not_enabled.subtitle") }
-        static var unavailableNotReady: String             { String(localized: "ai.unavailable.not_ready") }
-        static var unavailableNotReadySubtitle: String     { String(localized: "ai.unavailable.not_ready.subtitle") }
-        static var promptPlaceholder: String               { String(localized: "ai.prompt.placeholder") }
-        static var idleTitle: String                       { String(localized: "ai.idle.title") }
-        static var idleSubtitle: String                    { String(localized: "ai.idle.subtitle") }
-        static var exampleAnime: String                    { String(localized: "ai.example.anime") }
-        static var exampleMovie: String                    { String(localized: "ai.example.movie") }
-        static var exampleMood: String                     { String(localized: "ai.example.mood") }
+        static var title: String { String(localized: "ai.title") }
+        static var loading: String { String(localized: "ai.loading") }
+        static var emptyTitle: String { String(localized: "ai.empty.title") }
+        static var emptySubtitle: String { String(localized: "ai.empty.subtitle") }
+        static var emptyWatchlistTitle: String { String(localized: "ai.empty_watchlist.title") }
+        static var emptyWatchlistSubtitle: String { String(localized: "ai.empty_watchlist.subtitle") }
+        static var unavailableNotEligible: String { String(localized: "ai.unavailable.not_eligible") }
+        static var unavailableNotEligibleSubtitle: String { String(localized: "ai.unavailable.not_eligible.subtitle") }
+        static var unavailableNotEnabled: String { String(localized: "ai.unavailable.not_enabled") }
+        static var unavailableNotEnabledSubtitle: String { String(localized: "ai.unavailable.not_enabled.subtitle") }
+        static var unavailableNotReady: String { String(localized: "ai.unavailable.not_ready") }
+        static var unavailableNotReadySubtitle: String{ String(localized: "ai.unavailable.not_ready.subtitle") }
+        static var promptPlaceholder: String { String(localized: "ai.prompt.placeholder") }
+        static var idleTitle: String { String(localized: "ai.idle.title") }
+        static var idleSubtitle: String { String(localized: "ai.idle.subtitle") }
+        static var exampleAnime: String { String(localized: "ai.example.anime") }
+        static var exampleMovie: String { String(localized: "ai.example.movie") }
+        static var exampleMood: String { String(localized: "ai.example.mood") }
     }
 
     // MARK: - Episode
     
     enum Episode {
-        static var accessibilityWatched: String       { String(localized: "episode.accessibility.watched") }
-        static var accessibilityNotWatched: String    { String(localized: "episode.accessibility.not_watched") }
-        static var accessibilityMarkWatched: String   { String(localized: "episode.accessibility.mark_watched") }
+        static var accessibilityWatched: String { String(localized: "episode.accessibility.watched") }
+        static var accessibilityNotWatched: String { String(localized: "episode.accessibility.not_watched") }
+        static var accessibilityMarkWatched: String { String(localized: "episode.accessibility.mark_watched") }
         static var accessibilityMarkUnwatched: String { String(localized: "episode.accessibility.mark_unwatched") }
-        static var accessibilityNotReleased: String   { String(localized: "episode.accessibility.not_released") }
+        static var accessibilityNotReleased: String { String(localized: "episode.accessibility.not_released") }
         
         static func label(number: Int, name: String) -> String {
             String(format: String(localized: "episode.label"), number, name)

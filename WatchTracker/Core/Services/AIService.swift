@@ -33,12 +33,22 @@ final class AIService {
         }
     }
 
+    private var isPortugueseDevice: Bool {
+        Locale.current.language.languageCode?.identifier == "pt"
+    }
+
     func generateSuggestions(from watchlist: [WatchItem], userInput: String = "") async throws -> [AISuggestionItem] {
+        let languageInstruction = isPortugueseDevice
+            ? "Respond ONLY in Brazilian Portuguese (pt-BR). Write all reasons and text in Portuguese."
+            : "Respond in English."
+
         let session = LanguageModelSession(
             model: .default,
             instructions: """
             You are an expert movie and TV show recommendation assistant with deep knowledge of cinema and television.
             Your goal is to suggest titles the user will genuinely love based on their taste.
+
+            \(languageInstruction)
 
             Rules:
             - NEVER suggest a title that appears in the user's watchlist.
@@ -98,26 +108,28 @@ final class AIService {
 
         var lines: [String] = []
 
+        let pt = isPortugueseDevice
+
         // Block: titles to avoid
         let allTitles = watchlist.compactMap(\.title)
         if !allTitles.isEmpty {
-            lines.append("Titles already in my watchlist (DO NOT suggest any of these):")
+            lines.append(pt ? "Títulos já na minha lista (NÃO sugira nenhum destes):" : "Titles already in my watchlist (DO NOT suggest any of these):")
             for title in allTitles { lines.append("- \(title)") }
             lines.append("")
         }
 
         // Block: taste signal
         let groups: [(String, [WatchItem])] = [
-            ("Completed (strongest taste signal):", selected.filter { $0.status == .completed }),
-            ("Currently watching:",                 selected.filter { $0.status == .watching }),
-            ("Plan to watch:",                      selected.filter { $0.status == .planToWatch })
+            (pt ? "Assistidos (sinal de gosto mais forte):" : "Completed (strongest taste signal):", selected.filter { $0.status == .completed }),
+            (pt ? "Assistindo atualmente:"                  : "Currently watching:",                 selected.filter { $0.status == .watching }),
+            (pt ? "Quero assistir:"                         : "Plan to watch:",                      selected.filter { $0.status == .planToWatch })
         ]
 
         for (label, items) in groups where !items.isEmpty {
             lines.append(label)
             for item in items {
-                let title = item.title ?? "Unknown"
-                let type  = item.mediaType == .movie ? "Movie" : "TV"
+                let title = item.title ?? (pt ? "Desconhecido" : "Unknown")
+                let type  = item.mediaType == .movie ? (pt ? "Filme" : "Movie") : "TV"
                 let anime = item.isAnime == true ? " (Anime)" : ""
                 lines.append("- \(title) [\(type)\(anime)]")
             }
@@ -128,20 +140,34 @@ final class AIService {
         let mediaConstraint: String
         switch preference {
         case .anime:
-            mediaConstraint = "Suggest ONLY anime TV shows (mediaType must be \"tv\")."
+            mediaConstraint = pt
+                ? "Sugira APENAS animes (mediaType deve ser \"tv\")."
+                : "Suggest ONLY anime TV shows (mediaType must be \"tv\")."
         case .tvOnly:
-            mediaConstraint = "Suggest ONLY TV shows (mediaType must be \"tv\")."
+            mediaConstraint = pt
+                ? "Sugira APENAS séries de TV (mediaType deve ser \"tv\")."
+                : "Suggest ONLY TV shows (mediaType must be \"tv\")."
         case .movieOnly:
-            mediaConstraint = "Suggest ONLY movies (mediaType must be \"movie\")."
+            mediaConstraint = pt
+                ? "Sugira APENAS filmes (mediaType deve ser \"movie\")."
+                : "Suggest ONLY movies (mediaType must be \"movie\")."
         case .balanced:
-            mediaConstraint = "Suggest a balanced mix of movies and TV shows."
+            mediaConstraint = pt
+                ? "Sugira uma mistura equilibrada de filmes e séries."
+                : "Suggest a balanced mix of movies and TV shows."
         }
 
         if trimmedInput.isEmpty {
-            lines.append("Based on my taste above, suggest 6 titles I would love. \(mediaConstraint) Do not suggest anything from my watchlist.")
+            lines.append(pt
+                ? "Com base no meu gosto acima, sugira 6 títulos que eu adoraria. \(mediaConstraint) Não sugira nada da minha lista."
+                : "Based on my taste above, suggest 6 titles I would love. \(mediaConstraint) Do not suggest anything from my watchlist."
+            )
         } else {
-            lines.append("Specific request: \(trimmedInput)")
-            lines.append("Prioritize this request while considering my taste above. Suggest 6 titles. \(mediaConstraint) Do not suggest anything from my watchlist.")
+            lines.append(pt ? "Pedido específico: \(trimmedInput)" : "Specific request: \(trimmedInput)")
+            lines.append(pt
+                ? "Priorize este pedido considerando meu gosto acima. Sugira 6 títulos. \(mediaConstraint) Não sugira nada da minha lista."
+                : "Prioritize this request while considering my taste above. Suggest 6 titles. \(mediaConstraint) Do not suggest anything from my watchlist."
+            )
         }
 
         return lines.joined(separator: "\n")

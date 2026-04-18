@@ -11,18 +11,24 @@ struct PosterCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(2/3, contentMode: .fill)
-                case .failure:
-                    posterPlaceholder
-                case .empty:
-                    SkeletonView()
-                        .aspectRatio(2/3, contentMode: .fill)
-                @unknown default:
+            Group {
+                if let url = url {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(2/3, contentMode: .fill)
+                        case .failure:
+                            posterPlaceholder
+                        case .empty:
+                            SkeletonView()
+                                .aspectRatio(2/3, contentMode: .fill)
+                        @unknown default:
+                            posterPlaceholder
+                        }
+                    }
+                } else {
                     posterPlaceholder
                 }
             }

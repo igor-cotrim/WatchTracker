@@ -61,7 +61,12 @@ actor APIClient {
         let baseURL = await Config.apiBaseURL
         let fullURLString = await baseURL.absoluteString + endpoint.path
         var components = URLComponents(string: fullURLString)!
-        components.queryItems = await endpoint.queryItems
+        let language = Locale.current.language.languageCode?.identifier == "pt" ? "pt-BR" : "en-US"
+        let languageItem = URLQueryItem(
+            name: "language",
+            value: language,
+        )
+        components.queryItems = (await endpoint.queryItems ?? []) + [languageItem]
 
         guard let url = components.url else {
             throw APIError.unknown

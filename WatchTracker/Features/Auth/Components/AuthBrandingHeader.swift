@@ -12,7 +12,7 @@ struct AuthBrandingHeader: View {
                 .font(.largeTitle.bold())
                 .foregroundStyle(.white)
 
-            Text("Track what you watch.")
+            Text(Strings.Auth.trackYourShows)
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.5))
         }

@@ -3,8 +3,8 @@ import Foundation
 final class DiscoverService {
     private let api = APIClient.shared
 
-    func fetchTrending() async throws -> [MediaDetail] {
-        try await api.get(.trending)
+    func fetchTrending(page: Int? = nil) async throws -> [MediaDetail] {
+        try await api.get(.trending(page: page))
     }
 
     func search(query: String, type: MediaType? = nil, year: Int? = nil) async throws -> [MediaDetail] {
@@ -15,12 +15,25 @@ final class DiscoverService {
         try await api.get(.discover(provider: provider, type: type, region: region))
     }
 
-    func discoverFiltered(type: MediaType, genres: String? = nil, originCountry: String? = nil, providers: String? = nil, watchRegion: String? = nil, sortBy: String? = nil, page: Int? = nil) async throws -> [MediaDetail] {
-        try await api.get(.discoverFiltered(type: type, genres: genres, originCountry: originCountry, providers: providers, watchRegion: watchRegion, sortBy: sortBy, page: page))
+    func discoverFiltered(type: MediaType, genres: String? = nil, originCountry: String? = nil, providers: String? = nil, watchRegion: String? = nil, sortBy: String? = nil, page: Int? = nil, releaseDateGte: String? = nil, firstAirDateGte: String? = nil) async throws -> [MediaDetail] {
+        try await api.get(.discoverFiltered(type: type, genres: genres, originCountry: originCountry, providers: providers, watchRegion: watchRegion, sortBy: sortBy, page: page, releaseDateGte: releaseDateGte, firstAirDateGte: firstAirDateGte))
     }
 
-    func fetchNowPlaying() async throws -> [MediaDetail] {
-        try await api.get(.nowPlaying)
+    /// Sugar around `discoverFiltered` scoped to a single streaming provider in BR.
+    func discoverByProvider(type: MediaType, providerId: Int, sortBy: String? = nil, releaseDateGte: String? = nil, firstAirDateGte: String? = nil, page: Int? = nil) async throws -> [MediaDetail] {
+        try await discoverFiltered(
+            type: type,
+            providers: String(providerId),
+            watchRegion: "BR",
+            sortBy: sortBy,
+            page: page,
+            releaseDateGte: releaseDateGte,
+            firstAirDateGte: firstAirDateGte
+        )
+    }
+
+    func fetchNowPlaying(page: Int? = nil) async throws -> [MediaDetail] {
+        try await api.get(.nowPlaying(page: page))
     }
 
     func fetchTopRated(type: MediaType = .movie, page: Int? = nil) async throws -> [MediaDetail] {

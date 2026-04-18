@@ -1,31 +1,24 @@
 import Foundation
 
-enum DiscoverTab {
-    case movies
-    case tv
-}
-
 @Observable
 @MainActor
 final class DiscoverViewModel {
-    // Tab selection
-    var selectedTab: DiscoverTab = .movies
-
-    // Movies content
+    // Generic content (no provider filter)
     var trending: [MediaDetail] = []
     var nowPlaying: [MediaDetail] = []
     var popular: [MediaDetail] = []
     var topRated: [MediaDetail] = []
     var upcoming: [MediaDetail] = []
 
-    // TV content
-    var popularTV: [MediaDetail] = []
-    var topRatedTV: [MediaDetail] = []
-    var anime: [MediaDetail] = []
-
     // Shared
-    var genres: [Genre] = []
     var providers: [StreamingProvider] = []
+
+    // Provider-scoped content (movie + tv merged)
+    var selectedProvider: StreamingProvider?
+    var newOnProvider: [MediaDetail] = []
+    var topTenOnProvider: [MediaDetail] = []
+    var trendingOnProvider: [MediaDetail] = []
+    var acclaimedOnProvider: [MediaDetail] = []
 
     // Search
     var searchResults: [MediaDetail] = []
@@ -40,6 +33,7 @@ final class DiscoverViewModel {
     private var searchTask: Task<Void, Never>?
     private let service: DiscoverServiceProtocol
     private let searchHistoryManager: SearchHistoryManager
+    private let lastProviderKey = "discover.lastProviderId"
 
     init(
         service: DiscoverServiceProtocol,
@@ -53,14 +47,14 @@ final class DiscoverViewModel {
         !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
-    // MARK: - Movies Fetching
+    // MARK: - Generic Fetching
 
     func fetchTrending() async {
-        await fetch(\.trending) { try await self.service.fetchTrending() }
+        await fetch(\.trending) { try await self.service.fetchTrending(page: nil) }
     }
 
     func fetchNowPlaying() async {
-        await fetch(\.nowPlaying) { try await self.service.fetchNowPlaying() }
+        await fetch(\.nowPlaying) { try await self.service.fetchNowPlaying(page: nil) }
     }
 
     func fetchPopular() async {
@@ -75,28 +69,154 @@ final class DiscoverViewModel {
         await fetch(\.upcoming) { try await self.service.fetchUpcoming(page: nil) }
     }
 
-    // MARK: - TV Fetching
-
-    func fetchPopularTV() async {
-        await fetch(\.popularTV) { try await self.service.fetchPopular(type: .tv, page: nil) }
-    }
-
-    func fetchTopRatedTV() async {
-        await fetch(\.topRatedTV) { try await self.service.fetchTopRated(type: .tv, page: nil) }
-    }
-
-    func fetchAnime() async {
-        await fetch(\.anime) { try await self.service.discoverFiltered(type: .tv, genres: "16", originCountry: "JP", providers: nil, watchRegion: nil, sortBy: nil, page: nil) }
-    }
-
-    // MARK: - Shared Fetching
-
-    func fetchGenres() async {
-        await fetch(\.genres) { try await self.service.fetchGenres(type: .movie) }
-    }
-
     func fetchProviders() async {
         await fetch(\.providers) { try await self.service.fetchProviders(type: .movie) }
+    }
+
+    // MARK: - Provider-Scoped Fetching
+
+    /// Call after providers load to restore the last selected provider if any.
+    func restoreLastProviderIfNeeded() async {
+        guard selectedProvider == nil else { return }
+        let storedId = UserDefaults.standard.object(forKey: lastProviderKey) as? Int
+        guard let storedId, let provider = providers.first(where: { $0.providerId == storedId }) else { return }
+        await selectProvider(provider)
+    }
+
+    func selectProvider(_ provider: StreamingProvider?) async {
+        selectedProvider = provider
+        if let provider {
+            UserDefaults.standard.set(provider.providerId, forKey: lastProviderKey)
+            await loadProviderContent(for: provider)
+        } else {
+            UserDefaults.standard.removeObject(forKey: lastProviderKey)
+            clearProviderContent()
+        }
+    }
+
+    private func loadProviderContent(for provider: StreamingProvider) async {
+        async let new: () = fetchNewOnProvider(provider)
+        async let top: () = fetchTopTenOnProvider(provider)
+        async let trending: () = fetchTrendingOnProvider(provider)
+        async let acclaimed: () = fetchAcclaimedOnProvider(provider)
+        _ = await (new, top, trending, acclaimed)
+    }
+
+    private func clearProviderContent() {
+        newOnProvider = []
+        topTenOnProvider = []
+        trendingOnProvider = []
+        acclaimedOnProvider = []
+    }
+
+    private func fetchNewOnProvider(_ provider: StreamingProvider) async {
+        let dateString = thirtyDaysAgoString()
+        await fetch(\.newOnProvider) {
+            async let moviesTask = self.service.discoverFiltered(
+                type: .movie, genres: nil, originCountry: nil,
+                providers: String(provider.providerId), watchRegion: "BR",
+                sortBy: "primary_release_date.desc", page: nil,
+                releaseDateGte: dateString, firstAirDateGte: nil
+            )
+            async let tvTask = self.service.discoverFiltered(
+                type: .tv, genres: nil, originCountry: nil,
+                providers: String(provider.providerId), watchRegion: "BR",
+                sortBy: "first_air_date.desc", page: nil,
+                releaseDateGte: nil, firstAirDateGte: dateString
+            )
+            let movies = try await moviesTask
+            let tv = try await tvTask
+            return Self.mergedByReleaseDateDesc(movies, tv)
+        }
+    }
+
+    private func fetchTopTenOnProvider(_ provider: StreamingProvider) async {
+        await fetch(\.topTenOnProvider) {
+            async let moviesTask = self.service.discoverFiltered(
+                type: .movie, genres: nil, originCountry: nil,
+                providers: String(provider.providerId), watchRegion: "BR",
+                sortBy: "popularity.desc", page: nil,
+                releaseDateGte: nil, firstAirDateGte: nil
+            )
+            async let tvTask = self.service.discoverFiltered(
+                type: .tv, genres: nil, originCountry: nil,
+                providers: String(provider.providerId), watchRegion: "BR",
+                sortBy: "popularity.desc", page: nil,
+                releaseDateGte: nil, firstAirDateGte: nil
+            )
+            let movies = try await moviesTask
+            let tv = try await tvTask
+            return Array(Self.interleaved(movies, tv).prefix(10))
+        }
+    }
+
+    private func fetchTrendingOnProvider(_ provider: StreamingProvider) async {
+        await fetch(\.trendingOnProvider) {
+            async let moviesTask = self.service.discoverFiltered(
+                type: .movie, genres: nil, originCountry: nil,
+                providers: String(provider.providerId), watchRegion: "BR",
+                sortBy: "popularity.desc", page: 2,
+                releaseDateGte: nil, firstAirDateGte: nil
+            )
+            async let tvTask = self.service.discoverFiltered(
+                type: .tv, genres: nil, originCountry: nil,
+                providers: String(provider.providerId), watchRegion: "BR",
+                sortBy: "popularity.desc", page: 2,
+                releaseDateGte: nil, firstAirDateGte: nil
+            )
+            let movies = try await moviesTask
+            let tv = try await tvTask
+            return Self.interleaved(movies, tv)
+        }
+    }
+
+    private func fetchAcclaimedOnProvider(_ provider: StreamingProvider) async {
+        await fetch(\.acclaimedOnProvider) {
+            async let moviesTask = self.service.discoverFiltered(
+                type: .movie, genres: nil, originCountry: nil,
+                providers: String(provider.providerId), watchRegion: "BR",
+                sortBy: "vote_average.desc", page: nil,
+                releaseDateGte: nil, firstAirDateGte: nil
+            )
+            async let tvTask = self.service.discoverFiltered(
+                type: .tv, genres: nil, originCountry: nil,
+                providers: String(provider.providerId), watchRegion: "BR",
+                sortBy: "vote_average.desc", page: nil,
+                releaseDateGte: nil, firstAirDateGte: nil
+            )
+            let movies = try await moviesTask
+            let tv = try await tvTask
+            return Self.interleaved(movies, tv)
+        }
+    }
+
+    // MARK: - Merge helpers
+
+    private static func interleaved(_ a: [MediaDetail], _ b: [MediaDetail]) -> [MediaDetail] {
+        var result: [MediaDetail] = []
+        let maxCount = max(a.count, b.count)
+        result.reserveCapacity(a.count + b.count)
+        for i in 0..<maxCount {
+            if i < a.count { result.append(a[i]) }
+            if i < b.count { result.append(b[i]) }
+        }
+        return result
+    }
+
+    private static func mergedByReleaseDateDesc(_ a: [MediaDetail], _ b: [MediaDetail]) -> [MediaDetail] {
+        (a + b).sorted { lhs, rhs in
+            let lhsDate = lhs.releaseDate ?? lhs.firstAirDate ?? ""
+            let rhsDate = rhs.releaseDate ?? rhs.firstAirDate ?? ""
+            return lhsDate > rhsDate
+        }
+    }
+
+    private func thirtyDaysAgoString() -> String {
+        let date = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        return formatter.string(from: date)
     }
 
     // MARK: - Private Helper
