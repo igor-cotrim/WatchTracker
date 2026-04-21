@@ -12,6 +12,7 @@ final class MediaDetailViewModel {
     // Watchlist state
     var isOnWatchlist = false
     var isCheckingStatus = false
+    var isUpdatingStatus = false
     var watchlistItemId: Int?
     var watchlistStatus: WatchlistStatus?
     private var hasLoadedInitialStatus = false
@@ -65,23 +66,20 @@ final class MediaDetailViewModel {
             isCheckingStatus = false
             hasLoadedInitialStatus = true
         }
-
-        // Read from in-memory cache — no network call needed.
-        let cachedItems = store.cachedItems
-        if let item = cachedItems.first(where: { $0.tmdbId == mediaId && $0.mediaType == mediaType }) {
-            isOnWatchlist = true
-            watchlistItemId = item.id
-            watchlistStatus = item.status
-        } else {
-            isOnWatchlist = false
-            watchlistItemId = nil
-            watchlistStatus = nil
-        }
+        syncLocalStateFromCache()
     }
 
     func addToWatchlist(status: WatchlistStatus) async {
+        guard !isUpdatingStatus else { return }
+        isUpdatingStatus = true
+        defer { isUpdatingStatus = false }
+
         do {
-            try await watchlistService.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: status)
+            if let itemId = watchlistItemId {
+                try await watchlistService.updateStatus(id: itemId, status: status)
+            } else {
+                try await watchlistService.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: status)
+            }
             if status == .completed && mediaType == .tv {
                 try? await watchlistService.markAllEpisodesWatched(tvId: mediaId)
                 for seasonNumber in seasonEpisodes.keys {
@@ -233,9 +231,11 @@ final class MediaDetailViewModel {
 
     /// Reads the current media's watchlist entry from the shared cache and
     /// updates this ViewModel's local state (id, status, isOnWatchlist).
+    /// If duplicates exist (legacy data created before the DB unique constraint),
+    /// picks the most recently added row so the UI reflects the latest state.
     private func syncLocalStateFromCache() {
-        let cachedItems = store.cachedItems
-        if let item = cachedItems.first(where: { $0.tmdbId == mediaId && $0.mediaType == mediaType }) {
+        let matches = store.cachedItems.filter { $0.tmdbId == mediaId && $0.mediaType == mediaType }
+        if let item = matches.max(by: { $0.id < $1.id }) {
             isOnWatchlist = true
             watchlistItemId = item.id
             watchlistStatus = item.status

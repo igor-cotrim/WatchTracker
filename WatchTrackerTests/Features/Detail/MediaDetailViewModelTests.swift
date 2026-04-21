@@ -203,6 +203,38 @@ struct MediaDetailViewModelTests {
         #expect(watchlistMock.markAllEpisodesWatchedCalls.isEmpty)
     }
 
+    @Test func `addToWatchlist routes to updateStatus when item already on watchlist`() async {
+        let watchlistMock = MockWatchlistService()
+        watchlistMock.fetchWatchlistResult = .success([
+            TestFixtures.watchItem(id: 42, tmdbId: 0, mediaType: .movie, status: .completed)
+        ])
+        let store = WatchlistStore()
+        store.cachedItems = [
+            TestFixtures.watchItem(id: 42, tmdbId: 0, mediaType: .movie, status: .watching)
+        ]
+        let vm = makeVM(watchlistService: watchlistMock, store: store)
+        await vm.checkWatchlistStatus()  // populates watchlistItemId = 42
+        await vm.addToWatchlist(status: .completed)
+        #expect(watchlistMock.updateStatusCalls.first?.id == 42)
+        #expect(watchlistMock.updateStatusCalls.first?.status == .completed)
+        #expect(watchlistMock.addToWatchlistCalls.isEmpty)
+    }
+
+    @Test func `syncLocalStateFromCache picks latest id when duplicates exist`() async {
+        // Simulates legacy data created before the DB unique constraint:
+        // multiple rows with same (tmdbId, mediaType). VM should reflect the latest.
+        let store = WatchlistStore()
+        store.cachedItems = [
+            TestFixtures.watchItem(id: 10, tmdbId: 0, mediaType: .movie, status: .watching),
+            TestFixtures.watchItem(id: 25, tmdbId: 0, mediaType: .movie, status: .completed),
+            TestFixtures.watchItem(id: 17, tmdbId: 0, mediaType: .movie, status: .planToWatch),
+        ]
+        let vm = makeVM(store: store)
+        await vm.checkWatchlistStatus()
+        #expect(vm.watchlistItemId == 25)
+        #expect(vm.watchlistStatus == .completed)
+    }
+
     // MARK: - removeFromWatchlist
 
     @Test func `removeFromWatchlist does nothing when watchlistItemId is nil`() async {
