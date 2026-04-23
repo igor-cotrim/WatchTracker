@@ -3,9 +3,10 @@ import SwiftUI
 struct AuthBrandingHeader: View {
     var body: some View {
         VStack(spacing: 10) {
-            Image(systemName: "play.tv.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(.white)
+            Image("logo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
                 .shadow(color: Color.brandPrimary.opacity(0.8), radius: 20)
 
             Text(verbatim: "WatchTracker")

@@ -4,7 +4,7 @@ import Security
 
 @main
 struct WatchTrackerApp: App {
-    @State private var isAuthenticated = false
+    @State private var showSplash = true
     @StateObject private var authService: AuthService
 
     init() {
@@ -14,16 +14,26 @@ struct WatchTrackerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
+            ZStack {
                 if authService.isAuthenticated {
                     AppTabView()
                 } else {
                     AuthView()
                 }
+
+                if showSplash {
+                    SplashView()
+                        .transition(.opacity)
+                        .zIndex(1)
+                }
             }
+            .animation(.easeOut(duration: 0.4), value: showSplash)
             .environmentObject(authService)
             .task {
-                await authService.checkSession()
+                async let session: () = authService.checkSession()
+                async let minDelay: () = { try? await Task.sleep(for: .seconds(1.2)) }()
+                _ = await (session, minDelay)
+                showSplash = false
             }
         }
     }
