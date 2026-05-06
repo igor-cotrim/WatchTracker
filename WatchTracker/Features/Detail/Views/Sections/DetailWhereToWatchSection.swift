@@ -9,9 +9,11 @@ struct DetailWhereToWatchSection: View {
                 .font(.headline)
 
             if let providers = media.watchProviders?.results?["BR"]?.flatrate, !providers.isEmpty {
-                HStack(spacing: 8) {
-                    ForEach(providers) { provider in
-                        StreamingBadgeView(provider: provider)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(providers) { provider in
+                            StreamingBadgeView(provider: provider)
+                        }
                     }
                 }
             } else {
