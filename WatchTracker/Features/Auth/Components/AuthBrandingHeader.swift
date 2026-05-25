@@ -11,11 +11,11 @@ struct AuthBrandingHeader: View {
 
             Text(verbatim: "WatchTracker")
                 .font(.largeTitle.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
 
             Text(Strings.Auth.trackYourShows)
                 .font(.caption)
-                .foregroundStyle(.white.opacity(0.5))
+                .foregroundStyle(.secondary)
         }
     }
 }

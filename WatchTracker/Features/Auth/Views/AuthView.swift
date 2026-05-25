@@ -2,15 +2,20 @@ import SwiftUI
 
 struct AuthView: View {
     @EnvironmentObject private var authService: AuthService
-
     @State private var email = ""
     @State private var password = ""
     @State private var isSignUp = false
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @FocusState private var focusedField: AuthFocusField?
 
     var body: some View {
         ZStack {
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture { focusedField = nil }
+                .ignoresSafeArea()
+
             VStack(spacing: 32) {
                 Spacer()
 
@@ -40,12 +45,11 @@ struct AuthView: View {
                     errorMessage = nil
                 }
                 .font(.footnote)
-                .foregroundStyle(.white.opacity(0.65))
+                .foregroundStyle(.secondary)
 
                 Spacer()
             }
         }
-        .preferredColorScheme(.dark)
     }
 
     private var formCard: some View {
@@ -53,14 +57,24 @@ struct AuthView: View {
             AuthTextField(
                 placeholder: Strings.Auth.email,
                 text: $email,
-                kind: .email
+                kind: .email,
+                focusState: $focusedField,
+                focusValue: .email
             )
+            .onSubmit { focusedField = .password }
 
             AuthTextField(
                 placeholder: Strings.Auth.password,
                 text: $password,
-                kind: isSignUp ? .newPassword : .password
+                kind: isSignUp ? .newPassword : .password,
+                focusState: $focusedField,
+                focusValue: .password
             )
+            .onSubmit {
+                if !isLoading && !email.isEmpty && !password.isEmpty {
+                    Task { await authenticate() }
+                }
+            }
         }
         .padding(24)
         .background(.ultraThinMaterial)
@@ -69,7 +83,6 @@ struct AuthView: View {
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.white.opacity(0.12), lineWidth: 1)
         }
-        .colorScheme(.dark)
         .padding(.horizontal, 24)
     }
 
