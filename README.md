@@ -1,6 +1,10 @@
-# WatchTracker — iOS
+<div align="center">
+  <img src="screenshots/logo.svg" width="100" alt="WatchTracker Logo" />
+  <h1>WatchTracker — iOS</h1>
+  <h2>Native iOS app for tracking movies and TV shows</h2>
+</div>
 
-Native iOS app for tracking movies and TV shows. Built with SwiftUI and powered by a custom Express.js backend. Part of the `movie_tracker` monorepo — see `../README.md` for the full-stack overview.
+Built with SwiftUI and powered by a custom Express.js backend. Part of the `movie_tracker` monorepo — see `../README.md` for the full-stack overview.
 
 ## Screenshots
 
