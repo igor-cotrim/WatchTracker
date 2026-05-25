@@ -2,6 +2,20 @@
 
 Native iOS app for tracking movies and TV shows. Built with SwiftUI and powered by a custom Express.js backend. Part of the `movie_tracker` monorepo — see `../README.md` for the full-stack overview.
 
+## Screenshots
+
+<div align="center">
+  <img src="screenshots/auth.png" width="180" alt="Sign In" />
+  <img src="screenshots/watchlist-watching.png" width="180" alt="Watchlist – Watching" />
+  <img src="screenshots/watchlist-plan.png" width="180" alt="Watchlist – Plan to Watch" />
+  <img src="screenshots/watchlist-completed.png" width="180" alt="Watchlist – Completed" />
+  <img src="screenshots/watching.png" width="180" alt="Watching" />
+  <img src="screenshots/upcoming.png" width="180" alt="Upcoming Episodes" />
+  <img src="screenshots/discover.png" width="180" alt="Discover" />
+  <img src="screenshots/for-you.png" width="180" alt="For You – AI Suggestions" />
+  <img src="screenshots/profile.png" width="180" alt="Profile" />
+</div>
+
 ## Features
 
 - **Watchlist** — Add movies and TV shows with status (watching, plan to watch, completed, dropped). Filter by type and status.
