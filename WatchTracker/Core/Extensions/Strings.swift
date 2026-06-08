@@ -250,8 +250,16 @@ enum Strings {
         static var exampleMood: String { String(localized: "ai.example.mood") }
     }
 
+    // MARK: - Notifications
+
+    enum Notifications {
+        static var sectionTitle: String { String(localized: "notifications.section_title") }
+        static var episodeReminders: String { String(localized: "notifications.episode_reminders") }
+        static var newEpisodeBody: String { String(localized: "notifications.new_episode_body") }
+    }
+
     // MARK: - Episode
-    
+
     enum Episode {
         static var accessibilityWatched: String { String(localized: "episode.accessibility.watched") }
         static var accessibilityNotWatched: String { String(localized: "episode.accessibility.not_watched") }

@@ -5,6 +5,7 @@ private enum WatchingTab {
 }
 
 struct WatchingView: View {
+    @Environment(AppRouter.self) private var appRouter
     @State private var viewModel = ContinueWatchingViewModel(
         service: WatchlistService(),
         store: .shared
@@ -13,9 +14,10 @@ struct WatchingView: View {
         service: WatchlistService()
     )
     @State private var selectedTab: WatchingTab = .watching
+    @State private var navigationPath = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             VStack(spacing: 0) {
                 Picker("", selection: $selectedTab) {
                     Text(Strings.Upcoming.tabWatching).tag(WatchingTab.watching)
@@ -38,6 +40,9 @@ struct WatchingView: View {
             }
             .navigationTitle(Strings.Watching.title)
             .background(Color(.systemGroupedBackground))
+            .navigationDestination(for: Int.self) { tmdbId in
+                MediaDetailView(mediaType: .tv, mediaId: tmdbId)
+            }
             .task { await viewModel.fetch() }
             .task(id: selectedTab) {
                 if selectedTab == .upcoming && upcomingViewModel.items.isEmpty {
@@ -50,6 +55,11 @@ struct WatchingView: View {
                 } else {
                     await upcomingViewModel.fetch()
                 }
+            }
+            .onChange(of: appRouter.pendingShowId) { _, id in
+                guard let id else { return }
+                navigationPath.append(id)
+                appRouter.pendingShowId = nil
             }
         }
     }

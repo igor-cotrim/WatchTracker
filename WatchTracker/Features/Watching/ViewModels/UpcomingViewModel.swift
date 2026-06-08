@@ -18,6 +18,7 @@ final class UpcomingViewModel {
         errorMessage = nil
         do {
             items = try await service.fetchUpcoming()
+            await NotificationService.shared.scheduleNotifications(for: items)
         } catch {
             errorMessage = error.localizedDescription
         }

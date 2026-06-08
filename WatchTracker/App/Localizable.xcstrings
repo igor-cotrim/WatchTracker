@@ -2365,6 +2365,57 @@
           }
         }
       }
+    },
+    "notifications.episode_reminders" : {
+      "comment" : "Toggle label for episode reminders in Profile notifications settings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episode Reminders"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lembretes de Episódios"
+          }
+        }
+      }
+    },
+    "notifications.new_episode_body" : {
+      "comment" : "Body text of a local notification when a new episode is available",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New episode now available"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novo episódio disponível agora"
+          }
+        }
+      }
+    },
+    "notifications.section_title" : {
+      "comment" : "Section header for notifications settings in Profile",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificações"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

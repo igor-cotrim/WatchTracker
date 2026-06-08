@@ -4,6 +4,7 @@ import Auth
 struct ProfileView: View {
     @EnvironmentObject private var authService: AuthService
     @State private var viewModel = ProfileViewModel()
+    @AppStorage("episodeRemindersEnabled") private var episodeRemindersEnabled = false
 
     var body: some View {
         NavigationStack {
@@ -52,6 +53,21 @@ struct ProfileView: View {
                         StatRow(title: Strings.Profile.statsShows, value: "\(viewModel.showsTracking)")
                         StatRow(title: Strings.Profile.statsShowsCompleted, value: "\(viewModel.showsCompleted)")
                     }
+                }
+
+                // Notifications
+                Section(Strings.Notifications.sectionTitle) {
+                    Toggle(Strings.Notifications.episodeReminders, isOn: $episodeRemindersEnabled)
+                        .onChange(of: episodeRemindersEnabled) { _, enabled in
+                            Task {
+                                if enabled {
+                                    let granted = await NotificationService.shared.requestAuthorization()
+                                    if !granted { episodeRemindersEnabled = false }
+                                } else {
+                                    await NotificationService.shared.cancelAllEpisodeNotifications()
+                                }
+                            }
+                        }
                 }
 
                 // Actions
