@@ -9,8 +9,6 @@ struct MediaDetailView: View {
         watchlistService: WatchlistService(),
         store: .shared
     )
-    @Environment(\.dismiss) private var dismiss
-
     var body: some View {
         ScrollView {
             if viewModel.isLoading {
@@ -45,17 +43,6 @@ struct MediaDetailView: View {
         }
         .navigationTitle(viewModel.media?.displayTitle ?? "")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .fontWeight(.semibold)
-                }
-            }
-        }
         .task {
             await viewModel.fetchDetails(type: mediaType, id: mediaId)
             await viewModel.checkWatchlistStatus()
