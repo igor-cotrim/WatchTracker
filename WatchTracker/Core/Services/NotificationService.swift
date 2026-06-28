@@ -55,6 +55,39 @@ actor NotificationService {
         }
     }
 
+    /// Fires an immediate local notification when a completed show was revived
+    /// because a brand-new season aired. Deduped per (show, season) so the same
+    /// season never notifies twice across watchlist refreshes.
+    func notifyNewSeason(tmdbId: Int, title: String, seasonNumber: Int) async {
+        guard UserDefaults.standard.bool(forKey: "episodeRemindersEnabled") else { return }
+
+        let dedupeKey = "notifiedNewSeason-\(tmdbId)-\(seasonNumber)"
+        guard !UserDefaults.standard.bool(forKey: dedupeKey) else { return }
+
+        let center = UNUserNotificationCenter.current()
+        let settings = await center.notificationSettings()
+        guard settings.authorizationStatus == .authorized else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.subtitle = await Strings.Notifications.newSeasonSubtitle
+        content.body = await Strings.Notifications.newSeasonBody(season: seasonNumber)
+        content.sound = .default
+        content.userInfo = ["tmdbId": tmdbId, "mediaType": "tv"]
+        content.categoryIdentifier = "NEW_SEASON_NOTIFICATION"
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let id = "newseason-\(tmdbId)-S\(seasonNumber)"
+        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+
+        do {
+            try await center.add(request)
+            UserDefaults.standard.set(true, forKey: dedupeKey)
+        } catch {
+            // Leave the dedupe flag unset so a later refresh can retry.
+        }
+    }
+
     func cancelAllEpisodeNotifications() async {
         let center = UNUserNotificationCenter.current()
         let pending = await center.pendingNotificationRequests()

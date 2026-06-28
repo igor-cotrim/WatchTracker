@@ -88,6 +88,7 @@ final class WatchlistViewModel {
             allItems = items
             store.cachedItems = items
             store.needsRefresh = false
+            await notifyRevivedSeasons(in: items)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -104,6 +105,20 @@ final class WatchlistViewModel {
     }
 
     // MARK: - Private
+
+    /// Fires a local notification for any show the backend just revived from
+    /// `completed` to `watching` because a new season aired. Deduping lives in
+    /// `NotificationService`, so this is safe to call on every refresh.
+    private func notifyRevivedSeasons(in items: [WatchItem]) async {
+        for item in items {
+            guard let season = item.newSeasonNumber else { continue }
+            await NotificationService.shared.notifyNewSeason(
+                tmdbId: item.tmdbId,
+                title: item.title ?? "",
+                seasonNumber: season
+            )
+        }
+    }
 
     private func rebuildDerived() {
         let byStatus = allItems.filter { $0.status == selectedStatus }
