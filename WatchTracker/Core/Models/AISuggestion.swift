@@ -1,11 +1,13 @@
 import FoundationModels
 
+@available(iOS 26, *)
 @Generable
 struct AISuggestionsResponse {
     @Guide(description: "A list of 5 to 8 movie or TV show suggestions based on the user's watchlist")
     var suggestions: [AISuggestionItem]
 }
 
+@available(iOS 26, *)
 @Generable
 struct AISuggestionItem {
     @Guide(description: "The exact title of the movie or TV show")

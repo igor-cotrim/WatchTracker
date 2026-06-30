@@ -8,6 +8,7 @@ enum AIModelAvailability: Equatable {
     case notReady
 }
 
+@available(iOS 26, *)
 final class AIService {
     private let discoverService: DiscoverService
 

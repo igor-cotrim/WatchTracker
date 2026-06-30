@@ -1,5 +1,6 @@
 import SwiftUI
 
+@available(iOS 26, *)
 struct AISuggestionsView: View {
     @State private var viewModel = AISuggestionsViewModel()
 
@@ -136,6 +137,7 @@ private struct AIExampleChip: View {
     }
 }
 
+@available(iOS 26, *)
 #Preview {
     AISuggestionsView()
 }

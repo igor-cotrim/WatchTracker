@@ -5,7 +5,9 @@ struct AppTabView: View {
     @Environment(AppRouter.self) private var appRouter
 
     private var isAIAvailable: Bool {
-        if case .available = SystemLanguageModel.default.availability { return true }
+        if #available(iOS 26, *) {
+            if case .available = SystemLanguageModel.default.availability { return true }
+        }
         return false
     }
 
@@ -21,7 +23,7 @@ struct AppTabView: View {
             Tab(Strings.Tab.discover, systemImage: "magnifyingglass", value: AppRouter.AppTab.discover) {
                 DiscoverView()
             }
-            if isAIAvailable {
+            if #available(iOS 26, *), isAIAvailable {
                 Tab(Strings.Tab.ai, systemImage: "sparkles", value: AppRouter.AppTab.ai) {
                     AISuggestionsView()
                 }

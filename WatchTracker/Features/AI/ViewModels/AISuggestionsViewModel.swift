@@ -1,5 +1,6 @@
 import Foundation
 
+@available(iOS 26, *)
 struct ResolvedSuggestion: Identifiable {
     let id: Int
     let suggestion: AISuggestionItem
@@ -12,6 +13,7 @@ struct ResolvedSuggestion: Identifiable {
     }
 }
 
+@available(iOS 26, *)
 @Observable
 @MainActor
 final class AISuggestionsViewModel {
