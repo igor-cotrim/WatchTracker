@@ -1618,6 +1618,57 @@
         }
       }
     },
+    "profile.about.section": {
+      "comment": "Section header for the About section on the Profile screen",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre"
+          }
+        }
+      }
+    },
+    "profile.about.tmdb_attribution": {
+      "comment": "TMDB attribution notice required by the TMDB API terms of use",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This product uses the TMDB API but is not endorsed or certified by TMDB."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este produto usa a API da TMDB, mas não é endossado nem certificado pela TMDB."
+          }
+        }
+      }
+    },
+    "profile.about.privacy_policy": {
+      "comment": "Link to the app's privacy policy on the Profile screen",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy Policy"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de Privacidade"
+          }
+        }
+      }
+    },
     "profile.sign_out": {
       "comment": "Button to sign the user out",
       "localizations": {

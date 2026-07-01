@@ -88,6 +88,9 @@ enum Strings {
         static var statsShows: String { String(localized: "profile.stats.shows") }
         static var statsShowsCompleted: String { String(localized: "profile.stats.shows_completed") }
         static var signOut: String { String(localized: "profile.sign_out") }
+        static var aboutSection: String { String(localized: "profile.about.section") }
+        static var tmdbAttribution: String { String(localized: "profile.about.tmdb_attribution") }
+        static var privacyPolicy: String { String(localized: "profile.about.privacy_policy") }
         static var preferencesSection: String { String(localized: "profile.preferences.section") }
         static var language: String { String(localized: "profile.preferences.language") }
         static var languageEnglish: String { String(localized: "profile.preferences.language.english") }

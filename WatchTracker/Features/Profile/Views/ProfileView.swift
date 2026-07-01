@@ -70,6 +70,31 @@ struct ProfileView: View {
                         }
                 }
 
+                // About
+                Section(Strings.Profile.aboutSection) {
+                    Link(destination: URL(string: "https://www.themoviedb.org")!) {
+                        HStack {
+                            Text(Strings.Profile.tmdbAttribution)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+
+                    Link(destination: URL(string: "https://spice-swift-6a1.notion.site/WatchTracker-Privacy-Policy-38f36fb13fb58025a339c5d18152725c")!) {
+                        HStack {
+                            Text(Strings.Profile.privacyPolicy)
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
                 // Actions
                 Section {
                     Button(Strings.Profile.signOut, role: .destructive) {
