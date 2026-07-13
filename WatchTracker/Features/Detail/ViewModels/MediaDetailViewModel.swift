@@ -21,6 +21,8 @@ final class MediaDetailViewModel {
     var expandedSeasons: Set<Int> = []
     var seasonEpisodes: [Int: [Episode]] = [:]
     var isLoadingSeason: Set<Int> = []
+    /// Season number the view should scroll to (set when marking a show as "watching").
+    var scrollTargetSeason: Int?
 
     private var mediaType: MediaType = .movie
     private var mediaId: Int = 0
@@ -94,9 +96,37 @@ final class MediaDetailViewModel {
             await refreshStoreCache()
             // Read back from the updated cache to get the server-assigned id.
             syncLocalStateFromCache()
+            // When starting to watch a show, open the first not-fully-watched season
+            // and scroll to it so the user can immediately mark episodes.
+            if status == .watching && mediaType == .tv {
+                await openFirstUnwatchedSeason()
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Expands the first season that isn't fully watched (falling back to the first
+    /// season) and asks the view to scroll to it. TV shows only.
+    func openFirstUnwatchedSeason() async {
+        guard mediaType == .tv else { return }
+        let seasons = (media?.seasons ?? [])
+            .filter { ($0.episodeCount ?? 0) > 0 }
+            .sorted { $0.seasonNumber < $1.seasonNumber }
+        guard let firstSeason = seasons.first else { return }
+
+        var target = firstSeason.seasonNumber
+        for season in seasons {
+            await loadSeasonIfNeeded(season.seasonNumber)
+            if !isSeasonAllWatched(season.seasonNumber) {
+                target = season.seasonNumber
+                break
+            }
+        }
+
+        expandedSeasons.insert(target)
+        await loadSeasonIfNeeded(target)
+        scrollTargetSeason = target
     }
 
     func removeFromWatchlist() async {

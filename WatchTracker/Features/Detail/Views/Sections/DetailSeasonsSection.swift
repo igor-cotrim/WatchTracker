@@ -19,6 +19,7 @@ struct DetailSeasonsSection: View {
                 }
                 .background(Color(.secondarySystemGroupedBackground))
                 .clipShape(.rect(cornerRadius: 12))
+                .id(season.seasonNumber)
             }
         }
     }

@@ -10,35 +10,44 @@ struct MediaDetailView: View {
         store: .shared
     )
     var body: some View {
-        ScrollView {
-            if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, minHeight: 400)
-            } else if let media = viewModel.media {
-                VStack(alignment: .leading, spacing: 20) {
-                    DetailHeaderSection(media: media)
+        ScrollViewReader { proxy in
+            ScrollView {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, minHeight: 400)
+                } else if let media = viewModel.media {
+                    VStack(alignment: .leading, spacing: 20) {
+                        DetailHeaderSection(media: media)
 
-                    VStack(alignment: .leading, spacing: 16) {
-                        DetailTitleSection(media: media)
+                        VStack(alignment: .leading, spacing: 16) {
+                            DetailTitleSection(media: media)
 
-                        DetailWatchlistSection(viewModel: viewModel, mediaType: mediaType)
+                            DetailWatchlistSection(viewModel: viewModel, mediaType: mediaType)
 
-                        DetailWhereToWatchSection(media: media)
+                            DetailWhereToWatchSection(media: media)
 
-                        DetailSynopsisSection(media: media)
+                            DetailSynopsisSection(media: media)
 
-                        if let seasons = media.seasons, !seasons.isEmpty {
-                            DetailSeasonsSection(seasons: seasons, viewModel: viewModel)
+                            if let seasons = media.seasons, !seasons.isEmpty {
+                                DetailSeasonsSection(seasons: seasons, viewModel: viewModel)
+                            }
                         }
+                        .padding(.horizontal)
+                        .padding(.bottom, 32)
                     }
-                    .padding(.horizontal)
-                    .padding(.bottom, 32)
+                } else if let error = viewModel.errorMessage {
+                    ErrorStateView(message: error) {
+                        await viewModel.fetchDetails(type: mediaType, id: mediaId)
+                        await viewModel.checkWatchlistStatus()
+                    }
                 }
-            } else if let error = viewModel.errorMessage {
-                ErrorStateView(message: error) {
-                    await viewModel.fetchDetails(type: mediaType, id: mediaId)
-                    await viewModel.checkWatchlistStatus()
+            }
+            .onChange(of: viewModel.scrollTargetSeason) { _, target in
+                guard let target else { return }
+                withAnimation {
+                    proxy.scrollTo(target, anchor: .top)
                 }
+                viewModel.scrollTargetSeason = nil
             }
         }
         .navigationTitle(viewModel.media?.displayTitle ?? "")

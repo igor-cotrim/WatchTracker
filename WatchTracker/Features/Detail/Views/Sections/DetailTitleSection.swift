@@ -25,12 +25,12 @@ struct DetailTitleSection: View {
 
                 Text("  |  ")
                     .foregroundStyle(.secondary)
-                
-                Text((media.releaseYear ?? "–"))
+
+                Text((media.releaseDateFormatted ?? "–"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
-                
+
                 Text("  |  ")
                     .foregroundStyle(.secondary)
 
@@ -38,6 +38,18 @@ struct DetailTitleSection: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
+            }
+
+            if let certification = media.certification, !certification.isEmpty {
+                Text(verbatim: certification)
+                    .font(.caption2.bold())
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(Color.secondary, lineWidth: 1)
+                    )
             }
         }
     }

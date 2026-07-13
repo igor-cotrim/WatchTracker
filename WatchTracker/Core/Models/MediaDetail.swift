@@ -15,6 +15,7 @@ struct MediaDetail: Codable, Identifiable {
     let watchProviders: WatchProviderResult?
     let seasons: [Season]?   // TV only
     let watchlistStatus: WatchlistStatus?  // Present when authenticated and show is in watchlist
+    let certification: String?  // Content rating for the request locale's region (e.g. "12", "PG-13")
 
     var mediaType: MediaType {
         title != nil ? .movie : .tv
@@ -28,6 +29,19 @@ struct MediaDetail: Codable, Identifiable {
         let date = releaseDate ?? firstAirDate
         guard let date, date.count >= 4 else { return nil }
         return String(date.prefix(4))
+    }
+
+    var releaseDateFormatted: String? {
+        let raw = releaseDate ?? firstAirDate
+        guard let raw else { return releaseYear }
+        let parser = DateFormatter()
+        parser.dateFormat = "yyyy-MM-dd"
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        guard let date = parser.date(from: raw) else { return releaseYear }
+        let display = DateFormatter()
+        display.dateStyle = .medium
+        display.timeStyle = .none
+        return display.string(from: date)
     }
 
     var posterURL: URL? {
