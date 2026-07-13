@@ -1414,6 +1414,40 @@
         }
       }
     },
+    "common.cancel": {
+      "comment": "Generic Cancel button label",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
+          }
+        }
+      }
+    },
+    "common.ok": {
+      "comment": "Generic OK button label",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
     "home.continue_watching": {
       "comment": "Section header for continue watching on Home screen",
       "localizations": {
@@ -1665,6 +1699,91 @@
           "stringUnit": {
             "state": "translated",
             "value": "Política de Privacidade"
+          }
+        }
+      }
+    },
+    "profile.delete_account": {
+      "comment": "Button to permanently delete the user's account on the Profile screen",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Account"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir Conta"
+          }
+        }
+      }
+    },
+    "profile.delete_account.confirm.title": {
+      "comment": "Title of the confirmation alert shown before deleting the account",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete account?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir conta?"
+          }
+        }
+      }
+    },
+    "profile.delete_account.confirm.message": {
+      "comment": "Body of the confirmation alert shown before deleting the account",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This permanently deletes your account and all your data. This can't be undone."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isso exclui permanentemente sua conta e todos os seus dados. Não é possível desfazer."
+          }
+        }
+      }
+    },
+    "profile.delete_account.confirm.button": {
+      "comment": "Destructive confirm button in the account deletion alert",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir"
+          }
+        }
+      }
+    },
+    "profile.delete_account.error.title": {
+      "comment": "Title of the alert shown when account deletion fails",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't delete account"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível excluir a conta"
           }
         }
       }

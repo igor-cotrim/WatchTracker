@@ -5,6 +5,9 @@ struct ProfileView: View {
     @EnvironmentObject private var authService: AuthService
     @State private var viewModel = ProfileViewModel()
     @AppStorage("episodeRemindersEnabled") private var episodeRemindersEnabled = false
+    @State private var showDeleteConfirm = false
+    @State private var isDeleting = false
+    @State private var deleteError: String?
 
     var body: some View {
         NavigationStack {
@@ -102,9 +105,49 @@ struct ProfileView: View {
                             try? await authService.signOut()
                         }
                     }
+
+                    Button(role: .destructive) {
+                        showDeleteConfirm = true
+                    } label: {
+                        HStack {
+                            Text(Strings.Profile.deleteAccount)
+                            if isDeleting {
+                                Spacer()
+                                ProgressView()
+                            }
+                        }
+                    }
+                    .disabled(isDeleting)
                 }
             }
             .navigationTitle(Strings.Profile.title)
+            .alert(Strings.Profile.deleteAccountConfirmTitle, isPresented: $showDeleteConfirm) {
+                Button(Strings.Common.cancel, role: .cancel) { }
+                Button(Strings.Profile.deleteAccountConfirmButton, role: .destructive) {
+                    Task {
+                        isDeleting = true
+                        do {
+                            try await authService.deleteAccount()
+                        } catch {
+                            deleteError = error.localizedDescription
+                        }
+                        isDeleting = false
+                    }
+                }
+            } message: {
+                Text(Strings.Profile.deleteAccountConfirmMessage)
+            }
+            .alert(
+                Strings.Profile.deleteAccountErrorTitle,
+                isPresented: Binding(
+                    get: { deleteError != nil },
+                    set: { if !$0 { deleteError = nil } }
+                )
+            ) {
+                Button(Strings.Common.ok, role: .cancel) { deleteError = nil }
+            } message: {
+                Text(verbatim: deleteError ?? "")
+            }
             .task {
                 await viewModel.fetchStats()
             }

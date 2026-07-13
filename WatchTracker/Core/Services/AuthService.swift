@@ -61,6 +61,17 @@ class AuthService: ObservableObject {
         }
     }
 
+    /// Permanently deletes the user's account and all their data. The backend removes
+    /// the Supabase auth user and every DB row; the local session is then cleared.
+    func deleteAccount() async throws {
+        try await APIClient.shared.delete(.deleteAccount)
+        try await client.auth.signOut()
+        await MainActor.run {
+            self.currentUser = nil
+            self.isAuthenticated = false
+        }
+    }
+
     // MARK: - Private
 
     private func listenToAuthChanges() {

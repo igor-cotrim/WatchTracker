@@ -62,6 +62,8 @@ enum Strings {
     
     enum Common {
         static var retry: String { String(localized: "error.retry") }
+        static var cancel: String { String(localized: "common.cancel") }
+        static var ok: String { String(localized: "common.ok") }
     }
     
     // MARK: - Auth
@@ -91,6 +93,11 @@ enum Strings {
         static var aboutSection: String { String(localized: "profile.about.section") }
         static var tmdbAttribution: String { String(localized: "profile.about.tmdb_attribution") }
         static var privacyPolicy: String { String(localized: "profile.about.privacy_policy") }
+        static var deleteAccount: String { String(localized: "profile.delete_account") }
+        static var deleteAccountConfirmTitle: String { String(localized: "profile.delete_account.confirm.title") }
+        static var deleteAccountConfirmMessage: String { String(localized: "profile.delete_account.confirm.message") }
+        static var deleteAccountConfirmButton: String { String(localized: "profile.delete_account.confirm.button") }
+        static var deleteAccountErrorTitle: String { String(localized: "profile.delete_account.error.title") }
         static var preferencesSection: String { String(localized: "profile.preferences.section") }
         static var language: String { String(localized: "profile.preferences.language") }
         static var languageEnglish: String { String(localized: "profile.preferences.language.english") }

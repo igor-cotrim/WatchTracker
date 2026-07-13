@@ -29,6 +29,7 @@ enum Endpoint: Sendable {
 
     // Profile
     case profileStats
+    case deleteAccount
 
     // Discover
     case discover(provider: String?, type: MediaType?, region: String?)
@@ -76,6 +77,8 @@ enum Endpoint: Sendable {
             return "/media/tv/\(tvId)/seasons/\(season)/watched"
         case .profileStats:
             return "/profile/stats"
+        case .deleteAccount:
+            return "/profile"
         case .discover, .discoverFiltered:
             return "/discover"
         case .trending:
@@ -104,7 +107,7 @@ enum Endpoint: Sendable {
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason, .watchAllEpisodes:
             return .POST
-        case .removeFromWatchlist, .unwatchEpisode, .unwatchSeason:
+        case .removeFromWatchlist, .unwatchEpisode, .unwatchSeason, .deleteAccount:
             return .DELETE
         case .updateWatchlistStatus:
             return .PATCH
