@@ -47,6 +47,7 @@ enum Strings {
         static var emptyPlanSubtitle: String { String(localized: "watchlist.empty.plan_to_watch.subtitle") }
         static var emptyCompletedTitle: String { String(localized: "watchlist.empty.completed.title") }
         static var emptyCompletedSubtitle: String { String(localized: "watchlist.empty.completed.subtitle") }
+        static var discoverButton: String { String(localized: "watchlist.empty.discover_button") }
     }
     
     enum Card {

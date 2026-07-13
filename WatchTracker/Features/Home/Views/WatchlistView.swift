@@ -4,6 +4,8 @@ struct WatchlistView: View {
     let viewModel: WatchlistViewModel
     let filter: MediaFilter
 
+    @Environment(AppRouter.self) private var appRouter
+
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12),
@@ -64,6 +66,17 @@ struct WatchlistView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+
+            if viewModel.allItems.isEmpty {
+                Button {
+                    appRouter.selectedTab = .discover
+                } label: {
+                    Label(Strings.Watchlist.discoverButton, systemImage: "sparkles")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color.brandPrimary)
+                .padding(.top, 4)
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, minHeight: 300)

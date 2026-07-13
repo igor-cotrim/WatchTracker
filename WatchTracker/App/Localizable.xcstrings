@@ -2434,6 +2434,23 @@
         }
       }
     },
+    "watchlist.empty.discover_button": {
+      "comment": "Button on empty watchlist that navigates to Discover",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discover titles"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descobrir títulos"
+          }
+        }
+      }
+    },
     "watchlist.empty.plan_to_watch.subtitle": {
       "comment": "Empty state subtitle when Plan to Watch filter is active",
       "localizations": {

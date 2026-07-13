@@ -6,24 +6,28 @@ struct StatusFilterBar: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(WatchlistStatus.allCases, id: \.self) { status in
-                    StatusPill(
-                        label: status.displayName,
-                        icon: status.icon,
-                        count: viewModel.count(for: status),
-                        isSelected: viewModel.selectedStatus == status,
-                        namespace: pillNamespace,
-                        pillID: status.rawValue
-                    ) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                            viewModel.selectedStatus = status
+            ScrollViewReader { proxy in
+                HStack(spacing: 8) {
+                    ForEach(WatchlistStatus.allCases, id: \.self) { status in
+                        StatusPill(
+                            label: status.displayName,
+                            icon: status.icon,
+                            count: viewModel.count(for: status),
+                            isSelected: viewModel.selectedStatus == status,
+                            namespace: pillNamespace,
+                            pillID: status.rawValue
+                        ) {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                viewModel.selectedStatus = status
+                                proxy.scrollTo(status, anchor: .center)
+                            }
                         }
+                        .id(status)
                     }
                 }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
             }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
         }
     }
 }
