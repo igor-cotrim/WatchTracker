@@ -36,7 +36,7 @@ actor NotificationService {
             guard airDate >= today else { continue }
 
             var components = Calendar.current.dateComponents([.year, .month, .day], from: airDate)
-            components.hour = 9
+            components.hour = 20
             components.minute = 0
             components.second = 0
 

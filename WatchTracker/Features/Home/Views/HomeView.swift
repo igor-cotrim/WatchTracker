@@ -9,8 +9,10 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                StatusFilterBar(viewModel: viewModel)
-                MediaFilterTabBar(selected: $viewModel.selectedFilter)
+                VStack(spacing: 8) {
+                    StatusFilterBar(viewModel: viewModel)
+                    MediaFilterTabBar(selected: $viewModel.selectedFilter)
+                }
 
                 TabView(selection: $viewModel.selectedFilter) {
                     ForEach(MediaFilter.allCases) { filter in

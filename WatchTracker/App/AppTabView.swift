@@ -32,6 +32,18 @@ struct AppTabView: View {
                 ProfileView()
             }
         }
+        .task {
+            let defaults = UserDefaults.standard
+            if !defaults.bool(forKey: "hasRequestedNotificationPermission") {
+                let granted = await NotificationService.shared.requestAuthorization()
+                defaults.set(true, forKey: "hasRequestedNotificationPermission")
+                if granted { defaults.set(true, forKey: "episodeRemindersEnabled") }
+            }
+
+            if let items = try? await WatchlistService().fetchUpcoming() {
+                await NotificationService.shared.scheduleNotifications(for: items)
+            }
+        }
     }
 }
 
