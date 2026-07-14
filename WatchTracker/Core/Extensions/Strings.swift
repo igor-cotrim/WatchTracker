@@ -99,6 +99,8 @@ enum Strings {
         static var deleteAccountConfirmMessage: String { String(localized: "profile.delete_account.confirm.message") }
         static var deleteAccountConfirmButton: String { String(localized: "profile.delete_account.confirm.button") }
         static var deleteAccountErrorTitle: String { String(localized: "profile.delete_account.error.title") }
+        static var dangerZoneSection: String { String(localized: "profile.danger_zone.section") }
+        static var dangerZoneFooter: String { String(localized: "profile.danger_zone.footer") }
         static var preferencesSection: String { String(localized: "profile.preferences.section") }
         static var language: String { String(localized: "profile.preferences.language") }
         static var languageEnglish: String { String(localized: "profile.preferences.language.english") }

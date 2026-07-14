@@ -58,6 +58,7 @@ class AuthService: ObservableObject {
         await MainActor.run {
             self.currentUser = nil
             self.isAuthenticated = false
+            self.resetLocalUserState()
         }
     }
 
@@ -69,10 +70,31 @@ class AuthService: ObservableObject {
         await MainActor.run {
             self.currentUser = nil
             self.isAuthenticated = false
+            self.resetLocalUserState()
         }
     }
 
     // MARK: - Private
+
+    /// Clears all per-user local state so the next account starts clean.
+    /// Called on sign-out and account deletion — the two paths that end a session.
+    @MainActor
+    private func resetLocalUserState() {
+        // Navigation returns to the Home tab (logout is triggered from Profile).
+        AppRouter.shared.selectedTab = .home
+        AppRouter.shared.pendingShowId = nil
+
+        // Previous account's cached watchlist.
+        WatchlistStore.shared.cachedItems = []
+        WatchlistStore.shared.needsRefresh = true
+
+        // URL-keyed GET responses could otherwise serve another account's data.
+        URLCache.shared.removeAllCachedResponses()
+
+        // Per-user preferences / history persisted in UserDefaults.
+        SearchHistoryManager().clearAll()
+        UserDefaults.standard.removeObject(forKey: "discover.lastProviderId")
+    }
 
     private func listenToAuthChanges() {
         Task {

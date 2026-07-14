@@ -1669,6 +1669,40 @@
         }
       }
     },
+    "profile.danger_zone.section": {
+      "comment": "Section header for the destructive Danger Zone (delete account) on the Profile screen",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danger Zone"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona de Perigo"
+          }
+        }
+      }
+    },
+    "profile.danger_zone.footer": {
+      "comment": "Footer text under the Danger Zone section warning the delete action is permanent",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleting your account is permanent and cannot be undone."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir sua conta é permanente e não pode ser desfeito."
+          }
+        }
+      }
+    },
     "profile.about.tmdb_attribution": {
       "comment": "TMDB attribution notice required by the TMDB API terms of use",
       "localizations": {

@@ -98,14 +98,17 @@ struct ProfileView: View {
                     }
                 }
 
-                // Actions
+                // Sign out
                 Section {
                     Button(Strings.Profile.signOut, role: .destructive) {
                         Task {
                             try? await authService.signOut()
                         }
                     }
+                }
 
+                // Danger Zone
+                Section {
                     Button(role: .destructive) {
                         showDeleteConfirm = true
                     } label: {
@@ -118,6 +121,11 @@ struct ProfileView: View {
                         }
                     }
                     .disabled(isDeleting)
+                } header: {
+                    Text(Strings.Profile.dangerZoneSection)
+                        .foregroundStyle(.red)
+                } footer: {
+                    Text(Strings.Profile.dangerZoneFooter)
                 }
             }
             .navigationTitle(Strings.Profile.title)
