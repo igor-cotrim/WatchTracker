@@ -76,15 +76,24 @@ struct ProfileView: View {
                 // About
                 Section(Strings.Profile.aboutSection) {
                     Link(destination: URL(string: "https://www.themoviedb.org")!) {
-                        HStack {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Image("tmdb-logo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 14)
+                                    .accessibilityLabel(Text(verbatim: "TMDB"))
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                            }
                             Text(Strings.Profile.tmdbAttribution)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption2)
-                                .foregroundStyle(.tertiary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
+                        .padding(.vertical, 2)
                     }
 
                     Link(destination: URL(string: "https://spice-swift-6a1.notion.site/WatchTracker-Privacy-Policy-38f36fb13fb58025a339c5d18152725c")!) {
