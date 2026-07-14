@@ -9,6 +9,8 @@ class AuthService: ObservableObject {
 
     private let client: SupabaseClient
 
+    @MainActor private var isRecovering = false
+
     var session: Session? {
         get async {
             try? await client.auth.session
@@ -37,12 +39,41 @@ class AuthService: ObservableObject {
         }
     }
 
-    func signUp(email: String, password: String) async throws {
-        let response = try await client.auth.signUp(email: email, password: password)
+    func signUp(email: String, password: String, name: String) async throws {
+        let response = try await client.auth.signUp(
+            email: email,
+            password: password,
+            data: ["name": .string(name)]
+        )
         await MainActor.run {
             self.currentUser = response.user
             self.isAuthenticated = true
         }
+    }
+
+    func resetPassword(email: String) async throws {
+        try await client.auth.resetPasswordForEmail(email)
+    }
+
+    /// Completes recovery: verifies the emailed code, then sets the new password.
+    ///
+    /// `verifyOTP` opens a session as a side effect, so the whole flow runs under
+    /// `isRecovering` to keep the app on the auth screen. The session is always
+    /// closed afterwards — on failure so a half-done reset never stays signed in,
+    /// and on success so the user re-authenticates with their new password.
+    @MainActor
+    func confirmPasswordReset(email: String, code: String, newPassword: String) async throws {
+        isRecovering = true
+        defer { isRecovering = false }
+
+        try await client.auth.verifyOTP(email: email, token: code, type: .recovery)
+        do {
+            try await client.auth.update(user: UserAttributes(password: newPassword))
+        } catch {
+            try? await client.auth.signOut()
+            throw error
+        }
+        try? await client.auth.signOut()
     }
 
     func signIn(email: String, password: String) async throws {
@@ -102,6 +133,7 @@ class AuthService: ObservableObject {
                 await MainActor.run {
                     switch event {
                     case .signedIn:
+                        if self.isRecovering { break }
                         self.currentUser = session?.user
                         self.isAuthenticated = true
                     case .signedOut:

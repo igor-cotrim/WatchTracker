@@ -2,11 +2,13 @@ import SwiftUI
 
 struct AuthView: View {
     @EnvironmentObject private var authService: AuthService
+    @State private var name = ""
     @State private var email = ""
     @State private var password = ""
     @State private var isSignUp = false
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var showForgotPassword = false
     @FocusState private var focusedField: AuthFocusField?
 
     var body: some View {
@@ -16,10 +18,12 @@ struct AuthView: View {
                 .onTapGesture { focusedField = nil }
                 .ignoresSafeArea()
 
-            VStack(spacing: 32) {
+            VStack(spacing: 24) {
                 Spacer()
 
                 AuthBrandingHeader()
+
+                AuthModeHeader(isSignUp: isSignUp)
 
                 formCard
 
@@ -34,26 +38,36 @@ struct AuthView: View {
                 AuthPrimaryButton(
                     title: isSignUp ? Strings.Auth.signUp : Strings.Auth.signIn,
                     isLoading: isLoading,
-                    isDisabled: isLoading || email.isEmpty || password.isEmpty
+                    isDisabled: isLoading || !isFormValid
                 ) {
                     Task { await authenticate() }
                 }
                 .padding(.horizontal, 24)
 
-                Button(isSignUp ? Strings.Auth.haveAccount : Strings.Auth.noAccount) {
-                    isSignUp.toggle()
-                    errorMessage = nil
-                }
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                toggleButton
 
                 Spacer()
             }
+        }
+        .sheet(isPresented: $showForgotPassword) {
+            ForgotPasswordView(prefillEmail: email)
         }
     }
 
     private var formCard: some View {
         VStack(spacing: 14) {
+            if isSignUp {
+                AuthTextField(
+                    placeholder: Strings.Auth.namePlaceholder,
+                    text: $name,
+                    kind: .name,
+                    focusState: $focusedField,
+                    focusValue: .name
+                )
+                .onSubmit { focusedField = .email }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
             AuthTextField(
                 placeholder: Strings.Auth.email,
                 text: $email,
@@ -66,14 +80,32 @@ struct AuthView: View {
             AuthTextField(
                 placeholder: Strings.Auth.password,
                 text: $password,
-                kind: isSignUp ? .newPassword : .password,
+                kind: .password,
                 focusState: $focusedField,
                 focusValue: .password
             )
             .onSubmit {
-                if !isLoading && !email.isEmpty && !password.isEmpty {
+                if !isLoading && isFormValid {
                     Task { await authenticate() }
                 }
+            }
+
+            if isSignUp {
+                PasswordRequirementsView(
+                    hasMinLength: passwordHasMinLength,
+                    hasUppercase: passwordHasUppercase,
+                    hasNumber: passwordHasNumber
+                )
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            if !isSignUp {
+                Button(Strings.Auth.forgotPassword) {
+                    showForgotPassword = true
+                }
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
         .padding(24)
@@ -86,12 +118,50 @@ struct AuthView: View {
         .padding(.horizontal, 24)
     }
 
+    private var toggleButton: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                isSignUp.toggle()
+                errorMessage = nil
+            }
+        } label: {
+            Text(isSignUp ? Strings.Auth.haveAccountPrefix : Strings.Auth.noAccountPrefix)
+                .foregroundStyle(.secondary)
+            + Text(verbatim: " ")
+            + Text(isSignUp ? Strings.Auth.signIn : Strings.Auth.signUp)
+                .foregroundStyle(Color.brandPrimary)
+                .fontWeight(.semibold)
+        }
+        .font(.footnote)
+    }
+
+    // MARK: - Validation
+
+    private var passwordHasMinLength: Bool { password.count >= 8 }
+    private var passwordHasUppercase: Bool {
+        password.range(of: "[A-Z]", options: .regularExpression) != nil
+    }
+    private var passwordHasNumber: Bool {
+        password.range(of: "[0-9]", options: .regularExpression) != nil
+    }
+    private var isPasswordValid: Bool {
+        passwordHasMinLength && passwordHasUppercase && passwordHasNumber
+    }
+
+    private var isFormValid: Bool {
+        if isSignUp {
+            return !name.isEmpty && !email.isEmpty && isPasswordValid
+        } else {
+            return !email.isEmpty && !password.isEmpty
+        }
+    }
+
     private func authenticate() async {
         isLoading = true
         errorMessage = nil
         do {
             if isSignUp {
-                try await authService.signUp(email: email, password: password)
+                try await authService.signUp(email: email, password: password, name: name)
             } else {
                 try await authService.signIn(email: email, password: password)
             }

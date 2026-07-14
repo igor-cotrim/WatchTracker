@@ -1,14 +1,17 @@
 import SwiftUI
 
 enum AuthFieldKind {
+    case name
     case email
     case password
-    case newPassword
+    case code
 }
 
 enum AuthFocusField {
+    case name
     case email
     case password
+    case code
 }
 
 struct AuthTextField: View {
@@ -30,6 +33,12 @@ struct AuthTextField: View {
     @ViewBuilder
     private var field: some View {
         switch kind {
+        case .name:
+            TextField(placeholder, text: $text)
+                .textContentType(.name)
+                .textInputAutocapitalization(.words)
+                .focused(focusState, equals: focusValue)
+                .submitLabel(.next)
         case .email:
             TextField(placeholder, text: $text)
                 .textContentType(.emailAddress)
@@ -43,11 +52,12 @@ struct AuthTextField: View {
                 .textContentType(.password)
                 .focused(focusState, equals: focusValue)
                 .submitLabel(.go)
-        case .newPassword:
-            SecureField(placeholder, text: $text)
-                .textContentType(.newPassword)
+        case .code:
+            TextField(placeholder, text: $text)
+                .textContentType(.oneTimeCode)
+                .keyboardType(.numberPad)
                 .focused(focusState, equals: focusValue)
-                .submitLabel(.go)
+                .submitLabel(.next)
         }
     }
 }
