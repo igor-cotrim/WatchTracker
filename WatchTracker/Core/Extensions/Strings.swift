@@ -251,6 +251,7 @@ enum Strings {
         static var synopsis: String { String(localized: "detail.synopsis.title") }
         static var cast: String { String(localized: "detail.cast.title") }
         static var whereToWatch: String { String(localized: "detail.where_to_watch.title") }
+        static var recommendations: String { String(localized: "detail.recommendations.title") }
         static var whereToWatchUnavailable: String { String(localized: "detail.where_to_watch.unavailable") }
         static var seasonMarkWatched: String { String(localized: "detail.season.mark_watched") }
         static var seasonUnmarkWatched: String { String(localized: "detail.season.unmark_watched") }

@@ -20,6 +20,10 @@ final class MediaDetailService {
         try await api.get(.mediaDetail(type: type, id: id))
     }
 
+    func fetchRecommendations(type: MediaType, id: Int) async throws -> [MediaDetail] {
+        try await api.get(.mediaRecommendations(type: type, id: id))
+    }
+
     func fetchSeasonDetail(tvId: Int, season: Int) async throws -> Season {
         try await api.get(.seasonDetail(tvId: tvId, season: season))
     }

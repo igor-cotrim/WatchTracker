@@ -33,8 +33,15 @@ struct MediaDetailView: View {
                             }
                         }
                         .padding(.horizontal)
-                        .padding(.bottom, 32)
+
+                        if !viewModel.recommendations.isEmpty {
+                            MediaRowSection(
+                                title: Strings.Detail.recommendations,
+                                items: viewModel.recommendations
+                            )
+                        }
                     }
+                    .padding(.bottom, 32)
                 } else if let error = viewModel.errorMessage {
                     ErrorStateView(message: error) {
                         await viewModel.fetchDetails(type: mediaType, id: mediaId)
@@ -53,7 +60,9 @@ struct MediaDetailView: View {
         .navigationTitle(viewModel.media?.displayTitle ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            await viewModel.fetchDetails(type: mediaType, id: mediaId)
+            async let details: () = viewModel.fetchDetails(type: mediaType, id: mediaId)
+            async let recs: () = viewModel.fetchRecommendations(type: mediaType, id: mediaId)
+            _ = await (details, recs)
             await viewModel.checkWatchlistStatus()
         }
     }

@@ -5,6 +5,7 @@ import SwiftUI
 @MainActor
 final class MediaDetailViewModel {
     var media: MediaDetail?
+    var recommendations: [MediaDetail] = []
     var isLoading = false
     var userRating: Int?
     var errorMessage: String?
@@ -60,6 +61,14 @@ final class MediaDetailViewModel {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    func fetchRecommendations(type: MediaType, id: Int) async {
+        do {
+            recommendations = try await mediaDetailService.fetchRecommendations(type: type, id: id)
+        } catch {
+            recommendations = []
+        }
     }
 
     func checkWatchlistStatus() async {

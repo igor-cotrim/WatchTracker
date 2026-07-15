@@ -682,24 +682,6 @@
         }
       }
     },
-    "auth.reset_email_sent" : {
-      "comment" : "Confirmation shown after the recovery email is sent",
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sent! Check your inbox."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email enviado! Verifique sua caixa de entrada."
-          }
-        }
-      }
-    },
     "auth.reset_password_button" : {
       "comment" : "Button that finalizes the password reset",
       "localizations" : {
@@ -730,24 +712,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enviar código"
-          }
-        }
-      }
-    },
-    "auth.send_reset_link" : {
-      "comment" : "Button that sends the password recovery email",
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Send link"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enviar link"
           }
         }
       }
@@ -987,6 +951,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desmarcar Temporada"
+          }
+        }
+      }
+    },
+    "detail.recommendations.title" : {
+      "comment" : "Section header for the recommended media list at the bottom of a detail page",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You might also like"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você também pode gostar"
           }
         }
       }

@@ -18,6 +18,7 @@ enum Endpoint: Sendable {
 
     // Media Detail
     case mediaDetail(type: MediaType, id: Int)
+    case mediaRecommendations(type: MediaType, id: Int)
     case rateMedia(type: MediaType, id: Int, rating: Int)
     case watchEpisode(tvId: Int, season: Int, episode: Int)
     case unwatchEpisode(tvId: Int, season: Int, episode: Int)
@@ -59,6 +60,8 @@ enum Endpoint: Sendable {
             return "/watchlist/\(id)/status"
         case .mediaDetail(let type, let id):
             return "/media/\(type.rawValue)/\(id)"
+        case .mediaRecommendations(let type, let id):
+            return "/media/\(type.rawValue)/\(id)/recommendations"
         case .rateMedia(let type, let id, _):
             return "/media/\(type.rawValue)/\(id)/rate"
         case .watchEpisode(let tvId, let season, let episode):
@@ -102,7 +105,7 @@ enum Endpoint: Sendable {
 
     var method: HTTPMethod {
         switch self {
-        case .watchlist, .continueWatching, .watchlistUpcoming, .mediaDetail, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
+        case .watchlist, .continueWatching, .watchlistUpcoming, .mediaDetail, .mediaRecommendations, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
              .topRated, .upcoming, .popular, .genres, .providers, .profileStats:
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason, .watchAllEpisodes:
