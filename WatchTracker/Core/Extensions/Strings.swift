@@ -264,6 +264,34 @@ enum Strings {
             String(format: String(localized: "detail.season.episodes_count"), count)
         }
     }
+
+    // MARK: - Rating
+
+    enum Rating {
+        static var yourRating: String { String(localized: "rating.your_rating") }
+        static var tapToRate: String { String(localized: "rating.tap_to_rate") }
+        static var startSeries: String { String(localized: "rating.start_series") }
+        static var share: String { String(localized: "rating.share") }
+        static var shareAccessibility: String { String(localized: "rating.share.accessibility") }
+
+        /// Playful caption keyed to the 1–10 rating, shown next to the stars and on the share card.
+        static func mood(forRating rating: Int) -> String {
+            switch rating {
+            case ...2: return String(localized: "rating.mood.awful")
+            case 3...4: return String(localized: "rating.mood.meh")
+            case 5...6: return String(localized: "rating.mood.decent")
+            case 7...8: return String(localized: "rating.mood.great")
+            default: return String(localized: "rating.mood.masterpiece")
+            }
+        }
+    }
+
+    // MARK: - Share
+
+    enum Share {
+        static var downloadCTA: String { String(localized: "share.download_cta") }
+    }
+
     
     // MARK: - AI
 

@@ -9,6 +9,9 @@ struct MediaDetailView: View {
         watchlistService: WatchlistService(),
         store: .shared
     )
+    @State private var isRenderingShare = false
+    @State private var shareItem: ShareableImage?
+
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -23,6 +26,8 @@ struct MediaDetailView: View {
                             DetailTitleSection(media: media)
 
                             DetailWatchlistSection(viewModel: viewModel, mediaType: mediaType)
+
+                            DetailRatingSection(viewModel: viewModel, mediaType: mediaType)
 
                             DetailWhereToWatchSection(media: media)
 
@@ -59,11 +64,46 @@ struct MediaDetailView: View {
         }
         .navigationTitle(viewModel.media?.displayTitle ?? "")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if let media = viewModel.media, viewModel.userRating != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Task { await shareRating(media: media) }
+                    } label: {
+                        if isRenderingShare {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    }
+                    .disabled(isRenderingShare)
+                    .accessibilityLabel(Strings.Rating.shareAccessibility)
+                }
+            }
+        }
+        .sheet(item: $shareItem) { item in
+            ShareSheet(items: [item.image])
+                .ignoresSafeArea()
+        }
         .task {
             async let details: () = viewModel.fetchDetails(type: mediaType, id: mediaId)
             async let recs: () = viewModel.fetchRecommendations(type: mediaType, id: mediaId)
             _ = await (details, recs)
             await viewModel.checkWatchlistStatus()
+        }
+    }
+
+    private func shareRating(media: MediaDetail) async {
+        guard let rating = viewModel.userRating else { return }
+        isRenderingShare = true
+        let image = await ShareCardRenderer.render(
+            title: media.displayTitle,
+            posterPath: media.posterPath,
+            starValue: Double(rating) / 2
+        )
+        isRenderingShare = false
+        if let image {
+            shareItem = ShareableImage(image: image)
         }
     }
 }

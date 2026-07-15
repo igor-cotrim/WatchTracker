@@ -16,9 +16,16 @@ struct MediaDetail: Codable, Identifiable {
     let seasons: [Season]?   // TV only
     let watchlistStatus: WatchlistStatus?  // Present when authenticated and show is in watchlist
     let certification: String?  // Content rating for the request locale's region (e.g. "12", "PG-13")
+    let userRating: Int?  // The caller's own rating (1–10 scale), present when authenticated and rated
 
     var mediaType: MediaType {
         title != nil ? .movie : .tv
+    }
+
+    /// The user's rating expressed on the 5-star / half-star scale (0.5…5.0).
+    /// Backend stores 1–10 integers; each half-star is one point.
+    var userStarRating: Double? {
+        userRating.map { Double($0) / 2 }
     }
 
     var displayTitle: String {

@@ -49,6 +49,7 @@ final class MediaDetailViewModel {
         do {
             let detail = try await mediaDetailService.fetchMediaDetail(type: type, id: id)
             media = detail
+            userRating = detail.userRating
             // If the backend updated the status (e.g. completed → watching due to new episodes),
             // sync it to local state without a separate watchlist fetch.
             if hasLoadedInitialStatus,
@@ -183,10 +184,12 @@ final class MediaDetailViewModel {
     }
 
     func rateMedia(rating: Int) async {
+        let previous = userRating
+        userRating = rating
         do {
             try await mediaDetailService.rateMedia(type: mediaType, id: mediaId, rating: rating)
-            userRating = rating
         } catch {
+            userRating = previous
             errorMessage = error.localizedDescription
         }
     }
