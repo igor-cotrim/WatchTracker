@@ -158,17 +158,33 @@ final class AIService {
                 : "Suggest a balanced mix of movies and TV shows."
         }
 
+        let hasTaste = !selected.isEmpty
+
         if trimmedInput.isEmpty {
-            lines.append(pt
-                ? "Com base no meu gosto acima, sugira 6 títulos que eu adoraria. \(mediaConstraint) Não sugira nada da minha lista."
-                : "Based on my taste above, suggest 6 titles I would love. \(mediaConstraint) Do not suggest anything from my watchlist."
-            )
+            if hasTaste {
+                lines.append(pt
+                    ? "Com base no meu gosto acima, sugira 6 títulos que eu adoraria. \(mediaConstraint) Não sugira nada da minha lista."
+                    : "Based on my taste above, suggest 6 titles I would love. \(mediaConstraint) Do not suggest anything from my watchlist."
+                )
+            } else {
+                lines.append(pt
+                    ? "Ainda não adicionei nada à minha lista. Sugira 6 títulos populares e aclamados pela crítica e pelo público, cobrindo gêneros diversos, que a maioria das pessoas adora. \(mediaConstraint)"
+                    : "I haven't added anything to my watchlist yet. Suggest 6 popular, critically and audience-acclaimed titles across a diverse range of genres that most people love. \(mediaConstraint)"
+                )
+            }
         } else {
             lines.append(pt ? "Pedido específico: \(trimmedInput)" : "Specific request: \(trimmedInput)")
-            lines.append(pt
-                ? "Priorize este pedido considerando meu gosto acima. Sugira 6 títulos. \(mediaConstraint) Não sugira nada da minha lista."
-                : "Prioritize this request while considering my taste above. Suggest 6 titles. \(mediaConstraint) Do not suggest anything from my watchlist."
-            )
+            if hasTaste {
+                lines.append(pt
+                    ? "Priorize este pedido considerando meu gosto acima. Sugira 6 títulos. \(mediaConstraint) Não sugira nada da minha lista."
+                    : "Prioritize this request while considering my taste above. Suggest 6 titles. \(mediaConstraint) Do not suggest anything from my watchlist."
+                )
+            } else {
+                lines.append(pt
+                    ? "Sugira 6 títulos que combinem com este pedido. \(mediaConstraint)"
+                    : "Suggest 6 titles that match this request. \(mediaConstraint)"
+                )
+            }
         }
 
         return lines.joined(separator: "\n")

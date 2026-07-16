@@ -46,13 +46,7 @@ final class AISuggestionsViewModel {
             } else {
                 watchlist = try await watchlistService.fetchWatchlist()
             }
-            
-            guard !watchlist.isEmpty else {
-                errorMessage = Strings.AI.emptyWatchlistSubtitle
-                isLoading = false
-                return
-            }
-            
+
             let aiItems = try await aiService.generateSuggestions(from: watchlist, userInput: userInput)
             let watchlistTmdbIds = Set(watchlist.map(\.tmdbId))
             let resolved = await resolveMedia(aiItems, excluding: watchlistTmdbIds)
