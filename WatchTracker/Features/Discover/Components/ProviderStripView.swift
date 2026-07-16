@@ -44,20 +44,17 @@ struct ProviderStripView: View {
             AsyncImage(url: provider.logoURL) { phase in
                 switch phase {
                 case .success(let image):
-                    image.resizable().aspectRatio(contentMode: .fit)
+                    image.resizable().aspectRatio(1, contentMode: .fit)
                 default:
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .fill(Color(.systemGray5))
                 }
             }
             .frame(width: 40, height: 40)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .padding(8)
-            .background(
-                Capsule()
-                    .fill(isSelected ? Color.brandPrimary.opacity(0.18) : Color(.systemGray6))
-            )
             .overlay(
-                Capsule()
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(isSelected ? Color.brandPrimary : Color.clear, lineWidth: 2)
             )
         }
