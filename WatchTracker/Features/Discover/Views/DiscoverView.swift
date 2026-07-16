@@ -49,7 +49,7 @@ struct DiscoverView: View {
                 async let pr: () = viewModel.fetchProviders()
                 _ = await (t, n, p, tr, u, pr)
                 viewModel.loadSearchHistory()
-                await viewModel.restoreLastProviderIfNeeded()
+                viewModel.restoreLastProviderIfNeeded()
             }
         }
     }
@@ -62,7 +62,7 @@ struct DiscoverView: View {
                 providers: viewModel.providers,
                 selectedProviderId: viewModel.selectedProvider?.providerId
             ) { provider in
-                Task { await viewModel.selectProvider(provider) }
+                viewModel.selectProvider(provider)
             }
 
             MoodStripView()

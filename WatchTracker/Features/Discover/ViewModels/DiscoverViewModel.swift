@@ -31,6 +31,7 @@ final class DiscoverViewModel {
     var searchSuggestions: [MediaDetail] = []
 
     private var searchTask: Task<Void, Never>?
+    private var providerTask: Task<Void, Never>?
     private let service: DiscoverServiceProtocol
     private let searchHistoryManager: SearchHistoryManager
     private let lastProviderKey = "discover.lastProviderId"
@@ -75,22 +76,30 @@ final class DiscoverViewModel {
 
     // MARK: - Provider-Scoped Fetching
 
-    /// Call after providers load to restore the last selected provider if any.
-    func restoreLastProviderIfNeeded() async {
+    func restoreLastProviderIfNeeded() {
         guard selectedProvider == nil else { return }
         let storedId = UserDefaults.standard.object(forKey: lastProviderKey) as? Int
         guard let storedId, let provider = providers.first(where: { $0.providerId == storedId }) else { return }
-        await selectProvider(provider)
+        selectProvider(provider)
     }
 
-    func selectProvider(_ provider: StreamingProvider?) async {
+    func selectProvider(_ provider: StreamingProvider?) {
+        guard provider?.providerId != selectedProvider?.providerId else { return }
+
+        providerTask?.cancel()
         selectedProvider = provider
-        if let provider {
-            UserDefaults.standard.set(provider.providerId, forKey: lastProviderKey)
-            await loadProviderContent(for: provider)
-        } else {
+
+        guard let provider else {
             UserDefaults.standard.removeObject(forKey: lastProviderKey)
             clearProviderContent()
+            return
+        }
+
+        UserDefaults.standard.set(provider.providerId, forKey: lastProviderKey)
+        providerTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            await self?.loadProviderContent(for: provider)
         }
     }
 
@@ -224,8 +233,11 @@ final class DiscoverViewModel {
     private func fetch<T>(_ keyPath: ReferenceWritableKeyPath<DiscoverViewModel, T>,
                           _ operation: () async throws -> T) async {
         do {
-            self[keyPath: keyPath] = try await operation()
+            let value = try await operation()
+            guard !Task.isCancelled else { return }
+            self[keyPath: keyPath] = value
         } catch {
+            guard !Task.isCancelled, !(error is CancellationError) else { return }
             errorMessage = error.localizedDescription
         }
     }

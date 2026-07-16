@@ -115,14 +115,26 @@ actor APIClient {
     }
 
     private func perform<T: Decodable>(_ request: URLRequest) async throws -> T {
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
+        let data = try await sendWithRateLimitRetry(request)
 
         do {
             return try decoder.decode(T.self, from: data)
         } catch {
             throw APIError.decodingError
         }
+    }
+
+    private func sendWithRateLimitRetry(_ request: URLRequest) async throws -> Data {
+        var (data, response) = try await URLSession.shared.data(for: request)
+
+        if let http = response as? HTTPURLResponse, http.statusCode == 429 {
+            let retryAfter = http.value(forHTTPHeaderField: "Retry-After").flatMap(Double.init) ?? 1
+            try await Task.sleep(for: .seconds(min(max(retryAfter, 0), 5)))
+            (data, response) = try await URLSession.shared.data(for: request)
+        }
+
+        try validateResponse(response)
+        return data
     }
 
     private func validateResponse(_ response: URLResponse) throws {
@@ -137,6 +149,8 @@ actor APIClient {
             throw APIError.unauthorized
         case 404:
             throw APIError.notFound
+        case 429:
+            throw APIError.rateLimited
         case 500...599:
             throw APIError.serverError
         default:

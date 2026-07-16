@@ -4,6 +4,7 @@ enum APIError: LocalizedError {
     case unauthorized
     case notFound
     case serverError
+    case rateLimited
     case decodingError
     case networkError(Error)
     case unknown
@@ -16,6 +17,8 @@ enum APIError: LocalizedError {
             return "The requested resource was not found."
         case .serverError:
             return "A server error occurred. Please try again later."
+        case .rateLimited:
+            return "Too many requests. Please wait a moment and try again."
         case .decodingError:
             return "Failed to process the server response."
         case .networkError(let error):
