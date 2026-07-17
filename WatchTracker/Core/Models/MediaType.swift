@@ -6,8 +6,8 @@ enum MediaType: String, Codable, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .movie: "Filme"
-        case .tv: "Série"
+        case .movie: Strings.MediaTypeLabel.movie
+        case .tv: Strings.MediaTypeLabel.series
         }
     }
 }

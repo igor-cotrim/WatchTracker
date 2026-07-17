@@ -3232,6 +3232,40 @@
           }
         }
       }
+    },
+    "media_type.movie": {
+      "comment": "Media type badge — movie",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movie"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filme"
+          }
+        }
+      }
+    },
+    "media_type.series": {
+      "comment": "Media type badge — TV series",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Série"
+          }
+        }
+      }
     }
   },
   "version": "1.1"

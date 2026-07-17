@@ -27,14 +27,24 @@ struct SearchSuggestionRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: item.displayTitle)
                         .font(.subheadline).fontWeight(.medium)
-                    if let year = item.releaseYear {
-                        Text(verbatim: year)
-                            .font(.caption).foregroundStyle(.secondary)
+                    HStack(spacing: 6) {
+                        Text(item.mediaType.displayName)
+                            .font(.caption2).fontWeight(.medium)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 1)
+                            .background(Color.brandPrimary.opacity(0.15))
+                            .foregroundStyle(Color.brandPrimary)
+                            .clipShape(Capsule())
+                        if let year = item.releaseYear {
+                            Text(verbatim: year)
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
                     }
                 }
                 Spacer()
             }
             .padding(.horizontal)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

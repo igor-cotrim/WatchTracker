@@ -278,7 +278,7 @@ final class DiscoverViewModel {
             do {
                 let results = try await service.search(query: query, type: nil, year: nil)
                 if !Task.isCancelled {
-                    searchSuggestions = Array(results.prefix(5))
+                    searchSuggestions = Array(results.prefix(8))
                 }
             } catch {
                 // Silently ignore autocomplete errors

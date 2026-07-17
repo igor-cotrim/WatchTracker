@@ -229,8 +229,15 @@ enum Strings {
         static var anime: String { String(localized: "media_filter.anime") }
     }
     
+    // MARK: - Media Type (badge labels)
+
+    enum MediaTypeLabel {
+        static var movie: String { String(localized: "media_type.movie") }
+        static var series: String { String(localized: "media_type.series") }
+    }
+
     // MARK: - Search Filter
-    
+
     enum SearchFilter {
         static var all: String { String(localized: "search.filter.all") }
         static var movies: String { String(localized: "search.filter.movies") }

@@ -21,7 +21,7 @@ struct AISuggestionCard: View {
                     .font(.headline)
 
                 HStack(spacing: 6) {
-                    Text(verbatim: media.mediaType == .movie ? "Movie" : "TV")
+                    Text(media.mediaType.displayName)
                         .font(.caption)
                         .fontWeight(.medium)
                         .padding(.horizontal, 8)
