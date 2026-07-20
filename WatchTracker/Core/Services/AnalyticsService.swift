@@ -37,5 +37,6 @@ enum AnalyticsEvent: String {
     case watchlistStatusChanged = "watchlist_status_changed"
     case watchlistRemoved = "watchlist_removed"
     case mediaRated = "media_rated"
+    case ratingRemoved = "rating_removed"
     case providerLinkTapped = "provider_link_tapped"
 }

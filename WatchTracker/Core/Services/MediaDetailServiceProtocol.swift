@@ -10,4 +10,5 @@ protocol MediaDetailServiceProtocol: Sendable {
     func markSeasonWatched(tvId: Int, season: Int) async throws -> WatchlistStatus?
     func unmarkSeasonWatched(tvId: Int, season: Int) async throws -> WatchlistStatus?
     func rateMedia(type: MediaType, id: Int, rating: Int) async throws
+    func removeRating(type: MediaType, id: Int) async throws
 }

@@ -5,6 +5,7 @@ struct DetailRatingSection: View {
     let mediaType: MediaType
 
     @State private var feedbackTrigger = 0
+    @State private var showRemoveConfirmation = false
 
     private var starValue: Double {
         viewModel.userRating.map { Double($0) / 2 } ?? 0
@@ -36,6 +37,16 @@ struct DetailRatingSection: View {
         .animation(.spring(response: 0.35, dampingFraction: 0.6), value: viewModel.userRating)
         .animation(.spring(response: 0.35, dampingFraction: 0.6), value: viewModel.watchlistStatus)
         .sensoryFeedback(.selection, trigger: feedbackTrigger)
+        .confirmationDialog(
+            Strings.Rating.removeConfirmTitle,
+            isPresented: $showRemoveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(Strings.Rating.remove, role: .destructive) {
+                Task { await viewModel.removeRating() }
+            }
+            Button(Strings.Common.cancel, role: .cancel) { }
+        }
     }
 
     // MARK: - Interactive (movie always; series once completed)
@@ -48,6 +59,20 @@ struct DetailRatingSection: View {
             }
 
             caption
+
+            if viewModel.userRating != nil {
+                Button(role: .destructive) {
+                    showRemoveConfirmation = true
+                } label: {
+                    Label(Strings.Rating.remove, systemImage: "xmark.circle.fill")
+                        .labelStyle(.iconOnly)
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 20))
+                .foregroundStyle(.secondary)
+                .accessibilityLabel(Strings.Rating.removeAccessibility)
+                .transition(.scale.combined(with: .opacity))
+            }
         }
     }
 

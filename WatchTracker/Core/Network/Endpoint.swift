@@ -20,6 +20,7 @@ enum Endpoint: Sendable {
     case mediaDetail(type: MediaType, id: Int)
     case mediaRecommendations(type: MediaType, id: Int)
     case rateMedia(type: MediaType, id: Int, rating: Int)
+    case removeRating(type: MediaType, id: Int)
     case watchEpisode(tvId: Int, season: Int, episode: Int)
     case unwatchEpisode(tvId: Int, season: Int, episode: Int)
     case watchSeason(tvId: Int, season: Int)
@@ -63,6 +64,8 @@ enum Endpoint: Sendable {
         case .mediaRecommendations(let type, let id):
             return "/media/\(type.rawValue)/\(id)/recommendations"
         case .rateMedia(let type, let id, _):
+            return "/media/\(type.rawValue)/\(id)/rate"
+        case .removeRating(let type, let id):
             return "/media/\(type.rawValue)/\(id)/rate"
         case .watchEpisode(let tvId, let season, let episode):
             return "/media/tv/\(tvId)/episodes/\(season)/\(episode)/watch"
@@ -110,7 +113,7 @@ enum Endpoint: Sendable {
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason, .watchAllEpisodes:
             return .POST
-        case .removeFromWatchlist, .unwatchEpisode, .unwatchSeason, .deleteAccount:
+        case .removeFromWatchlist, .removeRating, .unwatchEpisode, .unwatchSeason, .deleteAccount:
             return .DELETE
         case .updateWatchlistStatus:
             return .PATCH

@@ -2582,6 +2582,57 @@
         }
       }
     },
+    "rating.remove": {
+      "comment": "Button label to remove the user's rating",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover"
+          }
+        }
+      }
+    },
+    "rating.remove.accessibility": {
+      "comment": "Accessibility label for the remove-rating button",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove your rating"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover sua nota"
+          }
+        }
+      }
+    },
+    "rating.remove.confirm_title": {
+      "comment": "Confirmation dialog title shown before removing the user's rating",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove your rating?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover sua nota?"
+          }
+        }
+      }
+    },
     "rating.share": {
       "comment": "Toolbar/button label to share the user's rating card",
       "localizations": {

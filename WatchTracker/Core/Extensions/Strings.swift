@@ -282,6 +282,9 @@ enum Strings {
         static var startSeries: String { String(localized: "rating.start_series") }
         static var share: String { String(localized: "rating.share") }
         static var shareAccessibility: String { String(localized: "rating.share.accessibility") }
+        static var remove: String { String(localized: "rating.remove") }
+        static var removeAccessibility: String { String(localized: "rating.remove.accessibility") }
+        static var removeConfirmTitle: String { String(localized: "rating.remove.confirm_title") }
 
         /// Playful caption keyed to the 1–10 rating, shown next to the stars and on the share card.
         static func mood(forRating rating: Int) -> String {

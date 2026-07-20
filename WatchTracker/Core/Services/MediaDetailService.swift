@@ -56,6 +56,10 @@ final class MediaDetailService {
     func rateMedia(type: MediaType, id: Int, rating: Int) async throws {
         try await api.post(.rateMedia(type: type, id: id, rating: rating))
     }
+
+    func removeRating(type: MediaType, id: Int) async throws {
+        try await api.delete(.removeRating(type: type, id: id))
+    }
 }
 
 extension MediaDetailService: MediaDetailServiceProtocol {}

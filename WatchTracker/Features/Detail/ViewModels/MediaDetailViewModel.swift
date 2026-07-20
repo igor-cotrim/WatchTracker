@@ -217,6 +217,21 @@ final class MediaDetailViewModel {
         }
     }
 
+    func removeRating() async {
+        let previous = userRating
+        userRating = nil
+        do {
+            try await mediaDetailService.removeRating(type: mediaType, id: mediaId)
+            AnalyticsService.shared.capture(.ratingRemoved, properties: [
+                "media_type": mediaType.rawValue,
+                "media_id": mediaId
+            ])
+        } catch {
+            userRating = previous
+            errorMessage = error.localizedDescription
+        }
+    }
+
     func toggleEpisodeWatched(season: Int, episode: Int) async {
         guard mediaType == .tv else { return }
 
