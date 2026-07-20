@@ -1981,13 +1981,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "New episode now available"
+            "value": "New episode available today"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Novo episódio disponível agora"
+            "value": "Novo episódio disponível hoje"
           }
         }
       }
