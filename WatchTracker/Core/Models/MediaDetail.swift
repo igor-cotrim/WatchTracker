@@ -88,6 +88,7 @@ struct WatchProviderResult: Codable {
 }
 
 struct WatchProviderRegion: Codable {
+    let link: String?
     let flatrate: [StreamingProvider]?
     let rent: [StreamingProvider]?
     let buy: [StreamingProvider]?

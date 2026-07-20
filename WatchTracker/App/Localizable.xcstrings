@@ -1125,6 +1125,23 @@
         }
       }
     },
+    "detail.where_to_watch.open_in_provider_hint": {
+      "comment": "VoiceOver hint for a tappable streaming provider icon on the media Detail screen",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the streaming service to search for this title"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre o serviço de streaming para buscar este título"
+          }
+        }
+      }
+    },
     "detail.where_to_watch.unavailable": {
       "comment": "Message shown when no streaming providers are available for the region",
       "localizations": {
