@@ -65,6 +65,7 @@ enum Strings {
         static var retry: String { String(localized: "error.retry") }
         static var cancel: String { String(localized: "common.cancel") }
         static var ok: String { String(localized: "common.ok") }
+        static var connectionError: String { String(localized: "error.connection") }
     }
     
     // MARK: - Auth

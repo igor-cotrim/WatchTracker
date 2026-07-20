@@ -166,7 +166,7 @@ struct AuthView: View {
                 try await authService.signIn(email: email, password: password)
             }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
         isLoading = false
     }

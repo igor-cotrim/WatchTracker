@@ -178,7 +178,7 @@ struct ForgotPasswordView: View {
                 focusedField = .code
             }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
         isLoading = false
     }
@@ -195,7 +195,7 @@ struct ForgotPasswordView: View {
             )
             withAnimation { didReset = true }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
         isLoading = false
     }
