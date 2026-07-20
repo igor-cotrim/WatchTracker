@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		81F8D3482F842A2A00AD08B5 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 81F8D3472F842A2A00AD08B5 /* Supabase */; };
+		AB0000010000000000000001 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = AB0000010000000000000002 /* PostHog */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				81F8D3482F842A2A00AD08B5 /* Supabase in Frameworks */,
+				AB0000010000000000000001 /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +121,7 @@
 			name = WatchTracker;
 			packageProductDependencies = (
 				81F8D3472F842A2A00AD08B5 /* Supabase */,
+				AB0000010000000000000002 /* PostHog */,
 			);
 			productName = WatchTracker;
 			productReference = 81F8D2942F84293500AD08B5 /* WatchTracker.app */;
@@ -155,6 +158,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				81F8D3462F842A2A00AD08B5 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				AB0000010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 81F8D2952F84293500AD08B5 /* Products */;
@@ -516,6 +520,14 @@
 				minimumVersion = 2.5.1;
 			};
 		};
+		AB0000010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -523,6 +535,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 81F8D3462F842A2A00AD08B5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		AB0000010000000000000002 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AB0000010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

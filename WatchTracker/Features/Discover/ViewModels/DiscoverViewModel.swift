@@ -96,6 +96,10 @@ final class DiscoverViewModel {
         }
 
         UserDefaults.standard.set(provider.providerId, forKey: lastProviderKey)
+        AnalyticsService.shared.capture(.discoverProviderFilter, properties: [
+            "provider_id": provider.providerId,
+            "provider_name": provider.providerName
+        ])
         providerTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
@@ -259,6 +263,13 @@ final class DiscoverViewModel {
             )
             searchHistoryManager.save(query: query)
             loadSearchHistory()
+            var eventProps: [String: Any] = [
+                "query": query,
+                "result_count": searchResults.count
+            ]
+            if let type = selectedSearchType { eventProps["search_type"] = type.rawValue }
+            if let year = selectedSearchYear { eventProps["year"] = year }
+            AnalyticsService.shared.capture(.searchPerformed, properties: eventProps)
         } catch {
             errorMessage = error.localizedDescription
         }

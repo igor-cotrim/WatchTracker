@@ -39,14 +39,25 @@ struct DetailWhereToWatchSection: View {
         ) else { return }
 
         guard let appURL = link.appURL else {
+            trackTap(provider: provider, openedVia: "web")
             UIApplication.shared.open(link.webURL)
             return
         }
 
         UIApplication.shared.open(appURL) { opened in
+            trackTap(provider: provider, openedVia: opened ? "app_deeplink" : "web_fallback")
             if !opened {
                 UIApplication.shared.open(link.webURL)
             }
         }
+    }
+
+    private func trackTap(provider: StreamingProvider, openedVia: String) {
+        AnalyticsService.shared.capture(.providerLinkTapped, properties: [
+            "provider_id": provider.providerId,
+            "provider_name": provider.providerName,
+            "title": media.displayTitle,
+            "opened_via": openedVia
+        ])
     }
 }

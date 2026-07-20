@@ -50,6 +50,11 @@ final class MediaDetailViewModel {
             let detail = try await mediaDetailService.fetchMediaDetail(type: type, id: id)
             media = detail
             userRating = detail.userRating
+            AnalyticsService.shared.capture(.detailViewed, properties: [
+                "media_type": type.rawValue,
+                "media_id": id,
+                "title": detail.displayTitle
+            ])
             // If the backend updated the status (e.g. completed → watching due to new episodes),
             // sync it to local state without a separate watchlist fetch.
             if hasLoadedInitialStatus,
@@ -87,11 +92,20 @@ final class MediaDetailViewModel {
         defer { isUpdatingStatus = false }
 
         do {
+            let isNewEntry = watchlistItemId == nil
             if let itemId = watchlistItemId {
                 try await watchlistService.updateStatus(id: itemId, status: status)
             } else {
                 try await watchlistService.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: status)
             }
+            AnalyticsService.shared.capture(
+                isNewEntry ? .watchlistAdded : .watchlistStatusChanged,
+                properties: [
+                    "media_type": mediaType.rawValue,
+                    "media_id": mediaId,
+                    "status": status.rawValue
+                ]
+            )
             if status == .completed && mediaType == .tv {
                 try? await watchlistService.markAllEpisodesWatched(tvId: mediaId)
                 for seasonNumber in seasonEpisodes.keys {
@@ -143,6 +157,10 @@ final class MediaDetailViewModel {
         guard let itemId = watchlistItemId else { return }
         do {
             try await watchlistService.removeFromWatchlist(id: itemId)
+            AnalyticsService.shared.capture(.watchlistRemoved, properties: [
+                "media_type": mediaType.rawValue,
+                "media_id": mediaId
+            ])
             isOnWatchlist = false
             watchlistItemId = nil
             watchlistStatus = nil
@@ -188,6 +206,11 @@ final class MediaDetailViewModel {
         userRating = rating
         do {
             try await mediaDetailService.rateMedia(type: mediaType, id: mediaId, rating: rating)
+            AnalyticsService.shared.capture(.mediaRated, properties: [
+                "media_type": mediaType.rawValue,
+                "media_id": mediaId,
+                "rating": rating
+            ])
         } catch {
             userRating = previous
             errorMessage = error.localizedDescription

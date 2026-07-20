@@ -14,6 +14,7 @@ struct WatchTrackerApp: App {
 
     init() {
         Self.clearKeychainIfFirstLaunch()
+        AnalyticsService.shared.start()
         _authService = StateObject(wrappedValue: AuthService())
         UNUserNotificationCenter.current().delegate = Self.notificationDelegate
     }
