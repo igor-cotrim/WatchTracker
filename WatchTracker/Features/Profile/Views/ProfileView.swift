@@ -73,6 +73,15 @@ struct ProfileView: View {
                         }
                 }
 
+                // Import
+                Section(Strings.Import.sectionTitle) {
+                    NavigationLink {
+                        ImportView()
+                    } label: {
+                        Label(Strings.Import.title, systemImage: "square.and.arrow.down")
+                    }
+                }
+
                 // About
                 Section(Strings.Profile.aboutSection) {
                     Link(destination: URL(string: "https://www.themoviedb.org")!) {

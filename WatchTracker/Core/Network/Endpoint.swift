@@ -33,6 +33,9 @@ enum Endpoint: Sendable {
     case profileStats
     case deleteAccount
 
+    // Import
+    case importData(items: [ImportItem])
+
     // Discover
     case discover(provider: String?, type: MediaType?, region: String?)
     case discoverFiltered(type: MediaType, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?, releaseDateGte: String?, firstAirDateGte: String?)
@@ -85,6 +88,8 @@ enum Endpoint: Sendable {
             return "/profile/stats"
         case .deleteAccount:
             return "/profile"
+        case .importData:
+            return "/import"
         case .discover, .discoverFiltered:
             return "/discover"
         case .trending:
@@ -111,7 +116,7 @@ enum Endpoint: Sendable {
         case .watchlist, .continueWatching, .watchlistUpcoming, .mediaDetail, .mediaRecommendations, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
              .topRated, .upcoming, .popular, .genres, .providers, .profileStats:
             return .GET
-        case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason, .watchAllEpisodes:
+        case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason, .watchAllEpisodes, .importData:
             return .POST
         case .removeFromWatchlist, .removeRating, .unwatchEpisode, .unwatchSeason, .deleteAccount:
             return .DELETE
@@ -180,6 +185,8 @@ enum Endpoint: Sendable {
             return RateMediaBody(rating: rating)
         case .updateWatchlistStatus(_, let status):
             return UpdateWatchlistStatusBody(status: status)
+        case .importData(let items):
+            return ImportBody(source: "letterboxd", items: items)
         default:
             return nil
         }
@@ -200,4 +207,9 @@ private struct RateMediaBody: Encodable, Sendable {
 
 private struct UpdateWatchlistStatusBody: Encodable, Sendable {
     let status: WatchlistStatus
+}
+
+private struct ImportBody: Encodable, Sendable {
+    let source: String
+    let items: [ImportItem]
 }
