@@ -2524,19 +2524,53 @@
         }
       }
     },
-    "profile.stats.shows": {
-      "comment": "Profile stat label for shows currently being tracked",
+    "profile.stats.average_rating": {
+      "comment": "Profile stat label for the user's average rating across all rated titles",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Shows Tracking"
+            "value": "Avg. Rating"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Séries Acompanhadas"
+            "value": "Nota Média"
+          }
+        }
+      }
+    },
+    "profile.stats.average_rating.empty": {
+      "comment": "Placeholder shown for the average rating stat when the user has not rated anything",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        }
+      }
+    },
+    "profile.stats.titles_rated": {
+      "comment": "Profile stat label for the number of titles the user has rated",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rated"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avaliados"
           }
         }
       }
@@ -2554,23 +2588,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Séries Concluídas"
-          }
-        }
-      }
-    },
-    "profile.stats.watchlist": {
-      "comment": "Profile stat label for total movies in the watchlist",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Movies in Watchlist"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Na Watchlist"
           }
         }
       }

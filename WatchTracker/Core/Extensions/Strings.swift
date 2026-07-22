@@ -114,9 +114,10 @@ enum Strings {
         static var stats: String { String(localized: "profile.stats") }
         static var statsEpisodes: String { String(localized: "profile.stats.episodes") }
         static var statsMovies: String { String(localized: "profile.stats.movies") }
-        static var statsWatchlist: String { String(localized: "profile.stats.watchlist") }
-        static var statsShows: String { String(localized: "profile.stats.shows") }
         static var statsShowsCompleted: String { String(localized: "profile.stats.shows_completed") }
+        static var statsAverageRating: String { String(localized: "profile.stats.average_rating") }
+        static var statsTitlesRated: String { String(localized: "profile.stats.titles_rated") }
+        static var statsAverageRatingEmpty: String { String(localized: "profile.stats.average_rating.empty") }
         static var signOut: String { String(localized: "profile.sign_out") }
         static var aboutSection: String { String(localized: "profile.about.section") }
         static var tmdbAttribution: String { String(localized: "profile.about.tmdb_attribution") }

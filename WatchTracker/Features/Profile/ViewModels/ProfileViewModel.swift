@@ -5,9 +5,9 @@ import Foundation
 final class ProfileViewModel {
     var episodesWatched: Int = 0
     var moviesWatched: Int = 0
-    var moviesInWatchlist: Int = 0
-    var showsTracking: Int = 0
     var showsCompleted: Int = 0
+    var titlesRated: Int = 0
+    var averageRating: Double = 0
     var isLoading = false
     var errorMessage: String?
 
@@ -18,9 +18,9 @@ final class ProfileViewModel {
             let stats: ProfileStats = try await APIClient.shared.get(.profileStats)
             episodesWatched = stats.episodesWatched
             moviesWatched = stats.moviesWatched
-            moviesInWatchlist = stats.moviesInWatchlist
-            showsTracking = stats.showsTracking
             showsCompleted = stats.showsCompleted
+            titlesRated = stats.titlesRated
+            averageRating = stats.averageRating
         } catch {
             errorMessage = error.localizedDescription
         }
