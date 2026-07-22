@@ -7,9 +7,14 @@ class AuthService: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: User?
 
+    /// Set when the session is lost mid-use (a 401) so `AuthView` can explain why
+    /// the user was returned to the login screen. Cleared on the next sign-in attempt.
+    @Published var sessionExpiredMessage: String?
+
     private let client: SupabaseClient
 
     @MainActor private var isRecovering = false
+    @MainActor private var isHandlingUnauthorized = false
 
     var session: Session? {
         get async {
@@ -20,6 +25,7 @@ class AuthService: ObservableObject {
     init() {
         self.client = SupabaseManager.shared.client
         listenToAuthChanges()
+        listenToUnauthorized()
     }
 
     // MARK: - Auth Methods
@@ -48,6 +54,7 @@ class AuthService: ObservableObject {
         await MainActor.run {
             self.currentUser = response.user
             self.isAuthenticated = true
+            self.sessionExpiredMessage = nil
         }
     }
 
@@ -81,6 +88,7 @@ class AuthService: ObservableObject {
         await MainActor.run {
             self.currentUser = session.user
             self.isAuthenticated = true
+            self.sessionExpiredMessage = nil
         }
     }
 
@@ -125,6 +133,32 @@ class AuthService: ObservableObject {
         // Per-user preferences / history persisted in UserDefaults.
         SearchHistoryManager().clearAll()
         UserDefaults.standard.removeObject(forKey: "discover.lastProviderId")
+    }
+
+    /// Observes 401s surfaced by `APIClient` and forces a sign-out so the user is
+    /// returned to `AuthView` instead of staying on a silently-failing authed UI.
+    private func listenToUnauthorized() {
+        NotificationCenter.default.addObserver(
+            forName: .authUnauthorized,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                await self?.handleUnauthorized()
+            }
+        }
+    }
+
+    /// Signs out on session loss. Guarded so parallel 401s trigger a single logout,
+    /// and skipped during password recovery (which opens/closes sessions on purpose).
+    @MainActor
+    private func handleUnauthorized() async {
+        guard isAuthenticated, !isRecovering, !isHandlingUnauthorized else { return }
+        isHandlingUnauthorized = true
+        defer { isHandlingUnauthorized = false }
+
+        sessionExpiredMessage = Strings.Auth.sessionExpired
+        try? await signOut()
     }
 
     private func listenToAuthChanges() {

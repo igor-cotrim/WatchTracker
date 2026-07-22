@@ -1,6 +1,10 @@
 import Foundation
 import Supabase
 
+extension Notification.Name {
+    nonisolated static let authUnauthorized = Notification.Name("authUnauthorized")
+}
+
 actor APIClient {
     static let shared = APIClient()
 
@@ -146,6 +150,7 @@ actor APIClient {
         case 200...299:
             return
         case 401:
+            NotificationCenter.default.post(name: .authUnauthorized, object: nil)
             throw APIError.unauthorized
         case 404:
             throw APIError.notFound

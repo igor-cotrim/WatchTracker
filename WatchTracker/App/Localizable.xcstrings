@@ -687,6 +687,23 @@
         }
       }
     },
+    "auth.session_expired": {
+      "comment": "Message shown on the login screen after the user is signed out automatically because their session expired",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your session expired. Please sign in again."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua sessão expirou. Faça login novamente."
+          }
+        }
+      }
+    },
     "auth.register_subtitle": {
       "comment": "Subtitle shown above the form in sign-up mode",
       "localizations": {

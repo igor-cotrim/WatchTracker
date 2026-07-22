@@ -25,6 +25,14 @@ struct AuthView: View {
 
                 AuthModeHeader(isSignUp: isSignUp)
 
+                if let sessionExpiredMessage = authService.sessionExpiredMessage {
+                    Text(verbatim: sessionExpiredMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+
                 formCard
 
                 if let errorMessage {
@@ -159,6 +167,7 @@ struct AuthView: View {
     private func authenticate() async {
         isLoading = true
         errorMessage = nil
+        authService.sessionExpiredMessage = nil
         do {
             if isSignUp {
                 try await authService.signUp(email: email, password: password, name: name)

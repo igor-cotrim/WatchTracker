@@ -102,6 +102,8 @@ enum Strings {
         static var resetPasswordButton: String { String(localized: "auth.reset_password_button") }
         static var passwordUpdated: String { String(localized: "auth.password_updated") }
         static var passwordUpdatedHint: String { String(localized: "auth.password_updated_hint") }
+
+        static var sessionExpired: String { String(localized: "auth.session_expired") }
     }
     
     // MARK: - Profile
