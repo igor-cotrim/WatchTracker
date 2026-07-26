@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "Memo-iOS-Default-1024x1024@1x.png",
+      "filename" : "Memo-iOS-Light-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "Memo-iOS-ClearLight-1024x1024@1x.png",
+      "filename" : "Memo-iOS-Tinted-1024x1024@1x.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
