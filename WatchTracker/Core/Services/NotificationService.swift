@@ -25,20 +25,14 @@ actor NotificationService {
         let settings = await center.notificationSettings()
         guard settings.authorizationStatus == .authorized else { return }
 
-        let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy-MM-dd"
-        fmt.timeZone = .current
         let today = Calendar.current.startOfDay(for: Date())
 
         for item in items {
             let ep = item.nextEpisode
-            guard let airDate = fmt.date(from: ep.airDate) else { continue }
+            guard let airDate = NotificationService.airDate(from: ep.airDate) else { continue }
             guard airDate >= today else { continue }
 
-            var components = Calendar.current.dateComponents([.year, .month, .day], from: airDate)
-            components.hour = 20
-            components.minute = 0
-            components.second = 0
+            let components = NotificationService.triggerComponents(for: airDate)
 
             let content = UNMutableNotificationContent()
             content.title = item.title
@@ -49,7 +43,11 @@ actor NotificationService {
             content.categoryIdentifier = "EPISODE_NOTIFICATION"
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-            let id = "episode-\(item.tmdbId)-S\(ep.seasonNumber)E\(ep.episodeNumber)"
+            let id = NotificationService.episodeIdentifier(
+                tmdbId: item.tmdbId,
+                season: ep.seasonNumber,
+                episode: ep.episodeNumber
+            )
             let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
             try? await center.add(request)
         }
@@ -61,7 +59,7 @@ actor NotificationService {
     func notifyNewSeason(tmdbId: Int, title: String, seasonNumber: Int) async {
         guard UserDefaults.standard.bool(forKey: "episodeRemindersEnabled") else { return }
 
-        let dedupeKey = "notifiedNewSeason-\(tmdbId)-\(seasonNumber)"
+        let dedupeKey = NotificationService.newSeasonDedupeKey(tmdbId: tmdbId, season: seasonNumber)
         guard !UserDefaults.standard.bool(forKey: dedupeKey) else { return }
 
         let center = UNUserNotificationCenter.current()
@@ -77,7 +75,7 @@ actor NotificationService {
         content.categoryIdentifier = "NEW_SEASON_NOTIFICATION"
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let id = "newseason-\(tmdbId)-S\(seasonNumber)"
+        let id = NotificationService.newSeasonIdentifier(tmdbId: tmdbId, season: seasonNumber)
         let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
 
         do {
@@ -91,7 +89,48 @@ actor NotificationService {
     func cancelAllEpisodeNotifications() async {
         let center = UNUserNotificationCenter.current()
         let pending = await center.pendingNotificationRequests()
-        let ids = pending.filter { $0.identifier.hasPrefix("episode-") }.map { $0.identifier }
+        let ids = pending.filter { $0.identifier.hasPrefix(NotificationService.episodePrefix) }.map { $0.identifier }
         center.removePendingNotificationRequests(withIdentifiers: ids)
     }
+
+    // MARK: - Pure helpers
+    //
+    // Extracted from the actor so the date handling and identifier shapes can be
+    // unit-tested without `UNUserNotificationCenter`.
+
+    nonisolated static let episodePrefix = "episode-"
+
+    /// Parses a TMDB `yyyy-MM-dd` air date. Uses the POSIX locale so the format is
+    /// not reinterpreted under non-Gregorian calendars.
+    nonisolated static func airDate(from string: String, calendar: Calendar = .current) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        return formatter.date(from: string)
+    }
+
+    /// Episode reminders fire at 20:00 local time on the air date.
+    nonisolated static func triggerComponents(for airDate: Date, calendar: Calendar = .current) -> DateComponents {
+        var components = calendar.dateComponents([.year, .month, .day], from: airDate)
+        components.hour = 20
+        components.minute = 0
+        components.second = 0
+        return components
+    }
+
+    nonisolated static func episodeIdentifier(tmdbId: Int, season: Int, episode: Int) -> String {
+        "\(episodePrefix)\(tmdbId)-S\(season)E\(episode)"
+    }
+
+    nonisolated static func newSeasonIdentifier(tmdbId: Int, season: Int) -> String {
+        "newseason-\(tmdbId)-S\(season)"
+    }
+
+    nonisolated static func newSeasonDedupeKey(tmdbId: Int, season: Int) -> String {
+        "notifiedNewSeason-\(tmdbId)-\(season)"
+    }
 }
+
+extension NotificationService: NotificationScheduling {}

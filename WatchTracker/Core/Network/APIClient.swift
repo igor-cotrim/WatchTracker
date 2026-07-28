@@ -5,9 +5,16 @@ extension Notification.Name {
     nonisolated static let authUnauthorized = Notification.Name("authUnauthorized")
 }
 
+/// Supplies the bearer token injected into every request. Extracted so tests can
+/// drive `APIClient` without touching Supabase (and the keychain).
+typealias TokenProvider = @Sendable () async -> String?
+
 actor APIClient {
     static let shared = APIClient()
 
+    private let session: URLSession
+    private let tokenProvider: TokenProvider
+    private let clock: any Clock<Duration>
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
@@ -26,10 +33,24 @@ actor APIClient {
         return formatter
     }()
 
-    private init() {
-        self.decoder = JSONDecoder()
-        self.decoder.keyDecodingStrategy = .convertFromSnakeCase
-        self.decoder.dateDecodingStrategy = .custom { decoder in
+    static let supabaseTokenProvider: TokenProvider = {
+        try? await SupabaseManager.shared.client.auth.session.accessToken
+    }
+
+    init(session: URLSession = .shared,
+         tokenProvider: @escaping TokenProvider = APIClient.supabaseTokenProvider,
+         clock: any Clock<Duration> = ContinuousClock()) {
+        self.session = session
+        self.tokenProvider = tokenProvider
+        self.clock = clock
+        self.decoder = APIClient.makeDecoder()
+        self.encoder = APIClient.makeEncoder()
+    }
+
+    static func makeDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let string = try container.decode(String.self)
             if let date = APIClient.iso8601WithFractionalSeconds.date(from: string)
@@ -41,8 +62,13 @@ actor APIClient {
                 debugDescription: "Invalid ISO8601 date: \(string)"
             )
         }
-        self.encoder = JSONEncoder()
-        self.encoder.keyEncodingStrategy = .convertToSnakeCase
+        return decoder
+    }
+
+    static func makeEncoder() -> JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        return encoder
     }
 
     // MARK: - Public Methods
@@ -59,8 +85,8 @@ actor APIClient {
 
     func post(_ endpoint: Endpoint) async throws {
         let request = try await buildRequest(for: endpoint)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
+        let (_, response) = try await session.data(for: request)
+        try APIClient.validateResponse(response)
     }
 
     func delete<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
@@ -70,8 +96,8 @@ actor APIClient {
 
     func delete(_ endpoint: Endpoint) async throws {
         let request = try await buildRequest(for: endpoint)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
+        let (_, response) = try await session.data(for: request)
+        try APIClient.validateResponse(response)
     }
 
     func patch<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
@@ -81,8 +107,8 @@ actor APIClient {
 
     func patch(_ endpoint: Endpoint) async throws {
         let request = try await buildRequest(for: endpoint)
-        let (_, response) = try await URLSession.shared.data(for: request)
-        try validateResponse(response)
+        let (_, response) = try await session.data(for: request)
+        try APIClient.validateResponse(response)
     }
 
     // MARK: - Private Helpers
@@ -107,7 +133,7 @@ actor APIClient {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         // Inject Supabase auth token
-        if let token = try? await SupabaseManager.shared.client.auth.session.accessToken {
+        if let token = await tokenProvider() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
@@ -129,19 +155,21 @@ actor APIClient {
     }
 
     private func sendWithRateLimitRetry(_ request: URLRequest) async throws -> Data {
-        var (data, response) = try await URLSession.shared.data(for: request)
+        var (data, response) = try await session.data(for: request)
 
         if let http = response as? HTTPURLResponse, http.statusCode == 429 {
             let retryAfter = http.value(forHTTPHeaderField: "Retry-After").flatMap(Double.init) ?? 1
-            try await Task.sleep(for: .seconds(min(max(retryAfter, 0), 5)))
-            (data, response) = try await URLSession.shared.data(for: request)
+            try await clock.sleep(for: .seconds(min(max(retryAfter, 0), 5)))
+            (data, response) = try await session.data(for: request)
         }
 
-        try validateResponse(response)
+        try APIClient.validateResponse(response)
         return data
     }
 
-    private func validateResponse(_ response: URLResponse) throws {
+    /// Maps an HTTP response onto `APIError`. `static` so the status-code table can be
+    /// unit-tested without going through the network.
+    nonisolated static func validateResponse(_ response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.unknown
         }

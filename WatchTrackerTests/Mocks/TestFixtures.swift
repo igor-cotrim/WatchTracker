@@ -54,11 +54,15 @@ enum TestFixtures {
         id: Int = 1,
         title: String? = "Test Movie",
         name: String? = nil,
-        watchlistStatus: WatchlistStatus? = nil
+        watchlistStatus: WatchlistStatus? = nil,
+        releaseDate: String? = "2020-01-15",
+        firstAirDate: String? = nil
     ) -> MediaDetail {
         let titleValue = title.map { "\"\($0)\"" } ?? "null"
         let nameValue = name.map { "\"\($0)\"" } ?? "null"
         let statusValue = watchlistStatus.map { "\"\($0.rawValue)\"" } ?? "null"
+        let releaseDateValue = releaseDate.map { "\"\($0)\"" } ?? "null"
+        let firstAirDateValue = firstAirDate.map { "\"\($0)\"" } ?? "null"
         let json = """
         {
             "id": \(id),
@@ -68,8 +72,8 @@ enum TestFixtures {
             "poster_path": "/poster.jpg",
             "backdrop_path": "/backdrop.jpg",
             "vote_average": 8.0,
-            "release_date": "2020-01-15",
-            "first_air_date": null,
+            "release_date": \(releaseDateValue),
+            "first_air_date": \(firstAirDateValue),
             "genres": null,
             "credits": null,
             "watch_providers": null,
@@ -86,6 +90,37 @@ enum TestFixtures {
         watchlistStatus: WatchlistStatus? = nil
     ) -> MediaDetail {
         mediaDetail(id: id, title: nil, name: name, watchlistStatus: watchlistStatus)
+    }
+
+    /// A TV detail carrying `seasons`, each described as `(number, episodeCount)`.
+    static func tvDetail(id: Int = 2, seasons: [(number: Int, episodeCount: Int)]) -> MediaDetail {
+        let seasonsJSON = seasons.map { season in
+            """
+            {"id": \(season.number), "name": "Season \(season.number)",
+             "season_number": \(season.number), "episode_count": \(season.episodeCount),
+             "poster_path": null, "air_date": null, "episodes": null}
+            """
+        }.joined(separator: ", ")
+
+        let json = """
+        {
+            "id": \(id),
+            "title": null,
+            "name": "Test Show",
+            "overview": "Test overview",
+            "poster_path": null,
+            "backdrop_path": null,
+            "vote_average": 8.0,
+            "release_date": null,
+            "first_air_date": "2020-01-15",
+            "genres": null,
+            "credits": null,
+            "watch_providers": null,
+            "seasons": [\(seasonsJSON)],
+            "watchlist_status": null
+        }
+        """
+        return try! fixtureDecoder.decode(MediaDetail.self, from: Data(json.utf8))
     }
 
     // MARK: UpcomingEpisode
@@ -255,6 +290,81 @@ enum TestFixtures {
             airDate: nil,
             episodes: episodes
         )
+    }
+
+    // MARK: ProfileStats
+
+    static func profileStats(
+        episodesWatched: Int = 42,
+        moviesWatched: Int = 7,
+        showsCompleted: Int = 3,
+        titlesRated: Int = 12,
+        averageRating: Double = 7.6
+    ) -> ProfileStats {
+        let json = """
+        {
+            "episodes_watched": \(episodesWatched),
+            "movies_watched": \(moviesWatched),
+            "shows_completed": \(showsCompleted),
+            "titles_rated": \(titlesRated),
+            "average_rating": \(averageRating)
+        }
+        """
+        return try! fixtureDecoder.decode(ProfileStats.self, from: Data(json.utf8))
+    }
+
+    // MARK: StreamingProvider
+
+    static func streamingProvider(
+        providerId: Int = 8,
+        providerName: String = "Netflix",
+        logoPath: String = "/netflix.jpg"
+    ) -> StreamingProvider {
+        let json = """
+        {
+            "provider_id": \(providerId),
+            "provider_name": "\(providerName)",
+            "logo_path": "\(logoPath)"
+        }
+        """
+        return try! fixtureDecoder.decode(StreamingProvider.self, from: Data(json.utf8))
+    }
+
+    // MARK: Import
+
+    static func importItem(
+        title: String = "Test Movie",
+        year: Int? = 2020,
+        status: WatchlistStatus? = .completed,
+        rating: Int? = nil,
+        watchedDate: String? = nil
+    ) -> ImportItem {
+        ImportItem(title: title, year: year, status: status, rating: rating, watchedDate: watchedDate)
+    }
+
+    static func importItems(count: Int) -> [ImportItem] {
+        (0..<count).map { importItem(title: "Movie \($0)") }
+    }
+
+    static func importBatchResult(
+        total: Int = 1,
+        matched: Int = 1,
+        watchlist: Int = 1,
+        ratings: Int = 0,
+        unmatched: [(title: String, year: Int?)] = []
+    ) -> ImportBatchResult {
+        let unmatchedJSON = unmatched
+            .map { #"{"title": "\#($0.title)", "year": \#($0.year.map(String.init) ?? "null")}"# }
+            .joined(separator: ", ")
+        let json = """
+        {
+            "total": \(total),
+            "matched": \(matched),
+            "imported": { "watchlist": \(watchlist), "ratings": \(ratings) },
+            "unmatched": [\(unmatchedJSON)]
+        }
+        """
+        return try! fixtureDecoder.decode(ImportBatchResult.self, from: Data(json.utf8))
     }
 
     // MARK: Date helpers

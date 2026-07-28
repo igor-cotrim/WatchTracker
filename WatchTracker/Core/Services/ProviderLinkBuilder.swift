@@ -33,6 +33,12 @@ enum ProviderLinkBuilder {
         300: "https://pluto.tv/en/search/details?query={q}",
     ]
 
+    /// `.urlQueryAllowed` leaves the sub-delimiters intact, so a title like
+    /// "Fire & Blood" would terminate the `q=` parameter early and the provider
+    /// would only ever search for "Fire".
+    private static let titleAllowed = CharacterSet.urlQueryAllowed
+        .subtracting(CharacterSet(charactersIn: "&+=?#"))
+
     static func link(for provider: StreamingProvider,
                      title: String,
                      justWatchLink: String?) -> ProviderLink? {
@@ -46,7 +52,7 @@ enum ProviderLinkBuilder {
     private static func webURL(for provider: StreamingProvider,
                                title: String,
                                justWatchLink: String?) -> URL? {
-        guard let encodedTitle = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        guard let encodedTitle = title.addingPercentEncoding(withAllowedCharacters: titleAllowed) else {
             return nil
         }
 
@@ -59,7 +65,7 @@ enum ProviderLinkBuilder {
         }
 
         let query = "\(title) \(provider.providerName)"
-        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: titleAllowed) else {
             return nil
         }
         return URL(string: "https://www.google.com/search?q=\(encodedQuery)")

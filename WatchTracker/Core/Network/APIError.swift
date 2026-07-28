@@ -1,6 +1,6 @@
 import Foundation
 
-enum APIError: LocalizedError {
+enum APIError: LocalizedError, Equatable {
     case unauthorized
     case notFound
     case serverError
@@ -25,6 +25,24 @@ enum APIError: LocalizedError {
             return "Network error: \(error.localizedDescription)"
         case .unknown:
             return "An unknown error occurred."
+        }
+    }
+
+    /// `networkError` compares on the underlying `NSError` identity, since `Error`
+    /// itself carries no equality.
+    static func == (lhs: APIError, rhs: APIError) -> Bool {
+        switch (lhs, rhs) {
+        case (.unauthorized, .unauthorized),
+             (.notFound, .notFound),
+             (.serverError, .serverError),
+             (.rateLimited, .rateLimited),
+             (.decodingError, .decodingError),
+             (.unknown, .unknown):
+            return true
+        case let (.networkError(lhsError), .networkError(rhsError)):
+            return lhsError as NSError == rhsError as NSError
+        default:
+            return false
         }
     }
 }

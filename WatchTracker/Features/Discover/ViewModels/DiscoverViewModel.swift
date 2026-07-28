@@ -30,18 +30,31 @@ final class DiscoverViewModel {
     var searchHistory: [String] = []
     var searchSuggestions: [MediaDetail] = []
 
-    private var searchTask: Task<Void, Never>?
-    private var providerTask: Task<Void, Never>?
+    /// Exposed so tests can await the debounced work instead of sleeping.
+    private(set) var searchTask: Task<Void, Never>?
+    private(set) var providerTask: Task<Void, Never>?
     private let service: DiscoverServiceProtocol
     private let searchHistoryManager: SearchHistoryManager
+    private let analytics: AnalyticsTracking
+    private let defaults: UserDefaults
+    private let clock: any Clock<Duration>
+    private let now: @Sendable () -> Date
     private let lastProviderKey = "discover.lastProviderId"
 
     init(
         service: DiscoverServiceProtocol,
-        searchHistoryManager: SearchHistoryManager
+        searchHistoryManager: SearchHistoryManager,
+        analytics: AnalyticsTracking = AnalyticsService.shared,
+        userDefaults: UserDefaults = .standard,
+        clock: any Clock<Duration> = ContinuousClock(),
+        now: @escaping @Sendable () -> Date = Date.init
     ) {
         self.service = service
         self.searchHistoryManager = searchHistoryManager
+        self.analytics = analytics
+        self.defaults = userDefaults
+        self.clock = clock
+        self.now = now
     }
 
     var isSearching: Bool {
@@ -78,7 +91,7 @@ final class DiscoverViewModel {
 
     func restoreLastProviderIfNeeded() {
         guard selectedProvider == nil else { return }
-        let storedId = UserDefaults.standard.object(forKey: lastProviderKey) as? Int
+        let storedId = defaults.object(forKey: lastProviderKey) as? Int
         guard let storedId, let provider = providers.first(where: { $0.providerId == storedId }) else { return }
         selectProvider(provider)
     }
@@ -90,18 +103,18 @@ final class DiscoverViewModel {
         selectedProvider = provider
 
         guard let provider else {
-            UserDefaults.standard.removeObject(forKey: lastProviderKey)
+            defaults.removeObject(forKey: lastProviderKey)
             clearProviderContent()
             return
         }
 
-        UserDefaults.standard.set(provider.providerId, forKey: lastProviderKey)
-        AnalyticsService.shared.capture(.discoverProviderFilter, properties: [
+        defaults.set(provider.providerId, forKey: lastProviderKey)
+        analytics.capture(.discoverProviderFilter, properties: [
             "provider_id": provider.providerId,
             "provider_name": provider.providerName
         ])
-        providerTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(300))
+        providerTask = Task { [weak self, clock] in
+            try? await clock.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
             await self?.loadProviderContent(for: provider)
         }
@@ -205,7 +218,7 @@ final class DiscoverViewModel {
 
     // MARK: - Merge helpers
 
-    private static func interleaved(_ a: [MediaDetail], _ b: [MediaDetail]) -> [MediaDetail] {
+    static func interleaved(_ a: [MediaDetail], _ b: [MediaDetail]) -> [MediaDetail] {
         var result: [MediaDetail] = []
         let maxCount = max(a.count, b.count)
         result.reserveCapacity(a.count + b.count)
@@ -216,7 +229,7 @@ final class DiscoverViewModel {
         return result
     }
 
-    private static func mergedByReleaseDateDesc(_ a: [MediaDetail], _ b: [MediaDetail]) -> [MediaDetail] {
+    static func mergedByReleaseDateDesc(_ a: [MediaDetail], _ b: [MediaDetail]) -> [MediaDetail] {
         (a + b).sorted { lhs, rhs in
             let lhsDate = lhs.releaseDate ?? lhs.firstAirDate ?? ""
             let rhsDate = rhs.releaseDate ?? rhs.firstAirDate ?? ""
@@ -224,8 +237,9 @@ final class DiscoverViewModel {
         }
     }
 
-    private func thirtyDaysAgoString() -> String {
-        let date = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+    func thirtyDaysAgoString() -> String {
+        let today = now()
+        let date = Calendar.current.date(byAdding: .day, value: -30, to: today) ?? today
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(identifier: "UTC")
@@ -269,7 +283,7 @@ final class DiscoverViewModel {
             ]
             if let type = selectedSearchType { eventProps["search_type"] = type.rawValue }
             if let year = selectedSearchYear { eventProps["year"] = year }
-            AnalyticsService.shared.capture(.searchPerformed, properties: eventProps)
+            analytics.capture(.searchPerformed, properties: eventProps)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -283,8 +297,8 @@ final class DiscoverViewModel {
             searchSuggestions = []
             return
         }
-        searchTask = Task {
-            try? await Task.sleep(for: .milliseconds(300))
+        searchTask = Task { [clock] in
+            try? await clock.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
             do {
                 let results = try await service.search(query: query, type: nil, year: nil)

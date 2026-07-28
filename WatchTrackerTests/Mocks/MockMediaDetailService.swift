@@ -14,22 +14,26 @@ final class MockMediaDetailService: MediaDetailServiceProtocol {
     var fetchMediaDetailResult: Result<MediaDetail, Error> = .success(TestFixtures.mediaDetail())
     var fetchSeasonDetailResult: Result<Season, Error> = .success(TestFixtures.season())
     var fetchWatchedEpisodesResult: Result<[Int], Error> = .success([])
+    var fetchRecommendationsResult: Result<[MediaDetail], Error> = .success([])
     var markEpisodeWatchedResult: Result<WatchlistStatus?, Error> = .success(nil)
     var unmarkEpisodeWatchedResult: Result<WatchlistStatus?, Error> = .success(nil)
     var markSeasonWatchedResult: Result<WatchlistStatus?, Error> = .success(nil)
     var unmarkSeasonWatchedResult: Result<WatchlistStatus?, Error> = .success(nil)
     var rateMediaError: Error? = nil
+    var removeRatingError: Error? = nil
 
     // MARK: - Call tracking
 
     var fetchMediaDetailCalls: [(type: MediaType, id: Int)] = []
     var fetchSeasonDetailCalls: [(tvId: Int, season: Int)] = []
     var fetchWatchedEpisodesCalls: [(tvId: Int, season: Int)] = []
+    var fetchRecommendationsCalls: [(type: MediaType, id: Int)] = []
     var markEpisodeWatchedCalls: [(tvId: Int, season: Int, episode: Int)] = []
     var unmarkEpisodeWatchedCalls: [(tvId: Int, season: Int, episode: Int)] = []
     var markSeasonWatchedCalls: [(tvId: Int, season: Int)] = []
     var unmarkSeasonWatchedCalls: [(tvId: Int, season: Int)] = []
     var rateMediaCalls: [(type: MediaType, id: Int, rating: Int)] = []
+    var removeRatingCalls: [(type: MediaType, id: Int)] = []
 
     // MARK: - Protocol conformance
 
@@ -46,6 +50,11 @@ final class MockMediaDetailService: MediaDetailServiceProtocol {
     func fetchWatchedEpisodes(tvId: Int, season: Int) async throws -> [Int] {
         fetchWatchedEpisodesCalls.append((tvId: tvId, season: season))
         return try fetchWatchedEpisodesResult.get()
+    }
+
+    func fetchRecommendations(type: MediaType, id: Int) async throws -> [MediaDetail] {
+        fetchRecommendationsCalls.append((type: type, id: id))
+        return try fetchRecommendationsResult.get()
     }
 
     func markEpisodeWatched(tvId: Int, season: Int, episode: Int) async throws -> WatchlistStatus? {
@@ -71,5 +80,10 @@ final class MockMediaDetailService: MediaDetailServiceProtocol {
     func rateMedia(type: MediaType, id: Int, rating: Int) async throws {
         rateMediaCalls.append((type: type, id: id, rating: rating))
         if let error = rateMediaError { throw error }
+    }
+
+    func removeRating(type: MediaType, id: Int) async throws {
+        removeRatingCalls.append((type: type, id: id))
+        if let error = removeRatingError { throw error }
     }
 }

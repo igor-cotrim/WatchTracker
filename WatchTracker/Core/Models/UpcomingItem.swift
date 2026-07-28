@@ -32,6 +32,7 @@ struct UpcomingEpisode: Codable {
     var localDaysUntilAir: Int {
         let fmt = DateFormatter()
         fmt.dateFormat = "yyyy-MM-dd"
+        fmt.locale = Locale(identifier: "en_US_POSIX")
         fmt.timeZone = .current
         guard let air = fmt.date(from: airDate) else { return daysUntilAir }
         let today = Calendar.current.startOfDay(for: Date())

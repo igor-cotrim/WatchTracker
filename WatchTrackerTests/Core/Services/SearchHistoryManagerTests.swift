@@ -71,6 +71,16 @@ struct SearchHistoryManagerTests {
         #expect(history.contains("keep"))
     }
 
+    @Test func `remove matches case insensitively like save`() {
+        // Regression: `save` dedupes case-insensitively, so a query stored as "Batman"
+        // must be removable by tapping a history row rendered as "batman".
+        let (manager, suiteName) = makeManager()
+        defer { UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName) }
+        manager.save(query: "Batman")
+        manager.remove(query: "batman")
+        #expect(manager.load().isEmpty)
+    }
+
     @Test func `remove on missing item leaves list unchanged`() {
         let (manager, suiteName) = makeManager()
         defer { UserDefaults(suiteName: suiteName)?.removePersistentDomain(forName: suiteName) }

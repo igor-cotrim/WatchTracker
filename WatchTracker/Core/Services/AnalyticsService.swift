@@ -1,7 +1,7 @@
 import Foundation
 import PostHog
 
-final class AnalyticsService {
+final class AnalyticsService: AnalyticsTracking {
     static let shared = AnalyticsService()
 
     private var isStarted = false

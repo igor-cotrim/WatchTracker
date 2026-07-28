@@ -35,6 +35,7 @@ struct NextEpisode: Codable {
         guard let airDate else { return true }
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = .current
         guard let date = formatter.date(from: airDate) else { return true }
         let today = Calendar.current.startOfDay(for: Date())

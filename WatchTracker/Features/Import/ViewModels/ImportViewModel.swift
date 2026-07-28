@@ -17,22 +17,32 @@ final class ImportViewModel {
     var result: Summary?
 
     private let service: ImportServiceProtocol
-    private let batchSize = 100
+    private let batchSize: Int
 
-    init(service: ImportServiceProtocol) {
+    init(service: ImportServiceProtocol, batchSize: Int = 100) {
         self.service = service
+        self.batchSize = batchSize
     }
 
     func importFiles(_ urls: [URL]) async {
+        do {
+            let files = try readFiles(urls)
+            await importItems(LetterboxdParser.parse(files: files))
+        } catch {
+            errorMessage = error.localizedDescription
+            isImporting = false
+        }
+    }
+
+    /// Uploads already-parsed items in batches. Split out of `importFiles` so the
+    /// batching and progress logic is reachable without security-scoped file URLs.
+    func importItems(_ items: [ImportItem]) async {
         isImporting = true
         errorMessage = nil
         result = nil
         progress = 0
 
         do {
-            let files = try readFiles(urls)
-            let items = LetterboxdParser.parse(files: files)
-
             guard !items.isEmpty else {
                 errorMessage = Strings.Import.errorEmpty
                 isImporting = false

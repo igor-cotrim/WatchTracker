@@ -46,13 +46,16 @@ final class WatchlistViewModel {
 
     private let service: WatchlistServiceProtocol
     private let store: WatchlistStore
+    private let notifications: NotificationScheduling
 
     init(
         service: WatchlistServiceProtocol,
-        store: WatchlistStore
+        store: WatchlistStore,
+        notifications: NotificationScheduling = NotificationService.shared
     ) {
         self.service = service
         self.store = store
+        self.notifications = notifications
         allItems = store.cachedItems
         rebuildDerived()
     }
@@ -112,7 +115,7 @@ final class WatchlistViewModel {
     private func notifyRevivedSeasons(in items: [WatchItem]) async {
         for item in items {
             guard let season = item.newSeasonNumber else { continue }
-            await NotificationService.shared.notifyNewSeason(
+            await notifications.notifyNewSeason(
                 tmdbId: item.tmdbId,
                 title: item.title ?? "",
                 seasonNumber: season

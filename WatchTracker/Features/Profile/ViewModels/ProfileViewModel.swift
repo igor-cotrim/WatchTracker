@@ -7,12 +7,18 @@ final class ProfileViewModel {
     private(set) var isLoading = false
     private(set) var errorMessage: String?
 
+    private let service: ProfileServiceProtocol
+
+    init(service: ProfileServiceProtocol = ProfileService()) {
+        self.service = service
+    }
+
     func fetchStats() async {
         if stats == nil { isLoading = true }
         errorMessage = nil
 
         do {
-            stats = try await APIClient.shared.get(.profileStats)
+            stats = try await service.fetchStats()
         } catch {
             errorMessage = error.userFacingMessage
         }

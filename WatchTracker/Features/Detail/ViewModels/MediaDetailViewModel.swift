@@ -30,15 +30,18 @@ final class MediaDetailViewModel {
     private let mediaDetailService: MediaDetailServiceProtocol
     private let watchlistService: WatchlistServiceProtocol
     private let store: WatchlistStore
+    private let analytics: AnalyticsTracking
 
     init(
         mediaDetailService: MediaDetailServiceProtocol,
         watchlistService: WatchlistServiceProtocol,
-        store: WatchlistStore
+        store: WatchlistStore,
+        analytics: AnalyticsTracking = AnalyticsService.shared
     ) {
         self.mediaDetailService = mediaDetailService
         self.watchlistService = watchlistService
         self.store = store
+        self.analytics = analytics
     }
 
     func fetchDetails(type: MediaType, id: Int) async {
@@ -50,7 +53,7 @@ final class MediaDetailViewModel {
             let detail = try await mediaDetailService.fetchMediaDetail(type: type, id: id)
             media = detail
             userRating = detail.userRating
-            AnalyticsService.shared.capture(.detailViewed, properties: [
+            analytics.capture(.detailViewed, properties: [
                 "media_type": type.rawValue,
                 "media_id": id,
                 "title": detail.displayTitle
@@ -98,7 +101,7 @@ final class MediaDetailViewModel {
             } else {
                 try await watchlistService.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: status)
             }
-            AnalyticsService.shared.capture(
+            analytics.capture(
                 isNewEntry ? .watchlistAdded : .watchlistStatusChanged,
                 properties: [
                     "media_type": mediaType.rawValue,
@@ -157,7 +160,7 @@ final class MediaDetailViewModel {
         guard let itemId = watchlistItemId else { return }
         do {
             try await watchlistService.removeFromWatchlist(id: itemId)
-            AnalyticsService.shared.capture(.watchlistRemoved, properties: [
+            analytics.capture(.watchlistRemoved, properties: [
                 "media_type": mediaType.rawValue,
                 "media_id": mediaId
             ])
@@ -206,7 +209,7 @@ final class MediaDetailViewModel {
         userRating = rating
         do {
             try await mediaDetailService.rateMedia(type: mediaType, id: mediaId, rating: rating)
-            AnalyticsService.shared.capture(.mediaRated, properties: [
+            analytics.capture(.mediaRated, properties: [
                 "media_type": mediaType.rawValue,
                 "media_id": mediaId,
                 "rating": rating
@@ -222,7 +225,7 @@ final class MediaDetailViewModel {
         userRating = nil
         do {
             try await mediaDetailService.removeRating(type: mediaType, id: mediaId)
-            AnalyticsService.shared.capture(.ratingRemoved, properties: [
+            analytics.capture(.ratingRemoved, properties: [
                 "media_type": mediaType.rawValue,
                 "media_id": mediaId
             ])

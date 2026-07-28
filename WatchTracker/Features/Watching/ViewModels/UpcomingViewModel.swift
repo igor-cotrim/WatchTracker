@@ -8,9 +8,18 @@ final class UpcomingViewModel {
     var errorMessage: String?
 
     private let service: WatchlistServiceProtocol
+    private let notifications: NotificationScheduling
+    private let calendar: Calendar
+    private let now: @Sendable () -> Date
 
-    init(service: WatchlistServiceProtocol) {
+    init(service: WatchlistServiceProtocol,
+         notifications: NotificationScheduling = NotificationService.shared,
+         calendar: Calendar = .current,
+         now: @escaping @Sendable () -> Date = Date.init) {
         self.service = service
+        self.notifications = notifications
+        self.calendar = calendar
+        self.now = now
     }
 
     func fetch() async {
@@ -18,7 +27,7 @@ final class UpcomingViewModel {
         errorMessage = nil
         do {
             items = try await service.fetchUpcoming()
-            await NotificationService.shared.scheduleNotifications(for: items)
+            await notifications.scheduleNotifications(for: items)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -38,7 +47,7 @@ final class UpcomingViewModel {
         }
     }
 
-    private func sectionKey(for days: Int) -> String {
+    func sectionKey(for days: Int) -> String {
         switch days {
         case ...0: return "today"
         case 1:    return "tomorrow"
@@ -47,15 +56,14 @@ final class UpcomingViewModel {
         }
     }
 
-    private static let dayNameFormatter: DateFormatter = {
-        let fmt = DateFormatter()
-        fmt.locale = .current
-        fmt.dateFormat = "EEEE"
-        return fmt
-    }()
-
-    private func dayName(offset: Int) -> String {
-        let date = Calendar.current.date(byAdding: .day, value: offset, to: Date()) ?? Date()
-        return Self.dayNameFormatter.string(from: date).lowercased()
+    func dayName(offset: Int) -> String {
+        let today = now()
+        let date = calendar.date(byAdding: .day, value: offset, to: today) ?? today
+        let formatter = DateFormatter()
+        formatter.locale = calendar.locale ?? .current
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date).lowercased()
     }
 }

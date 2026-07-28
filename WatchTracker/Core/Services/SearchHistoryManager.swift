@@ -25,7 +25,7 @@ final class SearchHistoryManager {
 
     func remove(query: String) {
         var history = load()
-        history.removeAll { $0 == query }
+        history.removeAll { $0.lowercased() == query.lowercased() }
         defaults.set(history, forKey: key)
     }
 
