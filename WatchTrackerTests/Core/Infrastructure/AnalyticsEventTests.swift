@@ -16,5 +16,6 @@ struct AnalyticsEventTests {
         #expect(AnalyticsEvent.mediaRated.rawValue == "media_rated")
         #expect(AnalyticsEvent.ratingRemoved.rawValue == "rating_removed")
         #expect(AnalyticsEvent.providerLinkTapped.rawValue == "provider_link_tapped")
+        #expect(AnalyticsEvent.dataExported.rawValue == "data_exported")
     }
 }

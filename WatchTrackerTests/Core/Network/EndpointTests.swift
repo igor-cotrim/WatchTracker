@@ -71,6 +71,10 @@ struct EndpointTests {
         #expect(Endpoint.profileStats.path == "/profile/stats")
     }
 
+    @Test func `exportData path`() {
+        #expect(Endpoint.exportData.path == "/export")
+    }
+
     @Test func `trending path`() {
         #expect(Endpoint.trending(page: nil).path == "/discover/trending")
     }
@@ -121,6 +125,7 @@ struct EndpointTests {
         (Endpoint.trending(page: nil), HTTPMethod.GET),
         (Endpoint.search(query: "x", type: nil, year: nil), HTTPMethod.GET),
         (Endpoint.profileStats, HTTPMethod.GET),
+        (Endpoint.exportData, HTTPMethod.GET),
     ])
     func `GET endpoints`(endpoint: Endpoint, expected: HTTPMethod) {
         #expect(endpoint.method == expected)

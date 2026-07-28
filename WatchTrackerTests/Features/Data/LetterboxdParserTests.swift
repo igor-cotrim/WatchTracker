@@ -6,7 +6,7 @@ import Testing
 struct LetterboxdParserTests {
 
     private func parse(_ files: (name: String, content: String)...) -> [ImportItem] {
-        LetterboxdParser.parse(files: files.map { LetterboxdFile(name: $0.name, content: $0.content) })
+        LetterboxdParser.parse(files: files.map { ImportedFile(name: $0.name, content: $0.content) })
     }
 
     private func item(_ items: [ImportItem], title: String) -> ImportItem? {
@@ -24,7 +24,7 @@ struct LetterboxdParserTests {
         #expect(items.count == 1)
         #expect(items[0].title == "Dune")
         #expect(items[0].year == 2021)
-        #expect(items[0].status == .completed)
+        #expect(items[0].status == WatchlistStatus.completed.rawValue)
     }
 
     @Test func `watchlist csv marks titles as plan to watch`() {
@@ -33,7 +33,7 @@ struct LetterboxdParserTests {
         2026-01-01,Arrival,2016,https://boxd.it/b
         """))
 
-        #expect(items[0].status == .planToWatch)
+        #expect(items[0].status == WatchlistStatus.planToWatch.rawValue)
     }
 
     @Test func `ratings csv marks completed and carries a rating`() {
@@ -42,7 +42,7 @@ struct LetterboxdParserTests {
         2026-01-01,Dune,2021,https://boxd.it/a,4.5
         """))
 
-        #expect(items[0].status == .completed)
+        #expect(items[0].status == WatchlistStatus.completed.rawValue)
         #expect(items[0].rating == 9)
     }
 
@@ -83,7 +83,7 @@ struct LetterboxdParserTests {
         2026-01-01,Film,2020,
         """))
         #expect(items.first?.rating == nil)
-        #expect(items.first?.status == .completed)
+        #expect(items.first?.status == WatchlistStatus.completed.rawValue)
     }
 
     // MARK: Aggregation across files
@@ -95,7 +95,7 @@ struct LetterboxdParserTests {
         )
 
         #expect(items.count == 1)
-        #expect(items[0].status == .completed)
+        #expect(items[0].status == WatchlistStatus.completed.rawValue)
         #expect(items[0].rating == 8)
     }
 
@@ -122,7 +122,7 @@ struct LetterboxdParserTests {
             (name: "watched.csv", content: "Date,Name,Year\n2026-01-02,Dune,2021")
         )
         #expect(items.count == 1)
-        #expect(items[0].status == .completed)
+        #expect(items[0].status == WatchlistStatus.completed.rawValue)
     }
 
     // MARK: Watched date

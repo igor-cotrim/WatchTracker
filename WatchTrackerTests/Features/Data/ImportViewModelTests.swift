@@ -6,16 +6,60 @@ import Testing
 @MainActor
 struct ImportViewModelTests {
 
-    private func makeViewModel(batchSize: Int = 100) -> (ImportViewModel, MockImportService) {
+    private func makeViewModel(
+        batchSize: Int = 100,
+        episodeBatchSize: Int = 400
+    ) -> (ImportViewModel, MockImportService) {
         let service = MockImportService()
-        return (ImportViewModel(service: service, batchSize: batchSize), service)
+        let viewModel = ImportViewModel(
+            service: service,
+            batchSize: batchSize,
+            episodeBatchSize: episodeBatchSize
+        )
+        return (viewModel, service)
+    }
+
+    // MARK: Episodes
+
+    @Test func `episodes are chunked separately from items`() async {
+        let (vm, service) = makeViewModel(batchSize: 2, episodeBatchSize: 3)
+
+        await vm.importBatch(ImportBatch(
+            items: TestFixtures.importItems(count: 3),
+            episodes: TestFixtures.importEpisodes(count: 7)
+        ))
+
+        #expect(service.batchSizes == [2, 1, 0, 0, 0])
+        #expect(service.episodeBatchSizes == [0, 0, 3, 3, 1])
+    }
+
+    @Test func `an episodes-only batch still uploads`() async {
+        let (vm, service) = makeViewModel()
+
+        await vm.importBatch(ImportBatch(episodes: TestFixtures.importEpisodes(count: 5)))
+
+        #expect(vm.errorMessage == nil)
+        #expect(service.episodeBatchSizes == [5])
+        #expect(vm.result?.episodes == 5)
+        #expect(vm.result?.total == 0)
+    }
+
+    @Test func `progress reaches 1 across mixed item and episode chunks`() async {
+        let (vm, _) = makeViewModel(batchSize: 2, episodeBatchSize: 2)
+
+        await vm.importBatch(ImportBatch(
+            items: TestFixtures.importItems(count: 3),
+            episodes: TestFixtures.importEpisodes(count: 3)
+        ))
+
+        #expect(vm.progress == 1.0)
     }
 
     // MARK: Empty input
 
     @Test func `an empty item list reports the empty error and skips the network`() async {
         let (vm, service) = makeViewModel()
-        await vm.importItems([])
+        await vm.importBatch(ImportBatch())
 
         #expect(vm.errorMessage == Strings.Import.errorEmpty)
         #expect(vm.result == nil)
@@ -27,27 +71,27 @@ struct ImportViewModelTests {
 
     @Test func `a single batch is sent for fewer items than the batch size`() async {
         let (vm, service) = makeViewModel()
-        await vm.importItems(TestFixtures.importItems(count: 30))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 30)))
         #expect(service.batchSizes == [30])
     }
 
     @Test func `items are split into batches of the configured size`() async {
         let (vm, service) = makeViewModel()
-        await vm.importItems(TestFixtures.importItems(count: 250))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 250)))
         #expect(service.batchSizes == [100, 100, 50])
     }
 
     @Test func `an exact multiple of the batch size does not send a trailing empty batch`() async {
         let (vm, service) = makeViewModel()
-        await vm.importItems(TestFixtures.importItems(count: 200))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 200)))
         #expect(service.batchSizes == [100, 100])
     }
 
     @Test func `batches preserve item order`() async {
         let (vm, service) = makeViewModel(batchSize: 2)
-        await vm.importItems(TestFixtures.importItems(count: 5))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 5)))
 
-        let titles = service.importBatchCalls.flatMap { $0.map(\.title) }
+        let titles = service.importBatchCalls.flatMap { $0.items.map(\.title) }
         #expect(titles == (0..<5).map { "Movie \($0)" })
     }
 
@@ -55,17 +99,17 @@ struct ImportViewModelTests {
 
     @Test func `the summary accumulates across batches`() async {
         let (vm, service) = makeViewModel(batchSize: 2)
-        service.importBatchResult = { items in
+        service.importBatchResult = { batch in
             .success(TestFixtures.importBatchResult(
-                total: items.count,
-                matched: items.count,
-                watchlist: items.count,
+                total: batch.items.count,
+                matched: batch.items.count,
+                watchlist: batch.items.count,
                 ratings: 1,
-                unmatched: [("Missing \(items.count)", nil)]
+                unmatched: [("Missing \(batch.items.count)", nil)]
             ))
         }
 
-        await vm.importItems(TestFixtures.importItems(count: 5))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 5)))
 
         let result = vm.result
         #expect(result?.total == 5, "total comes from the input, not the batches")
@@ -77,14 +121,14 @@ struct ImportViewModelTests {
 
     @Test func `unmatched items are collected in batch order`() async {
         let (vm, service) = makeViewModel(batchSize: 1)
-        service.importBatchResult = { items in
+        service.importBatchResult = { batch in
             .success(TestFixtures.importBatchResult(
                 total: 1, matched: 0, watchlist: 0, ratings: 0,
-                unmatched: [(items[0].title, 2020)]
+                unmatched: [(batch.items[0].title, 2020)]
             ))
         }
 
-        await vm.importItems(TestFixtures.importItems(count: 3))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 3)))
         #expect(vm.result?.unmatched.map(\.title) == ["Movie 0", "Movie 1", "Movie 2"])
     }
 
@@ -92,13 +136,13 @@ struct ImportViewModelTests {
 
     @Test func `progress reaches exactly 1 when every batch succeeds`() async {
         let (vm, _) = makeViewModel(batchSize: 40)
-        await vm.importItems(TestFixtures.importItems(count: 100))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 100)))
         #expect(vm.progress == 1.0)
     }
 
     @Test func `progress starts at zero for a fresh import`() async {
         let (vm, _) = makeViewModel()
-        await vm.importItems([])
+        await vm.importBatch(ImportBatch())
         #expect(vm.progress == 0)
     }
 
@@ -110,7 +154,7 @@ struct ImportViewModelTests {
         service.importBatchError = MockError.generic("boom")
         let failing = ImportViewModel(service: service)
 
-        await failing.importItems(TestFixtures.importItems(count: 5))
+        await failing.importBatch(ImportBatch(items: TestFixtures.importItems(count: 5)))
 
         #expect(failing.errorMessage != nil)
         #expect(failing.result == nil)
@@ -123,7 +167,7 @@ struct ImportViewModelTests {
         service.importBatchError = MockError.generic("boom")
         let vm = ImportViewModel(service: service, batchSize: 1)
 
-        await vm.importItems(TestFixtures.importItems(count: 5))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 5)))
         #expect(service.importBatchCalls.count == 1)
     }
 
@@ -132,11 +176,11 @@ struct ImportViewModelTests {
         service.importBatchError = MockError.generic("boom")
         let vm = ImportViewModel(service: service)
 
-        await vm.importItems(TestFixtures.importItems(count: 1))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 1)))
         #expect(vm.errorMessage != nil)
 
         service.importBatchError = nil
-        await vm.importItems(TestFixtures.importItems(count: 1))
+        await vm.importBatch(ImportBatch(items: TestFixtures.importItems(count: 1)))
 
         #expect(vm.errorMessage == nil)
         #expect(vm.result != nil)
@@ -166,7 +210,7 @@ struct ImportViewModelTests {
         await vm.importFiles([file])
 
         #expect(service.importBatchCalls.count == 1)
-        #expect(service.importBatchCalls.first?.first?.title == "Dune")
+        #expect(service.importBatchCalls.first?.items.first?.title == "Dune")
         #expect(vm.result?.total == 1)
     }
 }

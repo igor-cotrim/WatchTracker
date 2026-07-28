@@ -337,13 +337,34 @@ enum TestFixtures {
         year: Int? = 2020,
         status: WatchlistStatus? = .completed,
         rating: Int? = nil,
-        watchedDate: String? = nil
+        watchedDate: String? = nil,
+        tmdbId: Int? = nil,
+        mediaType: MediaType? = nil
     ) -> ImportItem {
-        ImportItem(title: title, year: year, status: status, rating: rating, watchedDate: watchedDate)
+        ImportItem(
+            title: title,
+            year: year,
+            status: status?.rawValue,
+            rating: rating,
+            watchedDate: watchedDate,
+            tmdbId: tmdbId,
+            mediaType: mediaType
+        )
     }
 
     static func importItems(count: Int) -> [ImportItem] {
         (0..<count).map { importItem(title: "Movie \($0)") }
+    }
+
+    static func importEpisodes(count: Int, tmdbId: Int = 95396) -> [ImportEpisode] {
+        (0..<count).map {
+            ImportEpisode(
+                tmdbId: tmdbId,
+                seasonNumber: 1,
+                episodeNumber: $0 + 1,
+                watchedDate: nil
+            )
+        }
     }
 
     static func importBatchResult(
@@ -351,6 +372,7 @@ enum TestFixtures {
         matched: Int = 1,
         watchlist: Int = 1,
         ratings: Int = 0,
+        episodes: Int = 0,
         unmatched: [(title: String, year: Int?)] = []
     ) -> ImportBatchResult {
         let unmatchedJSON = unmatched
@@ -360,11 +382,84 @@ enum TestFixtures {
         {
             "total": \(total),
             "matched": \(matched),
-            "imported": { "watchlist": \(watchlist), "ratings": \(ratings) },
+            "imported": {
+                "watchlist": \(watchlist),
+                "ratings": \(ratings),
+                "episodes": \(episodes)
+            },
             "unmatched": [\(unmatchedJSON)]
         }
         """
         return try! fixtureDecoder.decode(ImportBatchResult.self, from: Data(json.utf8))
+    }
+
+    // MARK: Export
+
+    static func exportEntry(
+        tmdbId: Int = 550,
+        mediaType: MediaType = .movie,
+        title: String = "Fight Club",
+        year: Int? = 1999,
+        status: WatchlistStatus? = .completed,
+        rating: Int? = nil,
+        addedAt: String? = "2026-01-02T10:00:00Z",
+        ratedAt: String? = nil,
+        /// Escape hatch for statuses `WatchlistStatus` has no case for, e.g. "dropped".
+        rawStatus: String? = nil
+    ) -> ExportEntry {
+        let statusValue = rawStatus ?? status?.rawValue
+        let json = """
+        {
+            "tmdb_id": \(tmdbId),
+            "media_type": "\(mediaType.rawValue)",
+            "title": "\(title)",
+            "year": \(year.map(String.init) ?? "null"),
+            "status": \(statusValue.map { "\"\($0)\"" } ?? "null"),
+            "rating": \(rating.map(String.init) ?? "null"),
+            "added_at": \(addedAt.map { "\"\($0)\"" } ?? "null"),
+            "rated_at": \(ratedAt.map { "\"\($0)\"" } ?? "null")
+        }
+        """
+        return try! fixtureDecoder.decode(ExportEntry.self, from: Data(json.utf8))
+    }
+
+    static func exportEpisode(
+        tmdbId: Int = 95396,
+        seasonNumber: Int = 1,
+        episodeNumber: Int = 1,
+        watchedAt: String? = "2026-02-01T00:00:00Z"
+    ) -> ExportEpisode {
+        let json = """
+        {
+            "tmdb_id": \(tmdbId),
+            "season_number": \(seasonNumber),
+            "episode_number": \(episodeNumber),
+            "watched_at": \(watchedAt.map { "\"\($0)\"" } ?? "null")
+        }
+        """
+        return try! fixtureDecoder.decode(ExportEpisode.self, from: Data(json.utf8))
+    }
+
+    static func exportPayload(
+        items: [ExportEntry] = [exportEntry()],
+        episodes: [ExportEpisode] = [],
+        unresolved: Int = 0
+    ) -> ExportPayload {
+        let json = """
+        {
+            "generated_at": "2026-07-28T12:00:00Z",
+            "unresolved": \(unresolved),
+            "items": [],
+            "episodes": []
+        }
+        """
+        let empty = try! fixtureDecoder.decode(ExportPayload.self, from: Data(json.utf8))
+        return ExportPayload(
+            generatedAt: empty.generatedAt,
+            unresolved: unresolved,
+            items: items,
+            episodes: episodes
+        )
     }
 
     // MARK: Date helpers

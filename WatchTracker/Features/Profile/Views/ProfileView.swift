@@ -76,11 +76,11 @@ struct ProfileView: View {
 
                 Section(Strings.Profile.dataSection) {
                     NavigationLink {
-                        ImportView()
+                        DataView()
                     } label: {
                         SettingsLabel(
-                            title: Strings.Import.title,
-                            systemImage: "square.and.arrow.down",
+                            title: Strings.Data.title,
+                            systemImage: "arrow.up.arrow.down.square",
                             tint: .blue
                         )
                     }

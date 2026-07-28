@@ -25,7 +25,7 @@ struct EndpointCoverageTests {
     }
 
     @Test func `importData path`() {
-        #expect(Endpoint.importData(items: []).path == "/import")
+        #expect(Endpoint.importData(batch: ImportBatch()).path == "/import")
     }
 
     // MARK: Method disambiguates same-path pairs
@@ -106,13 +106,28 @@ struct EndpointCoverageTests {
     }
 
     @Test func `importData body tags the source and carries the items`() throws {
-        let json = try bodyJSON(.importData(items: [
+        let json = try bodyJSON(.importData(batch: ImportBatch(items: [
             TestFixtures.importItem(title: "Dune", year: 2021),
-        ]))
+        ])))
         #expect(json["source"] as? String == "letterboxd")
         let items = try #require(json["items"] as? [[String: Any]])
         #expect(items.count == 1)
         #expect(items.first?["title"] as? String == "Dune")
+    }
+
+    @Test func `importData body tags a batch carrying TMDB ids as watchtracker`() throws {
+        let batch = ImportBatch(
+            items: [TestFixtures.importItem(title: "Severance", tmdbId: 95396, mediaType: .tv)],
+            episodes: [ImportEpisode(tmdbId: 95396, seasonNumber: 1, episodeNumber: 1, watchedDate: nil)]
+        )
+        let json = try bodyJSON(.importData(batch: batch))
+
+        #expect(json["source"] as? String == "watchtracker")
+        let items = try #require(json["items"] as? [[String: Any]])
+        #expect(items.first?["tmdb_id"] as? Int == 95396)
+        #expect(items.first?["media_type"] as? String == "tv")
+        let episodes = try #require(json["episodes"] as? [[String: Any]])
+        #expect(episodes.first?["season_number"] as? Int == 1)
     }
 
     @Test(arguments: [

@@ -4,17 +4,22 @@ import Foundation
 @MainActor
 final class MockImportService: ImportServiceProtocol {
     /// Applied to every batch. Defaults to "everything matched, nothing imported".
-    var importBatchResult: (([ImportItem]) -> Result<ImportBatchResult, Error>)?
+    var importBatchResult: ((ImportBatch) -> Result<ImportBatchResult, Error>)?
     var importBatchError: Error?
 
-    private(set) var importBatchCalls: [[ImportItem]] = []
+    private(set) var importBatchCalls: [ImportBatch] = []
 
-    var batchSizes: [Int] { importBatchCalls.map(\.count) }
+    var batchSizes: [Int] { importBatchCalls.map(\.items.count) }
+    var episodeBatchSizes: [Int] { importBatchCalls.map(\.episodes.count) }
 
-    func importBatch(_ items: [ImportItem]) async throws -> ImportBatchResult {
-        importBatchCalls.append(items)
+    func importBatch(_ batch: ImportBatch) async throws -> ImportBatchResult {
+        importBatchCalls.append(batch)
         if let importBatchError { throw importBatchError }
-        if let importBatchResult { return try importBatchResult(items).get() }
-        return TestFixtures.importBatchResult(total: items.count, matched: items.count)
+        if let importBatchResult { return try importBatchResult(batch).get() }
+        return TestFixtures.importBatchResult(
+            total: batch.items.count,
+            matched: batch.items.count,
+            episodes: batch.episodes.count,
+        )
     }
 }

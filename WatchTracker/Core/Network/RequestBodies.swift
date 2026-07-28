@@ -19,4 +19,5 @@ struct UpdateWatchlistStatusBody: Encodable, Sendable {
 struct ImportBody: Encodable, Sendable {
     let source: String
     let items: [ImportItem]
+    let episodes: [ImportEpisode]
 }

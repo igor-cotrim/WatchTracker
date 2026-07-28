@@ -34,7 +34,10 @@ enum Endpoint: Sendable {
     case deleteAccount
 
     // Import
-    case importData(items: [ImportItem])
+    case importData(batch: ImportBatch)
+
+    // Export
+    case exportData
 
     // Discover
     case discover(provider: String?, type: MediaType?, region: String?)
@@ -90,6 +93,8 @@ enum Endpoint: Sendable {
             return "/profile"
         case .importData:
             return "/import"
+        case .exportData:
+            return "/export"
         case .discover, .discoverFiltered:
             return "/discover"
         case .trending:
@@ -114,7 +119,7 @@ enum Endpoint: Sendable {
     var method: HTTPMethod {
         switch self {
         case .watchlist, .continueWatching, .watchlistUpcoming, .mediaDetail, .mediaRecommendations, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
-             .topRated, .upcoming, .popular, .genres, .providers, .profileStats:
+             .topRated, .upcoming, .popular, .genres, .providers, .profileStats, .exportData:
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason, .watchAllEpisodes, .importData:
             return .POST
@@ -185,8 +190,8 @@ enum Endpoint: Sendable {
             return RateMediaBody(rating: rating)
         case .updateWatchlistStatus(_, let status):
             return UpdateWatchlistStatusBody(status: status)
-        case .importData(let items):
-            return ImportBody(source: "letterboxd", items: items)
+        case .importData(let batch):
+            return ImportBody(source: batch.source, items: batch.items, episodes: batch.episodes)
         default:
             return nil
         }
