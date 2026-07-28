@@ -192,24 +192,3 @@ enum Endpoint: Sendable {
         }
     }
 }
-
-// MARK: - Request Bodies
-
-private struct AddToWatchlistBody: Encodable, Sendable {
-    let tmdbId: Int
-    let mediaType: MediaType
-    let status: WatchlistStatus
-}
-
-private struct RateMediaBody: Encodable, Sendable {
-    let rating: Int
-}
-
-private struct UpdateWatchlistStatusBody: Encodable, Sendable {
-    let status: WatchlistStatus
-}
-
-private struct ImportBody: Encodable, Sendable {
-    let source: String
-    let items: [ImportItem]
-}

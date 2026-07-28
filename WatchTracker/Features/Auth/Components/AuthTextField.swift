@@ -1,19 +1,5 @@
 import SwiftUI
 
-enum AuthFieldKind {
-    case name
-    case email
-    case password
-    case code
-}
-
-enum AuthFocusField {
-    case name
-    case email
-    case password
-    case code
-}
-
 struct AuthTextField: View {
     let placeholder: String
     @Binding var text: String

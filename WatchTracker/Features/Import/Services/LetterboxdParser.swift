@@ -1,10 +1,5 @@
 import Foundation
 
-struct LetterboxdFile: Sendable {
-    let name: String
-    let content: String
-}
-
 enum LetterboxdParser {
     private enum Role {
         case watched

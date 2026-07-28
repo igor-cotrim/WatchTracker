@@ -1,13 +1,6 @@
 import Foundation
 import FoundationModels
 
-enum AIModelAvailability: Equatable {
-    case available
-    case notEligible
-    case notEnabled
-    case notReady
-}
-
 @available(iOS 26, *)
 final class AIService {
     private let discoverService: DiscoverService
