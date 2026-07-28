@@ -21,4 +21,19 @@ enum Config {
 
     /// PostHog ingestion host. Use "https://eu.i.posthog.com" for EU-hosted projects.
     static let posthogHost: String = "https://us.i.posthog.com"
+
+    // MARK: - Links & Support
+
+    /// App Store identifier, used to build the review link.
+    static let appStoreID: String = "6786339224"
+
+    /// Opens the App Store straight on the write-a-review sheet.
+    static let reviewURL: URL = URL(string: "https://apps.apple.com/app/id\(appStoreID)?action=write-review")!
+
+    /// Destination for in-app feedback.
+    static let supportEmail: String = "igorcotrim.dev@gmail.com"
+
+    static let privacyPolicyURL: URL = URL(string: "https://spice-swift-6a1.notion.site/WatchTracker-Privacy-Policy-38f36fb13fb58025a339c5d18152725c")!
+
+    static let tmdbURL: URL = URL(string: "https://www.themoviedb.org")!
 }

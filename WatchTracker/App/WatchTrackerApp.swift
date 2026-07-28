@@ -7,9 +7,8 @@ import UserNotifications
 struct WatchTrackerApp: App {
     @State private var showSplash = true
     @StateObject private var authService: AuthService
+    @AppStorage(AppAppearance.storageKey) private var appearance: AppAppearance = .system
 
-    // Delegate stored as a static property so it is retained for the entire app lifetime
-    // and can be assigned before the first scene render.
     private static let notificationDelegate = NotificationDelegate()
 
     init() {
@@ -35,6 +34,7 @@ struct WatchTrackerApp: App {
                 }
             }
             .animation(.easeOut(duration: 0.4), value: showSplash)
+            .preferredColorScheme(appearance.colorScheme)
             .environmentObject(authService)
             .environment(AppRouter.shared)
             .task {

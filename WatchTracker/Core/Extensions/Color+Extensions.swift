@@ -11,4 +11,7 @@ extension Color {
     static let subtitleText = Color(.secondaryLabel)
     static let ratingStarFilled = Color.brandAccent
     static let ratingStarEmpty = Color(.systemGray4)
+
+    // MARK: - Third-party Brand Colors
+    static let tmdbBrand = Color(red: 0.004, green: 0.706, blue: 0.894) // TMDB cyan
 }

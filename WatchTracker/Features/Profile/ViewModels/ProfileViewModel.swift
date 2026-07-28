@@ -3,27 +3,20 @@ import Foundation
 @Observable
 @MainActor
 final class ProfileViewModel {
-    var episodesWatched: Int = 0
-    var moviesWatched: Int = 0
-    var showsCompleted: Int = 0
-    var titlesRated: Int = 0
-    var averageRating: Double = 0
-    var isLoading = false
-    var errorMessage: String?
+    private(set) var stats: ProfileStats?
+    private(set) var isLoading = false
+    private(set) var errorMessage: String?
 
     func fetchStats() async {
-        isLoading = true
+        if stats == nil { isLoading = true }
         errorMessage = nil
+
         do {
-            let stats: ProfileStats = try await APIClient.shared.get(.profileStats)
-            episodesWatched = stats.episodesWatched
-            moviesWatched = stats.moviesWatched
-            showsCompleted = stats.showsCompleted
-            titlesRated = stats.titlesRated
-            averageRating = stats.averageRating
+            stats = try await APIClient.shared.get(.profileStats)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
+
         isLoading = false
     }
 }

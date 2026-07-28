@@ -2235,6 +2235,91 @@
         }
       }
     },
+    "profile.appearance" : {
+      "comment" : "Row on the Profile screen that picks the app colour scheme",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparência"
+          }
+        }
+      }
+    },
+    "profile.appearance.system" : {
+      "comment" : "Appearance option that follows the system setting",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        }
+      }
+    },
+    "profile.appearance.light" : {
+      "comment" : "Light appearance option",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claro"
+          }
+        }
+      }
+    },
+    "profile.appearance.dark" : {
+      "comment" : "Dark appearance option",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuro"
+          }
+        }
+      }
+    },
+    "profile.language" : {
+      "comment" : "Row on the Profile screen that opens the app's page in the Settings app to change its language",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
+          }
+        }
+      }
+    },
     "profile.danger_zone.footer": {
       "comment": "Footer text under the Danger Zone section warning the delete action is permanent",
       "localizations": {
@@ -2248,23 +2333,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Excluir sua conta é permanente e não pode ser desfeito."
-          }
-        }
-      }
-    },
-    "profile.danger_zone.section": {
-      "comment": "Section header for the destructive Danger Zone (delete account) on the Profile screen",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Danger Zone"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zona de Perigo"
           }
         }
       }
@@ -2354,74 +2422,6 @@
         }
       }
     },
-    "profile.member": {
-      "comment": "Label shown below the user's email on the Profile screen",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Member"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Membro"
-          }
-        }
-      }
-    },
-    "profile.preferences.language": {
-      "comment": "Label for the language preference picker on the Profile screen",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Language"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Idioma"
-          }
-        }
-      }
-    },
-    "profile.preferences.language.english": {
-      "comment": "English option in the language preference picker",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "English"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inglês"
-          }
-        }
-      }
-    },
-    "profile.preferences.language.portuguese": {
-      "comment": "Portuguese option in the language preference picker",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Portuguese"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Português"
-          }
-        }
-      }
-    },
     "profile.preferences.section": {
       "comment": "Section header for user preferences on the Profile screen",
       "localizations": {
@@ -2486,23 +2486,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Episódios Assistidos"
-          }
-        }
-      }
-    },
-    "profile.stats.hours": {
-      "comment": "Profile stat label for total hours watched. %.0f = hours",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%.0f h"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%.0f h"
           }
         }
       }
@@ -2605,6 +2588,346 @@
           "stringUnit": {
             "state": "translated",
             "value": "Perfil"
+          }
+        }
+      }
+    },
+    "profile.section.data" : {
+      "comment" : "Section header grouping data import rows on the Profile screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dados"
+          }
+        }
+      }
+    },
+    "profile.section.support" : {
+      "comment" : "Section header grouping feedback and rating rows on the Profile screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suporte"
+          }
+        }
+      }
+    },
+    "profile.section.account" : {
+      "comment" : "Section header for sign out and delete account rows on the Profile screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conta"
+          }
+        }
+      }
+    },
+    "profile.stats.link" : {
+      "comment" : "Row on the Profile screen that opens the dedicated stats screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My stats"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minhas estatísticas"
+          }
+        }
+      }
+    },
+    "profile.stats.short.episodes" : {
+      "comment" : "Compact stat label used in the Profile stats preview",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episodes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Episódios"
+          }
+        }
+      }
+    },
+    "profile.stats.short.movies" : {
+      "comment" : "Compact stat label used in the Profile stats preview",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movies"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filmes"
+          }
+        }
+      }
+    },
+    "profile.member_since" : {
+      "comment" : "Subtitle on the Profile account card. %@ = month and year the account was created",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Member since %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Membro desde %@"
+          }
+        }
+      }
+    },
+    "profile.feedback" : {
+      "comment" : "Row on the Profile screen that opens the mail composer",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send feedback"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar feedback"
+          }
+        }
+      }
+    },
+    "profile.rate_app" : {
+      "comment" : "Row on the Profile screen that opens the App Store review sheet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate the app"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avaliar o app"
+          }
+        }
+      }
+    },
+    "profile.about.tmdb" : {
+      "comment" : "Row on the Profile screen linking to themoviedb.org",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data provided by TMDB"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dados fornecidos por TMDB"
+          }
+        }
+      }
+    },
+    "profile.feedback.subject" : {
+      "comment" : "Subject line of the feedback email. %@ = app name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ — Feedback"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ — Feedback"
+          }
+        }
+      }
+    },
+    "profile.feedback.body_placeholder" : {
+      "comment" : "Prompt at the top of the pre-filled feedback email body",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe your feedback here:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descreva seu feedback aqui:"
+          }
+        }
+      }
+    },
+    "profile.feedback.diagnostics_title" : {
+      "comment" : "Header of the diagnostics block appended to the feedback email",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device info"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informações do dispositivo"
+          }
+        }
+      }
+    },
+    "profile.feedback.field.app" : {
+      "comment" : "Diagnostics label in the feedback email",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        }
+      }
+    },
+    "profile.feedback.field.system" : {
+      "comment" : "Diagnostics label in the feedback email",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS"
+          }
+        }
+      }
+    },
+    "profile.feedback.field.device" : {
+      "comment" : "Diagnostics label in the feedback email",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Device"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo"
+          }
+        }
+      }
+    },
+    "profile.feedback.field.language" : {
+      "comment" : "Diagnostics label in the feedback email",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma"
+          }
+        }
+      }
+    },
+    "profile.feedback.field.account" : {
+      "comment" : "Diagnostics label in the feedback email",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conta"
+          }
+        }
+      }
+    },
+    "profile.feedback.error.title" : {
+      "comment" : "Alert title when no mail app is available",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't send feedback"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível enviar o feedback"
+          }
+        }
+      }
+    },
+    "profile.feedback.error.message" : {
+      "comment" : "Alert message when no mail app is available. %@ = support email address",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No mail app is set up on this device. Write to %@ instead."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum app de email está configurado neste aparelho. Escreva para %@."
           }
         }
       }

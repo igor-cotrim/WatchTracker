@@ -1,121 +1,141 @@
 import SwiftUI
+import MessageUI
 import Auth
 
 struct ProfileView: View {
     @EnvironmentObject private var authService: AuthService
+    @Environment(\.openURL) private var openURL
+
     @State private var viewModel = ProfileViewModel()
     @AppStorage("episodeRemindersEnabled") private var episodeRemindersEnabled = false
+    @AppStorage(AppAppearance.storageKey) private var appearance: AppAppearance = .system
+
     @State private var showDeleteConfirm = false
     @State private var isDeleting = false
     @State private var deleteError: String?
+    @State private var isShowingMailComposer = false
+    @State private var showMailUnavailable = false
 
     var body: some View {
         NavigationStack {
             List {
-                // User Info
                 Section {
-                    HStack(spacing: 16) {
-                        Image(systemName: "person.circle.fill")
-                            .font(.system(size: 56))
-                            .foregroundStyle(Color.brandPrimary)
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(verbatim: authService.currentUser?.email ?? "")
-                                .font(.headline)
-                            Text(Strings.Profile.member)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.vertical, 8)
+                    ProfileAccountCard(user: authService.currentUser)
                 }
 
-                // Stats
-                Section(Strings.Profile.stats) {
-                    Group {
-                        if viewModel.isLoading {
-                            ProfileStatsGridSkeleton()
-                        } else if let errorMessage = viewModel.errorMessage {
-                            Text(verbatim: errorMessage)
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                        } else {
-                            ProfileStatsGrid(viewModel: viewModel)
-                        }
+                Section(Strings.Profile.statsSection) {
+                    NavigationLink {
+                        StatsView(viewModel: viewModel)
+                    } label: {
+                        ProfileStatsLink(stats: viewModel.stats)
                     }
-                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-                    .listRowBackground(Color.clear)
                 }
 
-                // Notifications
-                Section(Strings.Notifications.sectionTitle) {
-                    Toggle(Strings.Notifications.episodeReminders, isOn: $episodeRemindersEnabled)
-                        .onChange(of: episodeRemindersEnabled) { _, enabled in
-                            Task {
-                                if enabled {
-                                    let granted = await NotificationService.shared.requestAuthorization()
-                                    if !granted { episodeRemindersEnabled = false }
-                                } else {
-                                    await NotificationService.shared.cancelAllEpisodeNotifications()
-                                }
+                Section(Strings.Profile.preferencesSection) {
+                    Picker(selection: $appearance) {
+                        ForEach(AppAppearance.allCases) { option in
+                            Label {
+                                Text(verbatim: option.title)
+                            } icon: {
+                                Image(systemName: option.icon)
                             }
+                            .tag(option)
                         }
+                    } label: {
+                        SettingsLabel(
+                            title: Strings.Profile.appearance,
+                            systemImage: "circle.lefthalf.filled",
+                            tint: .indigo
+                        )
+                    }
+                    .pickerStyle(.menu)
+
+                    Button {
+                        openAppSettings()
+                    } label: {
+                        SettingsLabel(
+                            title: Strings.Profile.language,
+                            systemImage: "globe",
+                            tint: .teal,
+                            value: Bundle.main.currentLanguageName,
+                            isExternal: true
+                        )
+                    }
+
+                    Toggle(isOn: $episodeRemindersEnabled) {
+                        SettingsLabel(
+                            title: Strings.Notifications.episodeReminders,
+                            systemImage: "bell.badge",
+                            tint: .orange
+                        )
+                    }
+                    .onChange(of: episodeRemindersEnabled) { _, enabled in
+                        Task { await updateEpisodeReminders(enabled: enabled) }
+                    }
                 }
 
-                // Import
-                Section(Strings.Import.sectionTitle) {
+                Section(Strings.Profile.dataSection) {
                     NavigationLink {
                         ImportView()
                     } label: {
-                        Label(Strings.Import.title, systemImage: "square.and.arrow.down")
+                        SettingsLabel(
+                            title: Strings.Import.title,
+                            systemImage: "square.and.arrow.down",
+                            tint: .blue
+                        )
                     }
                 }
 
-                // About
-                Section(Strings.Profile.aboutSection) {
-                    Link(destination: URL(string: "https://www.themoviedb.org")!) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Image("tmdb-logo")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(height: 14)
-                                    .accessibilityLabel(Text(verbatim: "TMDB"))
-                                Spacer()
-                                Image(systemName: "arrow.up.right")
-                                    .font(.caption2)
-                                    .foregroundStyle(.tertiary)
-                            }
-                            Text(Strings.Profile.tmdbAttribution)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.vertical, 2)
+                Section(Strings.Profile.supportSection) {
+                    Button {
+                        presentFeedback()
+                    } label: {
+                        SettingsLabel(
+                            title: Strings.Profile.feedback,
+                            systemImage: "envelope",
+                            tint: .brandPrimary
+                        )
                     }
 
-                    Link(destination: URL(string: "https://spice-swift-6a1.notion.site/WatchTracker-Privacy-Policy-38f36fb13fb58025a339c5d18152725c")!) {
-                        HStack {
-                            Text(Strings.Profile.privacyPolicy)
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                    Link(destination: Config.reviewURL) {
+                        SettingsLabel(
+                            title: Strings.Profile.rateApp,
+                            systemImage: "star",
+                            tint: .brandAccent,
+                            isExternal: true
+                        )
                     }
                 }
 
-                // Sign out
+                Section {
+                    Link(destination: Config.tmdbURL) {
+                        SettingsLabel(
+                            title: Strings.Profile.tmdb,
+                            systemImage: "film",
+                            tint: .tmdbBrand,
+                            isExternal: true
+                        )
+                    }
+
+                    Link(destination: Config.privacyPolicyURL) {
+                        SettingsLabel(
+                            title: Strings.Profile.privacyPolicy,
+                            systemImage: "lock",
+                            tint: Color(.systemGray),
+                            isExternal: true
+                        )
+                    }
+                } header: {
+                    Text(Strings.Profile.aboutSection)
+                } footer: {
+                    Text(Strings.Profile.tmdbAttribution)
+                }
+
                 Section {
                     Button(Strings.Profile.signOut, role: .destructive) {
-                        Task {
-                            try? await authService.signOut()
-                        }
+                        Task { try? await authService.signOut() }
                     }
-                }
 
-                // Danger Zone
-                Section {
                     Button(role: .destructive) {
                         showDeleteConfirm = true
                     } label: {
@@ -129,8 +149,7 @@ struct ProfileView: View {
                     }
                     .disabled(isDeleting)
                 } header: {
-                    Text(Strings.Profile.dangerZoneSection)
-                        .foregroundStyle(.red)
+                    Text(Strings.Profile.accountSection)
                 } footer: {
                     Text(Strings.Profile.dangerZoneFooter)
                 }
@@ -139,15 +158,7 @@ struct ProfileView: View {
             .alert(Strings.Profile.deleteAccountConfirmTitle, isPresented: $showDeleteConfirm) {
                 Button(Strings.Common.cancel, role: .cancel) { }
                 Button(Strings.Profile.deleteAccountConfirmButton, role: .destructive) {
-                    Task {
-                        isDeleting = true
-                        do {
-                            try await authService.deleteAccount()
-                        } catch {
-                            deleteError = error.localizedDescription
-                        }
-                        isDeleting = false
-                    }
+                    Task { await deleteAccount() }
                 }
             } message: {
                 Text(Strings.Profile.deleteAccountConfirmMessage)
@@ -163,10 +174,67 @@ struct ProfileView: View {
             } message: {
                 Text(verbatim: deleteError ?? "")
             }
+            .alert(Strings.Feedback.errorTitle, isPresented: $showMailUnavailable) {
+                Button(Strings.Common.ok, role: .cancel) { }
+            } message: {
+                Text(verbatim: Strings.Feedback.errorMessage(email: Config.supportEmail))
+            }
+            .sheet(isPresented: $isShowingMailComposer) {
+                MailComposeView(
+                    recipient: FeedbackComposer.recipient,
+                    subject: FeedbackComposer.subject,
+                    body: FeedbackComposer.body(accountEmail: authService.currentUser?.email)
+                )
+                .ignoresSafeArea()
+            }
             .task {
                 await viewModel.fetchStats()
             }
         }
+    }
+
+    // MARK: - Actions
+
+    private func updateEpisodeReminders(enabled: Bool) async {
+        if enabled {
+            let granted = await NotificationService.shared.requestAuthorization()
+            if !granted { episodeRemindersEnabled = false }
+        } else {
+            await NotificationService.shared.cancelAllEpisodeNotifications()
+        }
+    }
+
+    /// The per-app "Preferred Language" section is provided by iOS itself —
+    /// it shows up because the app ships more than one localization.
+    private func openAppSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        openURL(url)
+    }
+
+    private func presentFeedback() {
+        if MFMailComposeViewController.canSendMail() {
+            isShowingMailComposer = true
+            return
+        }
+
+        guard let url = FeedbackComposer.mailtoURL(accountEmail: authService.currentUser?.email) else {
+            showMailUnavailable = true
+            return
+        }
+
+        openURL(url) { accepted in
+            if !accepted { showMailUnavailable = true }
+        }
+    }
+
+    private func deleteAccount() async {
+        isDeleting = true
+        do {
+            try await authService.deleteAccount()
+        } catch {
+            deleteError = error.userFacingMessage
+        }
+        isDeleting = false
     }
 }
 
