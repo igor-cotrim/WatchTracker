@@ -1,0 +1,4 @@
+#include "Base.xcconfig"
+
+// Release builds talk to the deployed Cloud Run backend.
+API_BASE_URL = https:$()/$()/watch-tracker-backend-916835188736.southamerica-east1.run.app/api

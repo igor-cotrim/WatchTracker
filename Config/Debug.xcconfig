@@ -1,0 +1,6 @@
+#include "Base.xcconfig"
+
+// Debug builds talk to the backend running locally via `npm run dev`.
+// Point this elsewhere to develop against a deployed backend.
+// Plain HTTP to localhost is permitted by NSAllowsLocalNetworking in Config/Info.plist.
+API_BASE_URL = http:$()/$()/localhost:3000/api

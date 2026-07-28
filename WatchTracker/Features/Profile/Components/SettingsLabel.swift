@@ -28,7 +28,7 @@ struct SettingsLabel: View {
             SettingsIcon(systemImage: systemImage, tint: tint)
 
             Text(verbatim: title)
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.primary)
 
             if value != nil || isExternal {
                 Spacer(minLength: 8)
@@ -36,14 +36,14 @@ struct SettingsLabel: View {
 
             if let value {
                 Text(verbatim: value)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.secondary)
                     .lineLimit(1)
             }
 
             if isExternal {
                 Image(systemName: "arrow.up.right")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color(uiColor: .tertiaryLabel))
             }
         }
     }

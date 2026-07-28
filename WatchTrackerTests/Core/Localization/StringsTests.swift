@@ -123,3 +123,38 @@ struct StringsFormattingTests {
         #expect(value.contains("WatchTracker"))
     }
 }
+
+@Suite("Strings.Errors", .tags(.pure))
+struct StringsErrorsTests {
+
+    @Test(arguments: [
+        (value: Strings.Errors.unauthorized, key: "error.unauthorized"),
+        (value: Strings.Errors.notFound, key: "error.not_found"),
+        (value: Strings.Errors.server, key: "error.server"),
+        (value: Strings.Errors.rateLimited, key: "error.rate_limited"),
+        (value: Strings.Errors.decoding, key: "error.decoding"),
+        (value: Strings.Errors.unknown, key: "error.unknown"),
+    ])
+    func `every error key resolves to real catalog copy`(value: String, key: String) {
+        #expect(value != key, "Missing catalog entry for \(key)")
+        #expect(!value.isEmpty)
+    }
+
+    @Test func `network interpolates the underlying description`() {
+        let value = Strings.Errors.network("connection lost")
+        #expect(value != "error.network", "Missing catalog entry for error.network")
+        #expect(value.contains("connection lost"))
+    }
+
+    @Test func `each case carries distinct copy`() {
+        let all = [
+            Strings.Errors.unauthorized,
+            Strings.Errors.notFound,
+            Strings.Errors.server,
+            Strings.Errors.rateLimited,
+            Strings.Errors.decoding,
+            Strings.Errors.unknown,
+        ]
+        #expect(Set(all).count == all.count, "Each error case must have distinct copy")
+    }
+}

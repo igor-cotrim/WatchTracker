@@ -1,39 +1,44 @@
 import Foundation
 
 // MARK: - App Configuration
-// Replace placeholder values with your actual credentials before running.
+//
+// Values are injected at build time: Config/Base.xcconfig (shared) plus
+// Config/Debug.xcconfig or Config/Release.xcconfig (per configuration) are mapped
+// into the app's Info.plist by Config/Info.plist, and read back here.
+//
+// To change a value, edit the xcconfig — never hardcode it below.
 
 enum Config {
     /// Supabase project URL — safe for client distribution.
-    static let supabaseURL: URL = URL(string: "https://dextqapadrofqyizfgkp.supabase.co")!
+    static let supabaseURL: URL = Bundle.main.configurationURL(for: "SUPABASE_URL")
 
     /// Publishable (anon) key only. RLS enforces authorization server-side.
     /// NEVER place the service_role / secret key here — it bypasses RLS.
-    static let supabasePublishableKey: String = "sb_publishable_zgE0HvRNp9a6BXdJ5Myh4A_fofdqlEy"
+    static let supabasePublishableKey: String = Bundle.main.configurationValue(for: "SUPABASE_PUBLISHABLE_KEY")
 
-    static let apiBaseURL: URL = URL(string: "https://watch-tracker-backend-916835188736.southamerica-east1.run.app/api")!
+    /// Points at the local backend in Debug and at Cloud Run in Release.
+    static let apiBaseURL: URL = Bundle.main.configurationURL(for: "API_BASE_URL")
 
     // MARK: - Analytics (PostHog)
 
     /// PostHog project API key — safe for client distribution (write-only ingestion key).
-    /// Replace with your real project key from PostHog → Project Settings.
-    static let posthogAPIKey: String = "phc_rqcN9Enctc55wd8FAFRBzazgorgNApnn28gJtiyd3M9E"
+    static let posthogAPIKey: String = Bundle.main.configurationValue(for: "POSTHOG_API_KEY")
 
-    /// PostHog ingestion host. Use "https://eu.i.posthog.com" for EU-hosted projects.
-    static let posthogHost: String = "https://us.i.posthog.com"
+    /// PostHog ingestion host.
+    static let posthogHost: String = Bundle.main.configurationValue(for: "POSTHOG_HOST")
 
     // MARK: - Links & Support
 
     /// App Store identifier, used to build the review link.
-    static let appStoreID: String = "6786339224"
+    static let appStoreID: String = Bundle.main.configurationValue(for: "APP_STORE_ID")
 
     /// Opens the App Store straight on the write-a-review sheet.
     static let reviewURL: URL = URL(string: "https://apps.apple.com/app/id\(appStoreID)?action=write-review")!
 
     /// Destination for in-app feedback.
-    static let supportEmail: String = "igorcotrim.dev@gmail.com"
+    static let supportEmail: String = Bundle.main.configurationValue(for: "SUPPORT_EMAIL")
 
-    static let privacyPolicyURL: URL = URL(string: "https://spice-swift-6a1.notion.site/WatchTracker-Privacy-Policy-38f36fb13fb58025a339c5d18152725c")!
+    static let privacyPolicyURL: URL = Bundle.main.configurationURL(for: "PRIVACY_POLICY_URL")
 
-    static let tmdbURL: URL = URL(string: "https://www.themoviedb.org")!
+    static let tmdbURL: URL = Bundle.main.configurationURL(for: "TMDB_URL")
 }

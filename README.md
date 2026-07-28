@@ -48,7 +48,11 @@ Built with SwiftUI and powered by a custom Express.js backend. Part of the `movi
 2. Xcode resolves the single SPM dependency (Supabase Swift) automatically.
 3. Build and run (⌘R) on a simulator or device running iOS 18+.
 
-No CLI scripts or additional configuration needed. The app connects to the production backend at `https://watch-tracker-backend-916835188736.southamerica-east1.run.app/api`. To point at a local backend, update `Config.apiBaseURL` in `App/Config.swift`.
+No CLI scripts or additional configuration needed.
+
+Configuration is injected at build time rather than hardcoded in Swift. `Config/Base.xcconfig` holds the values shared by every build; `Config/Debug.xcconfig` and `Config/Release.xcconfig` hold the per-configuration ones. Those settings are mapped into the app's `Info.plist` by `Config/Info.plist` and read back through `App/Config.swift` — so to change a value, edit the xcconfig and never the Swift file.
+
+By default **Debug builds talk to `http://localhost:3000/api`** (start the backend with `npm run dev` in `../backend/`), while **Release builds talk to the deployed Cloud Run backend**. To develop against the deployed backend instead, point `API_BASE_URL` in `Config/Debug.xcconfig` at it.
 
 > **AI Suggestions** require a device with Apple Intelligence enabled. The feature shows a graceful unavailable state on ineligible simulators and devices.
 

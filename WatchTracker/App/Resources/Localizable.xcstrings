@@ -1929,6 +1929,74 @@
         }
       }
     },
+    "error.decoding": {
+      "comment": "APIError.decodingError — the server replied but the payload could not be parsed",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to process the server response."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível processar a resposta do servidor."
+          }
+        }
+      }
+    },
+    "error.network": {
+      "comment": "APIError.networkError — %@ = the underlying system error description",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network error: %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erro de rede: %@"
+          }
+        }
+      }
+    },
+    "error.not_found": {
+      "comment": "APIError.notFound — the requested resource returned 404",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The requested resource was not found."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O conteúdo solicitado não foi encontrado."
+          }
+        }
+      }
+    },
+    "error.rate_limited": {
+      "comment": "APIError.rateLimited — too many requests in a short window (429)",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many requests. Please wait a moment and try again."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muitas requisições. Aguarde um momento e tente novamente."
+          }
+        }
+      }
+    },
     "error.retry": {
       "comment": "Button label to retry a failed action",
       "localizations": {
@@ -1942,6 +2010,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tentar novamente"
+          }
+        }
+      }
+    },
+    "error.server": {
+      "comment": "APIError.serverError — the backend returned a 5xx response",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A server error occurred. Please try again later."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocorreu um erro no servidor. Tente novamente mais tarde."
+          }
+        }
+      }
+    },
+    "error.unauthorized": {
+      "comment": "APIError.unauthorized — the session token was rejected (401)",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are not authorized. Please sign in again."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você não está autorizado. Faça login novamente."
+          }
+        }
+      }
+    },
+    "error.unknown": {
+      "comment": "APIError.unknown — fallback for an unrecognised failure",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An unknown error occurred."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocorreu um erro desconhecido."
           }
         }
       }

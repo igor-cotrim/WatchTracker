@@ -48,7 +48,7 @@ struct ProfileView: View {
                             tint: .indigo
                         )
                     }
-                    .pickerStyle(.menu)
+                    .tint(Color.secondary)
 
                     Button {
                         openAppSettings()

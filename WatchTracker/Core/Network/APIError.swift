@@ -12,19 +12,19 @@ enum APIError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .unauthorized:
-            return "You are not authorized. Please sign in again."
+            return Strings.Errors.unauthorized
         case .notFound:
-            return "The requested resource was not found."
+            return Strings.Errors.notFound
         case .serverError:
-            return "A server error occurred. Please try again later."
+            return Strings.Errors.server
         case .rateLimited:
-            return "Too many requests. Please wait a moment and try again."
+            return Strings.Errors.rateLimited
         case .decodingError:
-            return "Failed to process the server response."
+            return Strings.Errors.decoding
         case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
+            return Strings.Errors.network(error.localizedDescription)
         case .unknown:
-            return "An unknown error occurred."
+            return Strings.Errors.unknown
         }
     }
 

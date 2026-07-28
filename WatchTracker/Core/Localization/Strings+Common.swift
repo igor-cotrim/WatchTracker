@@ -20,6 +20,21 @@ extension Strings {
         static var connectionError: String { String(localized: "error.connection") }
     }
 
+    // MARK: - API Errors
+
+    enum Errors {
+        static var unauthorized: String { String(localized: "error.unauthorized") }
+        static var notFound: String { String(localized: "error.not_found") }
+        static var server: String { String(localized: "error.server") }
+        static var rateLimited: String { String(localized: "error.rate_limited") }
+        static var decoding: String { String(localized: "error.decoding") }
+        static var unknown: String { String(localized: "error.unknown") }
+
+        static func network(_ description: String) -> String {
+            String(format: String(localized: "error.network"), description)
+        }
+    }
+
     enum Card {
         static var unknownTitle: String { String(localized: "card.unknown_title") }
         static var accessibilityHint: String { String(localized: "card.accessibility.hint") }
