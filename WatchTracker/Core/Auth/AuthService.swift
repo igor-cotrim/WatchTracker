@@ -3,6 +3,18 @@ import Combine
 import Supabase
 import Auth
 
+/// Sign-up outcomes that are not failures of the request itself.
+enum AuthServiceError: LocalizedError {
+    /// Supabase accepted the sign-up but withheld a session pending email confirmation.
+    case emailConfirmationRequired
+
+    var errorDescription: String? {
+        switch self {
+        case .emailConfirmationRequired: Strings.Auth.emailConfirmationRequired
+        }
+    }
+}
+
 class AuthService: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: User?
@@ -51,6 +63,14 @@ class AuthService: ObservableObject {
             password: password,
             data: ["name": .string(name)]
         )
+
+        // With email confirmation enabled, Supabase returns a user but no session.
+        // Signing in here would leave every request unauthenticated — `APIClient` simply
+        // omits the header when there is no token — so surface it instead.
+        guard response.session != nil else {
+            throw AuthServiceError.emailConfirmationRequired
+        }
+
         await MainActor.run {
             self.currentUser = response.user
             self.isAuthenticated = true

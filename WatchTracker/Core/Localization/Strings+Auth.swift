@@ -37,5 +37,8 @@ extension Strings {
         static var passwordUpdatedHint: String { String(localized: "auth.password_updated_hint") }
 
         static var sessionExpired: String { String(localized: "auth.session_expired") }
+        static var emailConfirmationRequired: String {
+            String(localized: "auth.email_confirmation_required")
+        }
     }
 }
