@@ -26,5 +26,7 @@ final class AppRouter {
     }
     var pendingShowId: Int?
 
-    private init() {}
+    /// Internal rather than private so tests can inject an isolated router, the same
+    /// way `WatchlistStore` does. Production code always goes through `shared`.
+    init() {}
 }

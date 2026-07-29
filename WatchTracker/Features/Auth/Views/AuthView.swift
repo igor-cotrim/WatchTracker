@@ -1,15 +1,16 @@
 import SwiftUI
 
 struct AuthView: View {
-    @EnvironmentObject private var authService: AuthService
-    @State private var name = ""
-    @State private var email = ""
-    @State private var password = ""
-    @State private var isSignUp = false
-    @State private var isLoading = false
-    @State private var errorMessage: String?
+    private let auth: any AuthServiceProtocol
+
+    @State private var viewModel: AuthViewModel
     @State private var showForgotPassword = false
     @FocusState private var focusedField: AuthFocusField?
+
+    init(auth: any AuthServiceProtocol) {
+        self.auth = auth
+        _viewModel = State(wrappedValue: AuthViewModel(auth: auth))
+    }
 
     var body: some View {
         ZStack {
@@ -23,9 +24,9 @@ struct AuthView: View {
 
                 AuthBrandingHeader()
 
-                AuthModeHeader(isSignUp: isSignUp)
+                AuthModeHeader(isSignUp: viewModel.isSignUp)
 
-                if let sessionExpiredMessage = authService.sessionExpiredMessage {
+                if let sessionExpiredMessage = viewModel.sessionExpiredMessage {
                     Text(verbatim: sessionExpiredMessage)
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -35,7 +36,7 @@ struct AuthView: View {
 
                 formCard
 
-                if let errorMessage {
+                if let errorMessage = viewModel.errorMessage {
                     Text(verbatim: errorMessage)
                         .font(.caption)
                         .foregroundStyle(Color(red: 1, green: 0.4, blue: 0.4))
@@ -43,12 +44,20 @@ struct AuthView: View {
                         .padding(.horizontal)
                 }
 
+                if let infoMessage = viewModel.infoMessage {
+                    Text(verbatim: infoMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+
                 AuthPrimaryButton(
-                    title: isSignUp ? Strings.Auth.signUp : Strings.Auth.signIn,
-                    isLoading: isLoading,
-                    isDisabled: isLoading || !isFormValid
+                    title: viewModel.submitTitle,
+                    isLoading: viewModel.isLoading,
+                    isDisabled: !viewModel.canSubmit
                 ) {
-                    Task { await authenticate() }
+                    Task { await viewModel.authenticate() }
                 }
                 .padding(.horizontal, 24)
 
@@ -58,16 +67,16 @@ struct AuthView: View {
             }
         }
         .sheet(isPresented: $showForgotPassword) {
-            ForgotPasswordView(prefillEmail: email)
+            ForgotPasswordView(auth: auth, prefillEmail: viewModel.email)
         }
     }
 
     private var formCard: some View {
         VStack(spacing: 14) {
-            if isSignUp {
+            if viewModel.isSignUp {
                 AuthTextField(
                     placeholder: Strings.Auth.namePlaceholder,
-                    text: $name,
+                    text: $viewModel.name,
                     kind: .name,
                     focusState: $focusedField,
                     focusValue: .name
@@ -78,7 +87,7 @@ struct AuthView: View {
 
             AuthTextField(
                 placeholder: Strings.Auth.email,
-                text: $email,
+                text: $viewModel.email,
                 kind: .email,
                 focusState: $focusedField,
                 focusValue: .email
@@ -87,27 +96,27 @@ struct AuthView: View {
 
             AuthTextField(
                 placeholder: Strings.Auth.password,
-                text: $password,
+                text: $viewModel.password,
                 kind: .password,
                 focusState: $focusedField,
                 focusValue: .password
             )
             .onSubmit {
-                if !isLoading && isFormValid {
-                    Task { await authenticate() }
+                if viewModel.canSubmit {
+                    Task { await viewModel.authenticate() }
                 }
             }
 
-            if isSignUp {
+            if viewModel.isSignUp {
                 PasswordRequirementsView(
-                    hasMinLength: passwordHasMinLength,
-                    hasUppercase: passwordHasUppercase,
-                    hasNumber: passwordHasNumber
+                    hasMinLength: viewModel.passwordHasMinLength,
+                    hasUppercase: viewModel.passwordHasUppercase,
+                    hasNumber: viewModel.passwordHasNumber
                 )
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
-            if !isSignUp {
+            if !viewModel.isSignUp {
                 Button(Strings.Auth.forgotPassword) {
                     showForgotPassword = true
                 }
@@ -129,59 +138,20 @@ struct AuthView: View {
     private var toggleButton: some View {
         Button {
             withAnimation(.easeInOut(duration: 0.25)) {
-                isSignUp.toggle()
-                errorMessage = nil
+                viewModel.toggleMode()
             }
         } label: {
-            Text(isSignUp ? Strings.Auth.haveAccountPrefix : Strings.Auth.noAccountPrefix)
+            Text(viewModel.isSignUp ? Strings.Auth.haveAccountPrefix : Strings.Auth.noAccountPrefix)
                 .foregroundStyle(.secondary)
             + Text(verbatim: " ")
-            + Text(isSignUp ? Strings.Auth.signIn : Strings.Auth.signUp)
+            + Text(viewModel.isSignUp ? Strings.Auth.signIn : Strings.Auth.signUp)
                 .foregroundStyle(Color.brandPrimary)
                 .fontWeight(.semibold)
         }
         .font(.footnote)
     }
-
-    // MARK: - Validation
-
-    private var passwordHasMinLength: Bool { password.count >= 8 }
-    private var passwordHasUppercase: Bool {
-        password.range(of: "[A-Z]", options: .regularExpression) != nil
-    }
-    private var passwordHasNumber: Bool {
-        password.range(of: "[0-9]", options: .regularExpression) != nil
-    }
-    private var isPasswordValid: Bool {
-        passwordHasMinLength && passwordHasUppercase && passwordHasNumber
-    }
-
-    private var isFormValid: Bool {
-        if isSignUp {
-            return !name.isEmpty && !email.isEmpty && isPasswordValid
-        } else {
-            return !email.isEmpty && !password.isEmpty
-        }
-    }
-
-    private func authenticate() async {
-        isLoading = true
-        errorMessage = nil
-        authService.sessionExpiredMessage = nil
-        do {
-            if isSignUp {
-                try await authService.signUp(email: email, password: password, name: name)
-            } else {
-                try await authService.signIn(email: email, password: password)
-            }
-        } catch {
-            errorMessage = error.userFacingMessage
-        }
-        isLoading = false
-    }
 }
 
 #Preview {
-    AuthView()
-        .environmentObject(AuthService())
+    AuthView(auth: AuthService())
 }

@@ -13,7 +13,11 @@ protocol WatchlistServiceProtocol: Sendable {
 }
 
 final class WatchlistService {
-    private let api = APIClient.shared
+    private let api: APIClient
+
+    init(api: APIClient = .shared) {
+        self.api = api
+    }
 
     func fetchWatchlist(status: WatchlistStatus? = nil, mediaType: MediaType? = nil) async throws -> [WatchItem] {
         try await api.get(.watchlist(status: status, mediaType: mediaType?.rawValue))

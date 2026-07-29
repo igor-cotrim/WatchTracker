@@ -14,7 +14,11 @@ protocol DiscoverServiceProtocol: Sendable {
 }
 
 final class DiscoverService {
-    private let api = APIClient.shared
+    private let api: APIClient
+
+    init(api: APIClient = .shared) {
+        self.api = api
+    }
 
     func fetchTrending(page: Int? = nil) async throws -> [MediaDetail] {
         try await api.get(.trending(page: page))

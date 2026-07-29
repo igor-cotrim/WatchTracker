@@ -5,7 +5,11 @@ protocol ImportServiceProtocol: Sendable {
 }
 
 final class ImportService {
-    private let api = APIClient.shared
+    private let api: APIClient
+
+    init(api: APIClient = .shared) {
+        self.api = api
+    }
 
     func importBatch(_ batch: ImportBatch) async throws -> ImportBatchResult {
         try await api.post(.importData(batch: batch))

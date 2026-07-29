@@ -3,7 +3,7 @@ import MessageUI
 import Auth
 
 struct ProfileView: View {
-    @EnvironmentObject private var authService: AuthService
+    @Environment(AuthService.self) private var authService
     @Environment(\.openURL) private var openURL
 
     @State private var viewModel = ProfileViewModel()
@@ -240,5 +240,5 @@ struct ProfileView: View {
 
 #Preview {
     ProfileView()
-        .environmentObject(AuthService())
+        .environment(AuthService())
 }

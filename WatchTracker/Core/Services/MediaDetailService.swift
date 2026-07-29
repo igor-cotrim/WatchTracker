@@ -27,7 +27,11 @@ private struct SeasonStatusResponse: Decodable {
 // MARK: - MediaDetailService
 
 final class MediaDetailService {
-    private let api = APIClient.shared
+    private let api: APIClient
+
+    init(api: APIClient = .shared) {
+        self.api = api
+    }
 
     func fetchMediaDetail(type: MediaType, id: Int) async throws -> MediaDetail {
         try await api.get(.mediaDetail(type: type, id: id))

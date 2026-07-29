@@ -11,14 +11,21 @@ final class AISuggestionsViewModel {
     var hasGenerated = false
     var userInput: String = ""
 
-    private let aiService = AIService()
-    private let watchlistService = WatchlistService()
-    private let store = WatchlistStore.shared
+    private let aiService: any AIServiceProtocol
+    private let watchlistService: any WatchlistServiceProtocol
+    private let store: WatchlistStore
 
-    init() {
-        availability = AIService().checkAvailability()
+    init(
+        aiService: any AIServiceProtocol = AIService(),
+        watchlistService: any WatchlistServiceProtocol = WatchlistService(),
+        store: WatchlistStore = .shared
+    ) {
+        self.aiService = aiService
+        self.watchlistService = watchlistService
+        self.store = store
+        availability = aiService.checkAvailability()
     }
-    
+
     func generateSuggestions() async {
         guard !isLoading else { return }
         
@@ -31,7 +38,7 @@ final class AISuggestionsViewModel {
             if !store.cachedItems.isEmpty {
                 watchlist = store.cachedItems
             } else {
-                watchlist = try await watchlistService.fetchWatchlist()
+                watchlist = try await watchlistService.fetchWatchlist(status: nil, mediaType: nil)
             }
 
             let aiItems = try await aiService.generateSuggestions(from: watchlist, userInput: userInput)

@@ -6,7 +6,7 @@ import UserNotifications
 @main
 struct WatchTrackerApp: App {
     @State private var showSplash = true
-    @StateObject private var authService: AuthService
+    @State private var authService = AuthService()
     @AppStorage(AppAppearance.storageKey) private var appearance: AppAppearance = .system
 
     private static let notificationDelegate = NotificationDelegate()
@@ -14,7 +14,6 @@ struct WatchTrackerApp: App {
     init() {
         Self.clearKeychainIfFirstLaunch()
         AnalyticsService.shared.start()
-        _authService = StateObject(wrappedValue: AuthService())
         UNUserNotificationCenter.current().delegate = Self.notificationDelegate
     }
 
@@ -24,7 +23,7 @@ struct WatchTrackerApp: App {
                 if authService.isAuthenticated {
                     AppTabView()
                 } else {
-                    AuthView()
+                    AuthView(auth: authService)
                 }
 
                 if showSplash {
@@ -35,7 +34,7 @@ struct WatchTrackerApp: App {
             }
             .animation(.easeOut(duration: 0.4), value: showSplash)
             .preferredColorScheme(appearance.colorScheme)
-            .environmentObject(authService)
+            .environment(authService)
             .environment(AppRouter.shared)
             .task {
                 async let session: () = authService.checkSession()
