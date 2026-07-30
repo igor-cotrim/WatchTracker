@@ -74,6 +74,49 @@ struct MediaDetailTests {
         #expect(detail.releaseYear == nil)
     }
 
+    // MARK: - runtimeMinutes
+
+    @Test func `runtimeMinutes reads runtime for a movie`() {
+        let detail = TestFixtures.mediaDetail(runtime: 148)
+        #expect(detail.runtimeMinutes == 148)
+    }
+
+    @Test func `runtimeMinutes reads the first episodeRunTime for a series`() {
+        let detail = TestFixtures.tvDetail(episodeRunTime: [45, 60])
+        #expect(detail.runtimeMinutes == 45)
+    }
+
+    @Test func `runtimeMinutes ignores episodeRunTime on a movie`() {
+        let detail = TestFixtures.mediaDetail(runtime: 148, episodeRunTime: [45])
+        #expect(detail.runtimeMinutes == 148)
+    }
+
+    @Test func `runtimeMinutes ignores runtime on a series`() {
+        let detail = TestFixtures.mediaDetail(
+            title: nil,
+            name: "Show",
+            runtime: 148,
+            episodeRunTime: [45]
+        )
+        #expect(detail.runtimeMinutes == 45)
+    }
+
+    // TMDB reports 0 / [] rather than null for titles it has no runtime for.
+    @Test func `runtimeMinutes treats a zero movie runtime as absent`() {
+        let detail = TestFixtures.mediaDetail(runtime: 0)
+        #expect(detail.runtimeMinutes == nil)
+    }
+
+    @Test func `runtimeMinutes treats an empty episodeRunTime as absent`() {
+        let detail = TestFixtures.tvDetail(episodeRunTime: [])
+        #expect(detail.runtimeMinutes == nil)
+    }
+
+    @Test func `runtimeMinutes is nil when both fields are missing`() {
+        #expect(TestFixtures.mediaDetail().runtimeMinutes == nil)
+        #expect(TestFixtures.tvDetail().runtimeMinutes == nil)
+    }
+
     // MARK: - Image URLs
 
     @Test func `posterURL constructs TMDB w342 URL`() throws {

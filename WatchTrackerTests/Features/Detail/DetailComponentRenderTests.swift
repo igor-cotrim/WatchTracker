@@ -44,6 +44,26 @@ struct DetailComponentRenderTests {
         _ = render(DetailTitleSection(media: bare), height: 120)
     }
 
+    /// Every metadata segment populated at once — the case that pushed the old
+    /// single-row layout into truncating both the date and the genres.
+    @Test func `title section renders every metadata segment`() {
+        let dense = TestFixtures.mediaDetail(
+            title: "Toy Story 5",
+            posterPath: nil,
+            backdropPath: nil,
+            runtime: 100,
+            genres: ["Animação", "Família", "Comédia"],
+            certification: "10"
+        )
+        _ = render(DetailTitleSection(media: dense), height: 120)
+    }
+
+    /// A series formats its runtime per episode rather than as a whole.
+    @Test func `title section renders a per-episode runtime`() {
+        let show = TestFixtures.tvDetail(episodeRunTime: [45])
+        _ = render(DetailTitleSection(media: show), height: 120)
+    }
+
     @Test func `synopsis section renders`() {
         _ = render(DetailSynopsisSection(media: movie), height: 200)
     }

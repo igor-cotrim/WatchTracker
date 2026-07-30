@@ -67,7 +67,11 @@ enum TestFixtures {
         posterPath: String? = "/poster.jpg",
         backdropPath: String? = "/backdrop.jpg",
         // Streaming providers for the "BR" region, which is the only one the UI reads.
-        flatrateProviders: [String]? = nil
+        flatrateProviders: [String]? = nil,
+        runtime: Int? = nil,
+        episodeRunTime: [Int]? = nil,
+        genres: [String]? = nil,
+        certification: String? = nil
     ) -> MediaDetail {
         let titleValue = title.map { "\"\($0)\"" } ?? "null"
         let nameValue = name.map { "\"\($0)\"" } ?? "null"
@@ -76,6 +80,17 @@ enum TestFixtures {
         let firstAirDateValue = firstAirDate.map { "\"\($0)\"" } ?? "null"
         let posterValue = posterPath.map { "\"\($0)\"" } ?? "null"
         let backdropValue = backdropPath.map { "\"\($0)\"" } ?? "null"
+        let runtimeValue = runtime.map(String.init) ?? "null"
+        let episodeRunTimeValue = episodeRunTime.map { "[\($0.map(String.init).joined(separator: ", "))]" } ?? "null"
+        let certificationValue = certification.map { "\"\($0)\"" } ?? "null"
+        let genresValue = genres.map { names in
+            let entries = names.enumerated().map { index, name in
+                """
+                {"id": \(index + 1), "name": "\(name)"}
+                """
+            }
+            return "[\(entries.joined(separator: ","))]"
+        } ?? "null"
         let providersValue = flatrateProviders.map { names in
             let entries = names.enumerated().map { index, name in
                 """
@@ -97,11 +112,14 @@ enum TestFixtures {
             "vote_average": 8.0,
             "release_date": \(releaseDateValue),
             "first_air_date": \(firstAirDateValue),
-            "genres": null,
+            "genres": \(genresValue),
+            "runtime": \(runtimeValue),
+            "episode_run_time": \(episodeRunTimeValue),
             "credits": null,
             "watch_providers": \(providersValue),
             "seasons": null,
-            "watchlist_status": \(statusValue)
+            "watchlist_status": \(statusValue),
+            "certification": \(certificationValue)
         }
         """
         return try! fixtureDecoder.decode(MediaDetail.self, from: Data(json.utf8))
@@ -110,9 +128,16 @@ enum TestFixtures {
     static func tvDetail(
         id: Int = 2,
         name: String = "Test Show",
-        watchlistStatus: WatchlistStatus? = nil
+        watchlistStatus: WatchlistStatus? = nil,
+        episodeRunTime: [Int]? = nil
     ) -> MediaDetail {
-        mediaDetail(id: id, title: nil, name: name, watchlistStatus: watchlistStatus)
+        mediaDetail(
+            id: id,
+            title: nil,
+            name: name,
+            watchlistStatus: watchlistStatus,
+            episodeRunTime: episodeRunTime
+        )
     }
 
     /// A TV detail carrying `seasons`, each described as `(number, episodeCount)`.

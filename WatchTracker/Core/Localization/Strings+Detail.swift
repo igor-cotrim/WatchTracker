@@ -26,6 +26,25 @@ extension Strings {
         static func seasonEpisodesCount(_ count: Int) -> String {
             String(format: String(localized: "detail.season.episodes_count"), count)
         }
+
+        /// Duration shown in the metadata line: "2h 28min" for a movie,
+        /// "~45min/ep" for a series, where the number is one episode's length.
+        static func runtime(minutes: Int, perEpisode: Bool) -> String {
+            let hours = minutes / 60
+            let mins = minutes % 60
+            let base: String
+            switch (hours, mins) {
+            case (0, _):
+                base = String(format: String(localized: "detail.runtime.minutes"), mins)
+            case (_, 0):
+                base = String(format: String(localized: "detail.runtime.hours"), hours)
+            default:
+                base = String(format: String(localized: "detail.runtime.hours_minutes"), hours, mins)
+            }
+            return perEpisode
+                ? String(format: String(localized: "detail.runtime.per_episode"), base)
+                : base
+        }
     }
 
     // MARK: - Rating

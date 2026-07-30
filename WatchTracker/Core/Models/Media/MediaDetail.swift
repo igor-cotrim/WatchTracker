@@ -11,6 +11,8 @@ struct MediaDetail: Codable, Identifiable {
     let releaseDate: String?
     let firstAirDate: String?
     let genres: [Genre]?
+    let runtime: Int?              // movies — total length in minutes
+    let episodeRunTime: [Int]?     // TV — typical episode length in minutes
     let credits: Credits?
     let watchProviders: WatchProviderResult?
     let seasons: [Season]?   // TV only
@@ -30,6 +32,15 @@ struct MediaDetail: Codable, Identifiable {
 
     var displayTitle: String {
         title ?? name ?? "Unknown"
+    }
+
+    /// Length in minutes: the whole film for a movie, one typical episode for a series.
+    /// TMDB reports 0 or an empty array for titles it has no runtime for, which we
+    /// treat as absent so the UI can drop the segment instead of showing "0min".
+    var runtimeMinutes: Int? {
+        let value = mediaType == .movie ? runtime : episodeRunTime?.first
+        guard let value, value > 0 else { return nil }
+        return value
     }
 
     var releaseYear: String? {

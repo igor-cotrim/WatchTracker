@@ -992,6 +992,74 @@
         }
       }
     },
+    "detail.runtime.hours" : {
+      "comment" : "Runtime in the detail metadata line, whole hours only. %lld = hours",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldh"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldh"
+          }
+        }
+      }
+    },
+    "detail.runtime.hours_minutes" : {
+      "comment" : "Runtime in the detail metadata line. %1$lld = hours, %2$lld = minutes",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lldh %2$lldmin"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lldh %2$lldmin"
+          }
+        }
+      }
+    },
+    "detail.runtime.minutes" : {
+      "comment" : "Runtime in the detail metadata line, under one hour. %lld = minutes",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldmin"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldmin"
+          }
+        }
+      }
+    },
+    "detail.runtime.per_episode" : {
+      "comment" : "Wraps a TV show's runtime to mark it as per-episode. %@ = formatted duration",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%@/ep"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%@/ep"
+          }
+        }
+      }
+    },
     "detail.season.episodes_count" : {
       "comment" : "Episode count shown under a season name. %lld = count",
       "localizations" : {
