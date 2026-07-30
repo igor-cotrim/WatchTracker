@@ -9,7 +9,7 @@ struct AuthBrandingHeader: View {
                 .frame(width: 120, height: 120)
                 .shadow(color: Color.brandPrimary.opacity(0.8), radius: 20)
 
-            Text(verbatim: "Watcheed")
+            Text(verbatim: "Watched")
                 .font(.largeTitle.bold())
                 .foregroundStyle(.primary)
 

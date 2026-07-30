@@ -69,7 +69,7 @@ struct ShareCardView: View {
                     .scaledToFit()
                     .frame(width: 72, height: 72)
 
-                Text(verbatim: "Watcheed")
+                Text(verbatim: "Watched")
                     .font(.system(size: 52, weight: .heavy))
                     .foregroundStyle(.white)
             }

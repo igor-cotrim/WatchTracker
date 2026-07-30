@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="screenshots/logo.svg" width="100" alt="WatchTracker Logo" />
-  <h1>WatchTracker — iOS</h1>
+  <img src="screenshots/logo.svg" width="100" alt="Watched Logo" />
+  <h1>Watched — iOS</h1>
   <h2>Native iOS app for tracking movies and TV shows</h2>
 </div>
 
@@ -32,19 +32,19 @@ Built with SwiftUI and powered by a custom Express.js backend. Part of the `movi
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| UI | SwiftUI |
-| Architecture | MVVM — `@Observable` ViewModels |
-| Auth | Supabase Swift SDK v2.5.1+ |
-| Networking | Custom `actor`-based `APIClient` |
+| Layer        | Technology                                        |
+| ------------ | ------------------------------------------------- |
+| UI           | SwiftUI                                           |
+| Architecture | MVVM — `@Observable` ViewModels                   |
+| Auth         | Supabase Swift SDK v2.5.1+                        |
+| Networking   | Custom `actor`-based `APIClient`                  |
 | Localization | `Localizable.xcstrings` + typesafe `Strings` enum |
-| AI | Apple `FoundationModels` (`SystemLanguageModel`) |
-| Backend | Express.js API — see `../backend/` |
+| AI           | Apple `FoundationModels` (`SystemLanguageModel`)  |
+| Backend      | Express.js API — see `../backend/`                |
 
 ## Getting Started
 
-1. Open `WatchTracker/WatchTracker.xcodeproj` in Xcode.
+1. Open `Watched/Watched.xcodeproj` in Xcode.
 2. Xcode resolves the single SPM dependency (Supabase Swift) automatically.
 3. Build and run (⌘R) on a simulator or device running iOS 18+.
 
@@ -59,7 +59,7 @@ By default **Debug builds talk to `http://localhost:3000/api`** (start the backe
 ## Project Structure
 
 ```
-WatchTracker/WatchTracker/
+Watched/Watched/
 ├── App/                        # Entry point, tab navigation, Config
 ├── Components/                 # Cross-feature reusable views
 │   ├── PosterCardView
@@ -99,4 +99,4 @@ All user-facing strings must go through `Core/Extensions/Strings.swift` and `Loc
 
 ## Tests
 
-Unit tests live in `WatchTracker/WatchTrackerTests/`. They cover ViewModels, models, and services using protocol-based mocks (`MockWatchlistService`, `MockDiscoverService`, `MockMediaDetailService`). Run with ⌘U in Xcode.
+Unit tests live in `Watched/WatchedTests/`. They cover ViewModels, models, and services using protocol-based mocks (`MockWatchlistService`, `MockDiscoverService`, `MockMediaDetailService`). Run with ⌘U in Xcode.
