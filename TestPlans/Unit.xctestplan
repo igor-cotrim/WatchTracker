@@ -1,43 +1,41 @@
 {
-  "configurations" : [
+  "configurations": [
     {
-      "id" : "707CFDDE-72D9-447C-AD3F-5DB7827EA446",
-      "name" : "Default",
-      "options" : {
-
-      }
+      "id": "707CFDDE-72D9-447C-AD3F-5DB7827EA446",
+      "name": "Default",
+      "options": {}
     }
   ],
-  "defaultOptions" : {
-    "codeCoverage" : {
-      "targets" : [
+  "defaultOptions": {
+    "codeCoverage": {
+      "targets": [
         {
-          "containerPath" : "container:WatchTracker.xcodeproj",
-          "identifier" : "81F8D2932F84293500AD08B5",
-          "name" : "WatchTracker"
+          "containerPath": "container:WatchTracker.xcodeproj",
+          "identifier": "81F8D2932F84293500AD08B5",
+          "name": "WatchTracker"
         }
       ]
     },
-    "defaultTestExecutionTimeAllowance" : 120,
-    "environmentVariableEntries" : [
+    "defaultTestExecutionTimeAllowance": 120,
+    "environmentVariableEntries": [
       {
-        "key" : "WT_DISABLE_ANIMATIONS",
-        "value" : "1"
+        "key": "WT_DISABLE_ANIMATIONS",
+        "value": "1"
       }
     ],
-    "language" : "en",
-    "region" : "US",
-    "testTimeoutsEnabled" : true
+    "language": "en",
+    "region": "US",
+    "testTimeoutsEnabled": true
   },
-  "testTargets" : [
+  "testTargets": [
     {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:WatchTracker.xcodeproj",
-        "identifier" : "81B30BE82F90263300C5B285",
-        "name" : "WatchTrackerTests"
+      "parallelizable": true,
+      "target": {
+        "containerPath": "container:WatchTracker.xcodeproj",
+        "identifier": "81B30BE82F90263300C5B285",
+        "name": "WatchTrackerTests"
       }
     }
   ],
-  "version" : 1
+  "version": 1
 }

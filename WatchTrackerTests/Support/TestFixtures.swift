@@ -65,7 +65,9 @@ enum TestFixtures {
         firstAirDate: String? = nil,
         // See `watchItem(posterPath:)` — nil keeps rendered views off the network.
         posterPath: String? = "/poster.jpg",
-        backdropPath: String? = "/backdrop.jpg"
+        backdropPath: String? = "/backdrop.jpg",
+        // Streaming providers for the "BR" region, which is the only one the UI reads.
+        flatrateProviders: [String]? = nil
     ) -> MediaDetail {
         let titleValue = title.map { "\"\($0)\"" } ?? "null"
         let nameValue = name.map { "\"\($0)\"" } ?? "null"
@@ -74,6 +76,16 @@ enum TestFixtures {
         let firstAirDateValue = firstAirDate.map { "\"\($0)\"" } ?? "null"
         let posterValue = posterPath.map { "\"\($0)\"" } ?? "null"
         let backdropValue = backdropPath.map { "\"\($0)\"" } ?? "null"
+        let providersValue = flatrateProviders.map { names in
+            let entries = names.enumerated().map { index, name in
+                """
+                {"provider_id": \(index + 1), "provider_name": "\(name)", "logo_path": "/\(name).jpg"}
+                """
+            }
+            return """
+            {"results": {"BR": {"link": "https://example.com", "flatrate": [\(entries.joined(separator: ","))], "rent": null, "buy": null}}}
+            """
+        } ?? "null"
         let json = """
         {
             "id": \(id),
@@ -87,7 +99,7 @@ enum TestFixtures {
             "first_air_date": \(firstAirDateValue),
             "genres": null,
             "credits": null,
-            "watch_providers": null,
+            "watch_providers": \(providersValue),
             "seasons": null,
             "watchlist_status": \(statusValue)
         }
@@ -322,6 +334,29 @@ enum TestFixtures {
         }
         """
         return try! fixtureDecoder.decode(ProfileStats.self, from: Data(json.utf8))
+    }
+
+    // MARK: CastMember
+
+    static func castMember(
+        id: Int = 1,
+        name: String = "Edward Norton",
+        character: String? = "The Narrator",
+        // nil keeps `profileURL` nil, so a rendered cast row shows its local placeholder
+        // instead of letting `AsyncImage` reach image.tmdb.org.
+        profilePath: String? = nil
+    ) -> CastMember {
+        let characterValue = character.map { "\"\($0)\"" } ?? "null"
+        let profileValue = profilePath.map { "\"\($0)\"" } ?? "null"
+        let json = """
+        {
+            "id": \(id),
+            "name": "\(name)",
+            "character": \(characterValue),
+            "profile_path": \(profileValue)
+        }
+        """
+        return try! fixtureDecoder.decode(CastMember.self, from: Data(json.utf8))
     }
 
     // MARK: StreamingProvider

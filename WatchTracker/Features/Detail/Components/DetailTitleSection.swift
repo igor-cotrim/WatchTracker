@@ -18,23 +18,23 @@ struct DetailTitleSection: View {
                     Text(voteAverage, format: .number.precision(.fractionLength(1)))
                         .font(.subheadline)
                 } else {
-                    Text("–")
+                    Text(verbatim: "–")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
 
-                Text("  |  ")
+                Text(verbatim: "  |  ")
                     .foregroundStyle(.secondary)
 
-                Text((media.releaseDateFormatted ?? "–"))
+                Text(verbatim: media.releaseDateFormatted ?? "–")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
 
-                Text("  |  ")
+                Text(verbatim: "  |  ")
                     .foregroundStyle(.secondary)
 
-                Text((media.genres?.map(\.name).joined(separator: ", ")) ?? "–")
+                Text(verbatim: media.genres?.map(\.name).joined(separator: ", ") ?? "–")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)

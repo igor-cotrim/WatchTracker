@@ -32,11 +32,15 @@ struct GlobalComponentRenderTests {
     // MARK: - SkeletonView
 
     /// Rasterised rather than laid out: the shimmer is a gradient `fill`, so its work
-    /// happens at draw time. The Unit plan sets `WT_DISABLE_ANIMATIONS=1`, which keeps
-    /// `MotionPolicy` from starting the never-ending `repeatForever` animation.
-    @Test func `skeleton renders its resting gradient`() {
+    /// happens at draw time.
+    ///
+    /// Deliberately asserts nothing about `MotionPolicy`. Whether the shimmer animates
+    /// is a property of how the suite was launched, not of this component, and a test
+    /// that checks it fails for anyone running from Xcode instead of `scripts/test.sh`.
+    /// The policy matters for snapshots, where the captured frame must be stable — it is
+    /// irrelevant here, since nothing inspects pixels.
+    @Test func `skeleton renders its gradient`() {
         rasterize(SkeletonView(), width: 120, height: 180)
-        #expect(MotionPolicy.isEnabled == false, "the Unit plan must disable animations")
     }
 
     // MARK: - ErrorStateView

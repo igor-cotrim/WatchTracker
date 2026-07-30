@@ -27,6 +27,7 @@
     {
       "parallelizable" : true,
       "selectedTests" : [
+        "AIScreenRenderTests",
         "AIServiceTests",
         "AISuggestionsViewModelTests"
       ],
