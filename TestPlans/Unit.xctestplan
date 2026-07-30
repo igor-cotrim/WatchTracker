@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "707CFDDE-72D9-447C-AD3F-5DB7827EA446",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:WatchTracker.xcodeproj",
+          "identifier" : "81F8D2932F84293500AD08B5",
+          "name" : "WatchTracker"
+        }
+      ]
+    },
+    "defaultTestExecutionTimeAllowance" : 120,
+    "language" : "en",
+    "region" : "US",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:WatchTracker.xcodeproj",
+        "identifier" : "81B30BE82F90263300C5B285",
+        "name" : "WatchTrackerTests"
+      }
+    }
+  ],
+  "version" : 1
+}

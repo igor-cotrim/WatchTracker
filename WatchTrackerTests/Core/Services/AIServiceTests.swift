@@ -4,10 +4,17 @@ import FoundationModels
 @testable import WatchTracker
 
 /// `AIService` is `@available(iOS 26, *)` but Swift Testing rejects `@available` on a
-/// `@Test` function, so every test guards at runtime instead. The bulk of the logic
-/// lives in the ungated `AIPromptBuilder` and is covered by `AIPromptBuilderTests`.
+/// `@Test` function, so every test also guards at runtime. `.enabled(if:)` is what makes
+/// an older runtime report these as *skipped* rather than vacuously passing — see
+/// `AIRuntime`. The bulk of the logic lives in the ungated `AIPromptBuilder` and is
+/// covered by `AIPromptBuilderTests`.
 @MainActor
-@Suite("AIService", .tags(.service, .async), .timeLimit(.minutes(1)))
+@Suite(
+    "AIService",
+    .tags(.service, .async),
+    .timeLimit(.minutes(1)),
+    .enabled(if: AIRuntime.isAvailable, "requires an iOS 26 runtime")
+)
 struct AIServiceTests {
 
     // MARK: - Availability mapping

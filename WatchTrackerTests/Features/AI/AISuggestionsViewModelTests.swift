@@ -2,8 +2,15 @@ import Foundation
 import Testing
 @testable import WatchTracker
 
+/// `.enabled(if:)` makes a pre-iOS-26 runtime report these as *skipped* instead of
+/// passing without running anything — see `AIRuntime`.
 @MainActor
-@Suite("AISuggestionsViewModel", .tags(.viewModel, .async), .timeLimit(.minutes(1)))
+@Suite(
+    "AISuggestionsViewModel",
+    .tags(.viewModel, .async),
+    .timeLimit(.minutes(1)),
+    .enabled(if: AIRuntime.isAvailable, "requires an iOS 26 runtime")
+)
 struct AISuggestionsViewModelTests {
 
     @available(iOS 26, *)
