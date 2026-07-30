@@ -1,4 +1,5 @@
 import Foundation
+import Auth
 @testable import WatchTracker
 
 @MainActor
@@ -6,10 +7,13 @@ final class MockAuthService: AuthServiceProtocol {
 
     // MARK: - Configurable results
 
+    var currentUser: User?
     var signInError: Error?
     var signUpError: Error?
     var resetPasswordError: Error?
     var confirmPasswordResetError: Error?
+    var signOutError: Error?
+    var deleteAccountError: Error?
 
     private(set) var sessionExpiredMessage: String?
 
@@ -20,13 +24,16 @@ final class MockAuthService: AuthServiceProtocol {
     private(set) var resetPasswordCalls: [String] = []
     private(set) var confirmPasswordResetCalls: [(email: String, code: String, newPassword: String)] = []
     private(set) var clearSessionExpiredMessageCallCount = 0
+    private(set) var signOutCallCount = 0
+    private(set) var deleteAccountCallCount = 0
 
     /// Runs inside each async method before it returns, so tests can observe the
     /// view model's in-flight state (e.g. `isLoading`) or re-enter it deterministically.
     var onCall: (@MainActor () async -> Void)?
 
-    init(sessionExpiredMessage: String? = nil) {
+    init(sessionExpiredMessage: String? = nil, currentUser: User? = nil) {
         self.sessionExpiredMessage = sessionExpiredMessage
+        self.currentUser = currentUser
     }
 
     // MARK: - Protocol conformance
@@ -58,5 +65,17 @@ final class MockAuthService: AuthServiceProtocol {
         confirmPasswordResetCalls.append((email: email, code: code, newPassword: newPassword))
         await onCall?()
         if let confirmPasswordResetError { throw confirmPasswordResetError }
+    }
+
+    func signOut() async throws {
+        signOutCallCount += 1
+        await onCall?()
+        if let signOutError { throw signOutError }
+    }
+
+    func deleteAccount() async throws {
+        deleteAccountCallCount += 1
+        await onCall?()
+        if let deleteAccountError { throw deleteAccountError }
     }
 }

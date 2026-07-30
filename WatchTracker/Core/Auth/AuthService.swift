@@ -16,16 +16,19 @@ enum AuthServiceError: LocalizedError {
 
 // MARK: - Protocols
 
-/// What the auth screens need from `AuthService`. Views and view models depend on this
-/// rather than the concrete service, so they can be driven by a stub in tests.
+/// What the auth screens and the Profile tab need from `AuthService`. Views and view models
+/// depend on this rather than the concrete service, so they can be driven by a stub in tests.
 @MainActor
 protocol AuthServiceProtocol: AnyObject {
+    var currentUser: User? { get }
     var sessionExpiredMessage: String? { get }
     func clearSessionExpiredMessage()
     func signIn(email: String, password: String) async throws
     func signUp(email: String, password: String, name: String) async throws
     func resetPassword(email: String) async throws
     func confirmPasswordReset(email: String, code: String, newPassword: String) async throws
+    func signOut() async throws
+    func deleteAccount() async throws
 }
 
 /// The slice of Supabase's `AuthClient` that `AuthService` actually uses.
@@ -106,6 +109,7 @@ final class AuthService: AuthServiceProtocol {
     private let router: AppRouter
     private let store: WatchlistStore
     private let userDefaults: UserDefaults
+    private let notifications: NotificationScheduling
     private let notificationCenter: NotificationCenter
 
     private var isRecovering = false
@@ -128,6 +132,7 @@ final class AuthService: AuthServiceProtocol {
         router: AppRouter = .shared,
         store: WatchlistStore = .shared,
         userDefaults: UserDefaults = .standard,
+        notifications: NotificationScheduling = NotificationService.shared,
         // Injectable so parallel tests don't sign each other out: `.authUnauthorized`
         // is a process-wide broadcast, and every live service reacts to it.
         notificationCenter: NotificationCenter = .default
@@ -137,6 +142,7 @@ final class AuthService: AuthServiceProtocol {
         self.router = router
         self.store = store
         self.userDefaults = userDefaults
+        self.notifications = notifications
         self.notificationCenter = notificationCenter
         listenToAuthChanges()
         listenToUnauthorized()
@@ -215,7 +221,7 @@ final class AuthService: AuthServiceProtocol {
         try await client.signOut()
         currentUser = nil
         isAuthenticated = false
-        resetLocalUserState()
+        await resetLocalUserState()
     }
 
     /// Permanently deletes the user's account and all their data. The backend removes
@@ -225,7 +231,7 @@ final class AuthService: AuthServiceProtocol {
         try await client.signOut()
         currentUser = nil
         isAuthenticated = false
-        resetLocalUserState()
+        await resetLocalUserState()
     }
 
     // MARK: - Internal
@@ -245,7 +251,7 @@ final class AuthService: AuthServiceProtocol {
 
     /// Clears all per-user local state so the next account starts clean.
     /// Called on sign-out and account deletion — the two paths that end a session.
-    private func resetLocalUserState() {
+    private func resetLocalUserState() async {
         // Navigation returns to the Home tab (logout is triggered from Profile).
         router.selectedTab = .home
         router.pendingShowId = nil
@@ -260,6 +266,19 @@ final class AuthService: AuthServiceProtocol {
         // Per-user preferences / history persisted in UserDefaults.
         SearchHistoryManager(userDefaults: userDefaults).clearAll()
         userDefaults.removeObject(forKey: "discover.lastProviderId")
+
+        await resetNotificationState()
+    }
+
+    private func resetNotificationState() async {
+        await notifications.removeAllNotifications()
+
+        // Per-(show, season) flags that suppress duplicate new-season alerts. Left behind they
+        // both leak which shows the previous user tracked and silence the alert for the next one.
+        for key in userDefaults.dictionaryRepresentation().keys
+        where key.hasPrefix(NotificationService.newSeasonDedupePrefix) {
+            userDefaults.removeObject(forKey: key)
+        }
     }
 
     /// Observes 401s surfaced by `APIClient` and forces a sign-out so the user is

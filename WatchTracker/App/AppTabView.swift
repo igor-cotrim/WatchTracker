@@ -3,6 +3,9 @@ import FoundationModels
 
 struct AppTabView: View {
     @Environment(AppRouter.self) private var appRouter
+    @Environment(AuthService.self) private var authService
+
+    private let startup = AppStartup()
 
     private var isAIAvailable: Bool {
         if #available(iOS 26, *) {
@@ -29,20 +32,11 @@ struct AppTabView: View {
                 }
             }
             Tab(Strings.Tab.profile, systemImage: "person.fill", value: AppRouter.AppTab.profile) {
-                ProfileView()
+                ProfileView(auth: authService)
             }
         }
         .task {
-            let defaults = UserDefaults.standard
-            if !defaults.bool(forKey: "hasRequestedNotificationPermission") {
-                let granted = await NotificationService.shared.requestAuthorization()
-                defaults.set(true, forKey: "hasRequestedNotificationPermission")
-                if granted { defaults.set(true, forKey: "episodeRemindersEnabled") }
-            }
-
-            if let items = try? await WatchlistService().fetchUpcoming() {
-                await NotificationService.shared.scheduleNotifications(for: items)
-            }
+            await startup.run()
         }
     }
 }
@@ -50,4 +44,5 @@ struct AppTabView: View {
 #Preview {
     AppTabView()
         .environment(AppRouter.shared)
+        .environment(AuthService())
 }

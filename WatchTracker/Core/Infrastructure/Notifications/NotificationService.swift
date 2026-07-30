@@ -17,7 +17,7 @@ actor NotificationService {
     }
 
     func scheduleNotifications(for items: [UpcomingItem]) async {
-        guard UserDefaults.standard.bool(forKey: "episodeRemindersEnabled") else { return }
+        guard UserDefaults.standard.bool(forKey: NotificationService.episodeRemindersEnabledKey) else { return }
 
         await cancelAllEpisodeNotifications()
 
@@ -57,7 +57,7 @@ actor NotificationService {
     /// because a brand-new season aired. Deduped per (show, season) so the same
     /// season never notifies twice across watchlist refreshes.
     func notifyNewSeason(tmdbId: Int, title: String, seasonNumber: Int) async {
-        guard UserDefaults.standard.bool(forKey: "episodeRemindersEnabled") else { return }
+        guard UserDefaults.standard.bool(forKey: NotificationService.episodeRemindersEnabledKey) else { return }
 
         let dedupeKey = NotificationService.newSeasonDedupeKey(tmdbId: tmdbId, season: seasonNumber)
         guard !UserDefaults.standard.bool(forKey: dedupeKey) else { return }
@@ -93,12 +93,31 @@ actor NotificationService {
         center.removePendingNotificationRequests(withIdentifiers: ids)
     }
 
+    /// Every notification the app schedules names a show and an episode, so none of them may
+    /// outlive the session that produced them — a queued reminder or one still sitting in
+    /// Notification Center would otherwise spell out the previous account's watchlist.
+    /// Unfiltered on purpose: episode reminders and new-season alerts are all this app creates.
+    func removeAllNotifications() async {
+        let center = UNUserNotificationCenter.current()
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
+    }
+
     // MARK: - Pure helpers
     //
     // Extracted from the actor so the date handling and identifier shapes can be
     // unit-tested without `UNUserNotificationCenter`.
 
     nonisolated static let episodePrefix = "episode-"
+
+    /// Whether the user wants episode reminders. Gates every scheduling path here, is
+    /// toggled from Profile, and is turned on once by `AppStartup` when the system
+    /// permission prompt is granted — so it must stay a single shared constant.
+    nonisolated static let episodeRemindersEnabledKey = "episodeRemindersEnabled"
+
+    /// iOS only ever shows the permission prompt once per install, so this flag keeps
+    /// `AppStartup` from re-asking (and from re-enabling reminders the user turned off).
+    nonisolated static let hasRequestedAuthorizationKey = "hasRequestedNotificationPermission"
 
     /// Parses a TMDB `yyyy-MM-dd` air date. Uses the POSIX locale so the format is
     /// not reinterpreted under non-Gregorian calendars.
@@ -128,8 +147,10 @@ actor NotificationService {
         "newseason-\(tmdbId)-S\(season)"
     }
 
+    nonisolated static let newSeasonDedupePrefix = "notifiedNewSeason-"
+
     nonisolated static func newSeasonDedupeKey(tmdbId: Int, season: Int) -> String {
-        "notifiedNewSeason-\(tmdbId)-\(season)"
+        "\(newSeasonDedupePrefix)\(tmdbId)-\(season)"
     }
 }
 

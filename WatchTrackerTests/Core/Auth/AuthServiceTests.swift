@@ -14,9 +14,12 @@ struct AuthServiceTests {
         let router = AppRouter()
         let store = WatchlistStore()
         let defaults: UserDefaults
+        let notifications = MockNotificationScheduler()
         /// Private so a 401 raised by a suite running in parallel can't sign this
         /// service out — `.authUnauthorized` is otherwise a process-wide broadcast.
         let notificationCenter = NotificationCenter()
+        /// Stubbed so no test can reach the network; `deleteAccount` is the one path that calls out.
+        let recorder: StubURLProtocol.Recorder
         let service: AuthService
         private let suiteName: String
 
@@ -24,11 +27,15 @@ struct AuthServiceTests {
         init() {
             suiteName = "test-\(UUID().uuidString)"
             defaults = UserDefaults(suiteName: suiteName)!
+            let (session, recorder) = StubURLProtocol.session(.json("{}"))
+            self.recorder = recorder
             service = AuthService(
                 client: client,
+                api: APIClient(session: session, tokenProvider: { "token" }, clock: ImmediateClock()),
                 router: router,
                 store: store,
                 userDefaults: defaults,
+                notifications: notifications,
                 notificationCenter: notificationCenter
             )
         }
@@ -163,6 +170,72 @@ struct AuthServiceTests {
             try await harness.service.signOut()
         }
         #expect(harness.store.cachedItems.count == 1)
+    }
+
+    // MARK: - Notification teardown
+    //
+    // Episode reminders carry show and episode titles in their payload, so anything one
+    // account queued must not survive into the next one's lock screen.
+
+    @Test func `signOut wipes every queued notification`() async throws {
+        let harness = Harness()
+
+        try await harness.service.signOut()
+
+        #expect(harness.notifications.removeAllCount == 1)
+    }
+
+    @Test func `signOut keeps the device-level notification preferences`() async throws {
+        // Both describe the device, not the user: the reminder opt-in is a standing choice
+        // nobody wants to redo after every login, and the prompt flag records that iOS has
+        // already shown its one-time system alert. Emptying the queue above is what makes
+        // keeping the opt-in safe — the next account only ever gets its own shows scheduled.
+        let harness = Harness()
+        harness.defaults.set(true, forKey: NotificationService.episodeRemindersEnabledKey)
+        harness.defaults.set(true, forKey: NotificationService.hasRequestedAuthorizationKey)
+
+        try await harness.service.signOut()
+
+        #expect(harness.defaults.bool(forKey: NotificationService.episodeRemindersEnabledKey))
+        #expect(harness.defaults.bool(forKey: NotificationService.hasRequestedAuthorizationKey))
+    }
+
+    @Test func `signOut clears the new-season dedupe flags`() async throws {
+        // Left behind, these both reveal which shows the previous user tracked and
+        // silence the new-season alert for whoever signs in next.
+        let harness = Harness()
+        harness.defaults.set(true, forKey: NotificationService.newSeasonDedupeKey(tmdbId: 1399, season: 4))
+        harness.defaults.set(true, forKey: NotificationService.newSeasonDedupeKey(tmdbId: 66732, season: 5))
+
+        try await harness.service.signOut()
+
+        let leftover = harness.defaults.dictionaryRepresentation().keys
+            .filter { $0.hasPrefix(NotificationService.newSeasonDedupePrefix) }
+        #expect(leftover.isEmpty)
+    }
+
+    @Test func `deleteAccount wipes the queued notifications and the dedupe flags`() async throws {
+        let harness = Harness()
+        harness.defaults.set(true, forKey: NotificationService.newSeasonDedupeKey(tmdbId: 1399, season: 4))
+
+        try await harness.service.deleteAccount()
+
+        #expect(harness.notifications.removeAllCount == 1)
+        #expect(harness.defaults.object(forKey: NotificationService.newSeasonDedupeKey(tmdbId: 1399, season: 4)) == nil)
+    }
+
+    @Test func `a failing signOut keeps the notifications queued`() async {
+        // The session survives a failed sign-out, so its reminders must too.
+        let harness = Harness()
+        harness.client.signOutError = APIError.serverError
+        harness.defaults.set(true, forKey: NotificationService.newSeasonDedupeKey(tmdbId: 1399, season: 4))
+
+        await #expect(throws: APIError.serverError) {
+            try await harness.service.signOut()
+        }
+
+        #expect(harness.notifications.removeAllCount == 0)
+        #expect(harness.defaults.object(forKey: NotificationService.newSeasonDedupeKey(tmdbId: 1399, season: 4)) != nil)
     }
 
     // MARK: - confirmPasswordReset
