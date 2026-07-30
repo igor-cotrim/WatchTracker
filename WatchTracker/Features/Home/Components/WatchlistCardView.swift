@@ -56,6 +56,10 @@ struct WatchlistCardView: View {
                     .scaleEffect(badgeVisible ? 1.0 : 0.4)
                     .opacity(badgeVisible ? 1.0 : 0.0)
                     .onAppear {
+                        guard MotionPolicy.isEnabled else {
+                            badgeVisible = true
+                            return
+                        }
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.55).delay(0.1)) {
                             badgeVisible = true
                         }

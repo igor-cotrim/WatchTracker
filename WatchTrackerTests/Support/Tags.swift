@@ -6,4 +6,5 @@ extension Tag {
     @Tag static var service: Self
     @Tag static var pure: Self      // synchronous, no network
     @Tag static var async: Self     // async tests with mocks
+    @Tag static var view: Self      // renders a SwiftUI view via `render(_:)`
 }

@@ -19,6 +19,12 @@
       ]
     },
     "defaultTestExecutionTimeAllowance" : 120,
+    "environmentVariableEntries" : [
+      {
+        "key" : "WT_DISABLE_ANIMATIONS",
+        "value" : "1"
+      }
+    ],
     "language" : "en",
     "region" : "US",
     "testTimeoutsEnabled" : true

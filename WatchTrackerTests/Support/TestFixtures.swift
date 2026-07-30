@@ -28,9 +28,15 @@ enum TestFixtures {
         tmdbId: Int = 100,
         mediaType: MediaType = .movie,
         status: WatchlistStatus = .planToWatch,
-        isAnime: Bool? = nil
+        isAnime: Bool? = nil,
+        // Pass nil to keep `posterURL` nil, so a rendered view takes its local
+        // placeholder branch instead of letting `AsyncImage` reach image.tmdb.org.
+        posterPath: String? = "/test.jpg",
+        newEpisodesCount: Int? = nil
     ) -> WatchItem {
         let animeValue = isAnime.map { $0 ? "true" : "false" } ?? "null"
+        let posterValue = posterPath.map { "\"\($0)\"" } ?? "null"
+        let newEpisodesValue = newEpisodesCount.map(String.init) ?? "null"
         let json = """
         {
             "id": \(id),
@@ -40,8 +46,8 @@ enum TestFixtures {
             "status": "\(status.rawValue)",
             "added_at": "2026-01-01T00:00:00Z",
             "title": "Test Title",
-            "poster_path": "/test.jpg",
-            "new_episodes_count": null,
+            "poster_path": \(posterValue),
+            "new_episodes_count": \(newEpisodesValue),
             "is_anime": \(animeValue)
         }
         """
@@ -56,21 +62,26 @@ enum TestFixtures {
         name: String? = nil,
         watchlistStatus: WatchlistStatus? = nil,
         releaseDate: String? = "2020-01-15",
-        firstAirDate: String? = nil
+        firstAirDate: String? = nil,
+        // See `watchItem(posterPath:)` — nil keeps rendered views off the network.
+        posterPath: String? = "/poster.jpg",
+        backdropPath: String? = "/backdrop.jpg"
     ) -> MediaDetail {
         let titleValue = title.map { "\"\($0)\"" } ?? "null"
         let nameValue = name.map { "\"\($0)\"" } ?? "null"
         let statusValue = watchlistStatus.map { "\"\($0.rawValue)\"" } ?? "null"
         let releaseDateValue = releaseDate.map { "\"\($0)\"" } ?? "null"
         let firstAirDateValue = firstAirDate.map { "\"\($0)\"" } ?? "null"
+        let posterValue = posterPath.map { "\"\($0)\"" } ?? "null"
+        let backdropValue = backdropPath.map { "\"\($0)\"" } ?? "null"
         let json = """
         {
             "id": \(id),
             "title": \(titleValue),
             "name": \(nameValue),
             "overview": "Test overview",
-            "poster_path": "/poster.jpg",
-            "backdrop_path": "/backdrop.jpg",
+            "poster_path": \(posterValue),
+            "backdrop_path": \(backdropValue),
             "vote_average": 8.0,
             "release_date": \(releaseDateValue),
             "first_air_date": \(firstAirDateValue),

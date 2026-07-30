@@ -17,6 +17,7 @@ struct SkeletonView: View {
                 )
             )
             .onAppear {
+                guard MotionPolicy.isEnabled else { return }
                 withAnimation(
                     .easeInOut(duration: 1.2)
                     .repeatForever(autoreverses: true)
