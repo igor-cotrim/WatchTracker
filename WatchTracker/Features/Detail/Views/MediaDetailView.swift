@@ -4,61 +4,41 @@ struct MediaDetailView: View {
     let mediaType: MediaType
     let mediaId: Int
 
-    @State private var viewModel = MediaDetailViewModel(
-        mediaDetailService: MediaDetailService(),
-        watchlistService: WatchlistService(),
-        store: .shared
-    )
-    @State private var isRenderingShare = false
-    @State private var shareItem: ShareableImage?
+    /// Read from the environment rather than taken through `init`: this screen is opened
+    /// from eight different places (rows, grids, the cast carousel, a notification tap),
+    /// and none of them should have to carry a container just to pass it on.
+    @Environment(AppContainer.self) private var container
+    @State private var viewModel: MediaDetailViewModel?
 
     var body: some View {
+        Group {
+            if let viewModel {
+                content(viewModel)
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 400)
+            }
+        }
+        .task {
+            let viewModel = viewModel ?? container.makeMediaDetailViewModel(type: mediaType, id: mediaId)
+            self.viewModel = viewModel
+            await viewModel.load()
+        }
+    }
+
+    @ViewBuilder
+    private func content(_ viewModel: MediaDetailViewModel) -> some View {
         ScrollViewReader { proxy in
             ScrollView {
-                if viewModel.isLoading {
+                switch viewModel.state {
+                case .idle, .loading:
                     ProgressView()
                         .frame(maxWidth: .infinity, minHeight: 400)
-                } else if let media = viewModel.media {
-                    VStack(alignment: .leading, spacing: 20) {
-                        DetailHeaderSection(media: media)
-
-                        VStack(alignment: .leading, spacing: 16) {
-                            DetailTitleSection(media: media)
-
-                            DetailWatchlistSection(viewModel: viewModel, mediaType: mediaType)
-
-                            if let trailer = media.trailer {
-                                DetailTrailerButton(trailer: trailer, title: media.displayTitle)
-                            }
-
-                            DetailRatingSection(viewModel: viewModel, mediaType: mediaType)
-
-                            DetailWhereToWatchSection(media: media)
-
-                            DetailSynopsisSection(media: media)
-
-                            if let cast = media.credits?.cast, !cast.isEmpty {
-                                DetailCastSection(cast: cast)
-                            }
-
-                            if let seasons = media.seasons, !seasons.isEmpty {
-                                DetailSeasonsSection(seasons: seasons, viewModel: viewModel)
-                            }
-                        }
-                        .padding(.horizontal)
-
-                        if !viewModel.recommendations.isEmpty {
-                            MediaRowSection(
-                                title: Strings.Detail.recommendations,
-                                items: viewModel.recommendations
-                            )
-                        }
-                    }
-                    .padding(.bottom, 32)
-                } else if let error = viewModel.errorMessage {
-                    ErrorStateView(message: error) {
-                        await viewModel.fetchDetails(type: mediaType, id: mediaId)
-                        await viewModel.checkWatchlistStatus()
+                case .loaded(let media):
+                    loaded(media, viewModel: viewModel)
+                case .failed(let message):
+                    ErrorStateView(message: message) {
+                        await viewModel.load()
                     }
                 }
             }
@@ -67,52 +47,103 @@ struct MediaDetailView: View {
                 withAnimation {
                     proxy.scrollTo(target, anchor: .top)
                 }
-                viewModel.scrollTargetSeason = nil
+                viewModel.didScrollToSeason()
             }
         }
         .navigationTitle(viewModel.media?.displayTitle ?? "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if let media = viewModel.media, viewModel.userRating != nil {
+            if viewModel.media != nil, viewModel.userRating != nil {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        Task { await shareRating(media: media) }
-                    } label: {
-                        if isRenderingShare {
-                            ProgressView()
-                        } else {
-                            Image(systemName: "square.and.arrow.up")
-                        }
-                    }
-                    .disabled(isRenderingShare)
-                    .accessibilityLabel(Strings.Rating.shareAccessibility)
+                    shareButton(viewModel)
                 }
             }
         }
-        .sheet(item: $shareItem) { item in
-            ShareSheet(items: [item.image])
-                .ignoresSafeArea()
+        .sheet(isPresented: shareBinding(viewModel)) {
+            if let item = viewModel.shareItem {
+                ShareSheet(items: [item.image])
+                    .ignoresSafeArea()
+            }
         }
-        .task {
-            async let details: () = viewModel.fetchDetails(type: mediaType, id: mediaId)
-            async let recs: () = viewModel.fetchRecommendations(type: mediaType, id: mediaId)
-            _ = await (details, recs)
-            await viewModel.checkWatchlistStatus()
+        .alert(
+            Strings.Detail.actionErrorTitle,
+            isPresented: actionErrorBinding(viewModel),
+            presenting: viewModel.actionError
+        ) { _ in
+            Button(Strings.Common.ok) { viewModel.dismissActionError() }
+        } message: { message in
+            Text(verbatim: message)
         }
     }
 
-    private func shareRating(media: MediaDetail) async {
-        guard let rating = viewModel.userRating else { return }
-        isRenderingShare = true
-        let image = await ShareCardRenderer.render(
-            title: media.displayTitle,
-            posterPath: media.posterPath,
-            starValue: Double(rating) / 2
-        )
-        isRenderingShare = false
-        if let image {
-            shareItem = ShareableImage(image: image)
+    @ViewBuilder
+    private func loaded(_ media: MediaDetail, viewModel: MediaDetailViewModel) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            DetailHeaderSection(media: media)
+
+            VStack(alignment: .leading, spacing: 16) {
+                DetailTitleSection(media: media)
+
+                DetailWatchlistSection(viewModel: viewModel, mediaType: mediaType)
+
+                if let trailer = media.trailer {
+                    DetailTrailerButton(trailer: trailer, viewModel: viewModel)
+                }
+
+                DetailRatingSection(viewModel: viewModel, mediaType: mediaType)
+
+                DetailWhereToWatchSection(media: media, viewModel: viewModel)
+
+                DetailSynopsisSection(media: media)
+
+                if let cast = media.credits?.cast, !cast.isEmpty {
+                    DetailCastSection(cast: cast)
+                }
+
+                if let seasons = media.seasons, !seasons.isEmpty {
+                    DetailSeasonsSection(seasons: seasons, viewModel: viewModel)
+                }
+            }
+            .padding(.horizontal)
+
+            if !viewModel.recommendations.isEmpty {
+                MediaRowSection(
+                    title: Strings.Detail.recommendations,
+                    items: viewModel.recommendations
+                )
+            }
         }
+        .padding(.bottom, 32)
+    }
+
+    private func shareButton(_ viewModel: MediaDetailViewModel) -> some View {
+        Button {
+            Task { await viewModel.shareRating() }
+        } label: {
+            if viewModel.isRenderingShare {
+                ProgressView()
+            } else {
+                Image(systemName: "square.and.arrow.up")
+            }
+        }
+        .disabled(viewModel.isRenderingShare)
+        .accessibilityLabel(Strings.Rating.shareAccessibility)
+    }
+
+    /// The card lives on the view model (rendering it fetches the poster), so presentation
+    /// is a plain read-through binding rather than `.sheet(item:)` over view state.
+    private func shareBinding(_ viewModel: MediaDetailViewModel) -> Binding<Bool> {
+        Binding(
+            get: { viewModel.shareItem != nil },
+            set: { if !$0 { viewModel.dismissShareCard() } }
+        )
+    }
+
+    private func actionErrorBinding(_ viewModel: MediaDetailViewModel) -> Binding<Bool> {
+        Binding(
+            get: { viewModel.actionError != nil },
+            set: { if !$0 { viewModel.dismissActionError() } }
+        )
     }
 }
 
@@ -120,4 +151,5 @@ struct MediaDetailView: View {
     NavigationStack {
         MediaDetailView(mediaType: .movie, mediaId: 550)
     }
+    .environment(AppContainer.preview)
 }

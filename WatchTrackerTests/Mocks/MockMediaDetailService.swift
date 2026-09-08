@@ -14,6 +14,10 @@ final class MockMediaDetailService: MediaDetailServiceProtocol {
     var fetchMediaDetailResult: Result<MediaDetail, Error> = .success(TestFixtures.mediaDetail())
     var fetchSeasonDetailResult: Result<Season, Error> = .success(TestFixtures.season())
     var fetchWatchedEpisodesResult: Result<[Int], Error> = .success([])
+    /// Per-season overrides for the two reads above, for the cases where seasons have to
+    /// differ from one another. Anything not listed falls back to the results above.
+    var seasonResults: [Int: Season] = [:]
+    var watchedEpisodesBySeason: [Int: [Int]] = [:]
     var fetchRecommendationsResult: Result<[MediaDetail], Error> = .success([])
     var fetchPersonResult: Result<PersonDetail, Error> = .success(TestFixtures.person())
     var markEpisodeWatchedResult: Result<WatchlistStatus?, Error> = .success(nil)
@@ -28,6 +32,10 @@ final class MockMediaDetailService: MediaDetailServiceProtocol {
     /// in-flight state (`pendingEpisodes`, `isSubmittingRating`, …) at the one moment
     /// it is actually set — no real suspension or timing needed.
     var duringCall: (() -> Void)?
+
+    /// The same seam for `fetchSeasonDetail`, which is a read rather than a write: it is
+    /// how a test renders a season while its episode list is still in flight.
+    var duringSeasonFetch: (() -> Void)?
 
     // MARK: - Call tracking
 
@@ -52,11 +60,14 @@ final class MockMediaDetailService: MediaDetailServiceProtocol {
 
     func fetchSeasonDetail(tvId: Int, season: Int) async throws -> Season {
         fetchSeasonDetailCalls.append((tvId: tvId, season: season))
+        duringSeasonFetch?()
+        if let override = seasonResults[season] { return override }
         return try fetchSeasonDetailResult.get()
     }
 
     func fetchWatchedEpisodes(tvId: Int, season: Int) async throws -> [Int] {
         fetchWatchedEpisodesCalls.append((tvId: tvId, season: season))
+        if let override = watchedEpisodesBySeason[season] { return override }
         return try fetchWatchedEpisodesResult.get()
     }
 

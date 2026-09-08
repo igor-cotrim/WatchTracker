@@ -19,6 +19,10 @@ final class MockDiscoverService: DiscoverServiceProtocol {
     // MARK: - Configurable results
 
     var fetchTrendingResult: Result<[MediaDetail], Error> = .success([])
+    /// Scripted pages for `fetchTrending`, one entry per page number. A request past the
+    /// end returns an empty page — the signal a paginated grid uses to stop asking.
+    /// Leave nil to fall back to `fetchTrendingResult`.
+    var trendingPages: [[MediaDetail]]?
     var searchResult: Result<[MediaDetail], Error> = .success([])
     var discoverResult: Result<[MediaDetail], Error> = .success([])
     var discoverFilteredResult: Result<[MediaDetail], Error> = .success([])
@@ -32,13 +36,17 @@ final class MockDiscoverService: DiscoverServiceProtocol {
     // MARK: - Call tracking
 
     var searchCallCount = 0
+    var trendingPagesRequested: [Int?] = []
     var lastSearchQuery: String? = nil
     var discoverFilteredCalls: [DiscoverFilteredCall] = []
 
     // MARK: - Protocol conformance
 
     func fetchTrending(page: Int?) async throws -> [MediaDetail] {
-        try fetchTrendingResult.get()
+        trendingPagesRequested.append(page)
+        guard let trendingPages else { return try fetchTrendingResult.get() }
+        let index = (page ?? 1) - 1
+        return trendingPages.indices.contains(index) ? trendingPages[index] : []
     }
 
     func search(query: String, type: MediaType?, year: Int?) async throws -> [MediaDetail] {

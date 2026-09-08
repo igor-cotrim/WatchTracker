@@ -2,7 +2,11 @@ import SwiftUI
 
 @available(iOS 26, *)
 struct AISuggestionsView: View {
-    @State private var viewModel = AISuggestionsViewModel()
+    @State private var viewModel: AISuggestionsViewModel
+
+    init(container: AppContainer) {
+        _viewModel = State(wrappedValue: container.makeAISuggestionsViewModel())
+    }
 
     var body: some View {
         NavigationStack {
@@ -139,5 +143,6 @@ private struct AIExampleChip: View {
 
 @available(iOS 26, *)
 #Preview {
-    AISuggestionsView()
+    AISuggestionsView(container: .preview)
+        .environment(AppContainer.preview)
 }

@@ -5,15 +5,22 @@ struct SeasonContentView: View {
     let viewModel: MediaDetailViewModel
 
     var body: some View {
-        if viewModel.isLoadingSeason.contains(season.seasonNumber) {
+        switch viewModel.seasonState(season.seasonNumber) {
+        case .loading, .none:
             ProgressView()
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-        } else if let episodes = viewModel.seasonEpisodes[season.seasonNumber] {
+        case .failed(let message):
+            Text(verbatim: message)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+        case .loaded(let episodes):
             Divider()
 
             let allWatched = viewModel.isSeasonAllWatched(season.seasonNumber)
-            let isPending = viewModel.pendingSeasons.contains(season.seasonNumber)
+            let isPending = viewModel.isSeasonPending(season.seasonNumber)
             HStack {
                 Spacer()
                 Button {

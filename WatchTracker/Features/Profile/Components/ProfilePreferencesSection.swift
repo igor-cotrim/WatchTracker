@@ -57,6 +57,6 @@ struct ProfilePreferencesSection: View {
 
 #Preview {
     List {
-        ProfilePreferencesSection(viewModel: ProfileViewModel(auth: AuthService()))
+        ProfilePreferencesSection(viewModel: AppContainer.preview.makeProfileViewModel())
     }
 }

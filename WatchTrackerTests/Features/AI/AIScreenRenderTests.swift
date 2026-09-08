@@ -19,6 +19,10 @@ struct AIScreenRenderTests {
 
     @Test func `suggestions screen renders`() {
         guard #available(iOS 26, *) else { return }
-        _ = render(AISuggestionsView())
+        let test = TestContainer()
+        _ = render(
+            AISuggestionsView(container: test.container)
+                .environment(test.container)
+        )
     }
 }

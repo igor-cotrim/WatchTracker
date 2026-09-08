@@ -35,7 +35,7 @@ Built with SwiftUI and powered by a custom Express.js backend. Part of the `movi
 | Layer        | Technology                                        |
 | ------------ | ------------------------------------------------- |
 | UI           | SwiftUI                                           |
-| Architecture | MVVM — `@Observable` ViewModels                   |
+| Architecture | MVVM — `@Observable` ViewModels + an `AppContainer` |
 | Auth         | Supabase Swift SDK v2.5.1+                        |
 | Networking   | Custom `actor`-based `APIClient`                  |
 | Localization | `Localizable.xcstrings` + typesafe `Strings` enum |
@@ -44,7 +44,7 @@ Built with SwiftUI and powered by a custom Express.js backend. Part of the `movi
 
 ## Getting Started
 
-1. Open `Watched/Watched.xcodeproj` in Xcode.
+1. Open `WatchTracker/WatchTracker.xcodeproj` in Xcode.
 2. Xcode resolves the single SPM dependency (Supabase Swift) automatically.
 3. Build and run (⌘R) on a simulator or device running iOS 18+.
 
@@ -59,20 +59,24 @@ By default **Debug builds talk to `http://localhost:3000/api`** (start the backe
 ## Project Structure
 
 ```
-Watched/Watched/
-├── App/                        # Entry point, tab navigation, Config
+WatchTracker/WatchTracker/
+├── App/                        # Entry point, AppContainer, tab navigation, Config
 ├── Components/                 # Cross-feature reusable views
 │   ├── PosterCardView
 │   ├── SkeletonView
 │   ├── ErrorStateView
-│   ├── StreamingBadgeView
+│   ├── MediaRowSection
 │   └── ...
 ├── Core/
 │   ├── Network/                # APIClient (actor), Endpoint enum, APIError
 │   ├── Services/               # AuthService, WatchlistService, DiscoverService,
-│   │                           # MediaDetailService, AIService, SearchHistoryManager
+│   │                           # MediaDetailService, AIService — each with its
+│   │                           # protocol and its Preview double
 │   ├── Models/                 # Codable domain models
-│   └── Extensions/             # Color+Extensions, Strings (localization)
+│   ├── Infrastructure/         # Analytics, Notifications, Persistence
+│   ├── Navigation/             # AppRouter
+│   ├── Localization/           # Strings + Strings+<Feature>
+│   └── Extensions/             # Color+Extensions, Error+UserMessage, …
 └── Features/
     ├── Auth/                   # Sign-in / sign-up flow
     ├── Home/                   # Watchlist with filters
@@ -85,18 +89,37 @@ Watched/Watched/
 
 ## Architecture
 
-Data flows in one direction: **View → ViewModel → Service → APIClient**.
+Data flows in one direction: **AppContainer → View → ViewModel → Service → APIClient**.
 
-- **Views** hold `@State var viewModel: SomeViewModel` and trigger async work via `.task { }`.
-- **ViewModels** use the `@Observable` macro and expose `isLoading`, `errorMessage`, and domain state.
-- **Services** (`WatchlistService`, `DiscoverService`, `MediaDetailService`) are thin wrappers that translate operations into `Endpoint` cases.
-- **`APIClient`** is an `actor` singleton. It auto-injects the Supabase bearer token, encodes/decodes snake_case ↔ camelCase, and surfaces typed `APIError` values.
-- **`AuthService`** is the single `ObservableObject` in the app, injected at the root via `@EnvironmentObject`. It gates the entire UI and reacts to Supabase auth state changes in real time.
+- **`AppContainer`** is the composition root: the one place a concrete service is named. It is
+  built once in `WatchTrackerApp.init` and passed down — never a globally-accessed singleton.
+  `AppContainer.preview` swaps in offline doubles so Xcode previews never reach the backend.
+- **Views** receive their ViewModel from the container (`init(container:)`, or
+  `@Environment(AppContainer.self)` for screens opened from many places) and trigger async work
+  via `.task { }`. They never construct a service, call the network, or capture analytics.
+- **ViewModels** are `@Observable @MainActor final class` with `private(set)` state. Screens whose
+  situations are mutually exclusive model them as an enum (`MediaDetailState`, `FeedState`) rather
+  than loose `isLoading` / `errorMessage` pairs.
+- **Services** (`WatchlistService`, `DiscoverService`, `MediaDetailService`) are thin wrappers that
+  translate operations into `Endpoint` cases. Each file holds the protocol, the live implementation
+  and a `Preview…Service` double.
+- **`APIClient`** is an `actor`. It auto-injects the Supabase bearer token, encodes/decodes
+  snake_case ↔ camelCase, and surfaces typed `APIError` values.
+- **`AuthService`** is `@Observable` like everything else — there is no `@EnvironmentObject` in the
+  app. It gates the entire UI and reacts to Supabase auth state changes in real time.
 
 ## Localization
 
-All user-facing strings must go through `Core/Extensions/Strings.swift` and `Localizable.xcstrings`. Never hardcode UI copy as string literals in Swift. See `mobile/CLAUDE.md` for the full localization rules.
+All user-facing strings must go through `Core/Localization/` and `Localizable.xcstrings`. Never hardcode UI copy as string literals in Swift. See `mobile/CLAUDE.md` for the full localization rules.
 
 ## Tests
 
-Unit tests live in `Watched/WatchedTests/`. They cover ViewModels, models, and services using protocol-based mocks (`MockWatchlistService`, `MockDiscoverService`, `MockMediaDetailService`). Run with ⌘U in Xcode.
+Unit tests live in `WatchTracker/WatchTrackerTests/`, written with Swift Testing. They cover
+ViewModels, models, services and SwiftUI rendering using protocol-based mocks
+(`MockWatchlistService`, `MockDiscoverService`, `MockMediaDetailService`) and a mock-backed
+`TestContainer`.
+
+```bash
+./scripts/test.sh                                  # whole suite + coverage report
+./scripts/test.sh WatchTrackerTests/EndpointTests  # one suite
+```

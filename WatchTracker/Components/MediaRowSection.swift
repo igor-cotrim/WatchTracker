@@ -3,7 +3,7 @@ import SwiftUI
 struct MediaRowSection: View {
     let title: String
     let items: [MediaDetail]
-    var seeAllViewModel: BrowseGridViewModel? = nil
+    var seeAllFeed: BrowseFeed? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -28,12 +28,12 @@ struct MediaRowSection: View {
 
     @ViewBuilder
     private var header: some View {
-        if let seeAllViewModel {
+        if let seeAllFeed {
             SectionHeaderView(
                 title: title,
                 seeAllTitle: Strings.Discover.seeAll
             ) {
-                BrowseGridView(viewModel: seeAllViewModel)
+                BrowseGridView(feed: seeAllFeed)
                     .navigationTitle(title)
             }
         } else {

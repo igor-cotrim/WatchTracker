@@ -36,7 +36,7 @@ final class AIService: AIServiceProtocol {
     let promptBuilder: AIPromptBuilder
 
     init(
-        discoverService: any DiscoverServiceProtocol = DiscoverService(),
+        discoverService: any DiscoverServiceProtocol,
         generator: any AISuggestionGenerating = LiveAISuggestionGenerator(),
         promptBuilder: AIPromptBuilder = AIPromptBuilder()
     ) {

@@ -7,6 +7,12 @@ struct DetailWatchlistSection: View {
     @State private var softFeedbackTrigger = 0
     @State private var mediumFeedbackTrigger = 0
 
+    /// The label the button carries while the title is on the list. `watchlistStatus` is
+    /// only nil in the instant between the write landing and the cache being read back.
+    private var statusLabel: String {
+        viewModel.watchlistStatus?.displayName ?? Strings.Detail.watchlistOnList
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             if viewModel.isCheckingStatus {
@@ -57,7 +63,7 @@ struct DetailWatchlistSection: View {
             }
         } label: {
             Label {
-                Text(viewModel.isOnWatchlist ? viewModel.displayStatus : Strings.Detail.watchlistAdd)
+                Text(viewModel.isOnWatchlist ? statusLabel : Strings.Detail.watchlistAdd)
             } icon: {
                 // Changing status writes to the server and then refetches the whole
                 // watchlist to refresh the shared cache, which is slow enough that the
@@ -81,7 +87,7 @@ struct DetailWatchlistSection: View {
         .disabled(viewModel.isUpdatingStatus)
         .accessibilityLabel(
             viewModel.isOnWatchlist
-                ? Strings.Detail.watchlistAccessibilityOnList(viewModel.displayStatus)
+                ? Strings.Detail.watchlistAccessibilityOnList(statusLabel)
                 : Strings.Detail.watchlistAccessibilityAdd
         )
         .accessibilityHint(Strings.Detail.watchlistAccessibilityHint)

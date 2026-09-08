@@ -1,10 +1,12 @@
 import SwiftUI
 
 struct ProfileView: View {
+    private let container: AppContainer
     @State private var viewModel: ProfileViewModel
 
-    init(auth: any AuthServiceProtocol) {
-        _viewModel = State(wrappedValue: ProfileViewModel(auth: auth))
+    init(container: AppContainer) {
+        self.container = container
+        _viewModel = State(wrappedValue: container.makeProfileViewModel())
     }
 
     var body: some View {
@@ -26,7 +28,7 @@ struct ProfileView: View {
 
                 Section(Strings.Profile.dataSection) {
                     NavigationLink {
-                        DataView()
+                        DataView(container: container)
                     } label: {
                         SettingsLabel(
                             title: Strings.Data.title,
@@ -51,5 +53,6 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(auth: AuthService())
+    ProfileView(container: .preview)
+        .environment(AppContainer.preview)
 }

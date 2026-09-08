@@ -48,6 +48,6 @@ struct ProfileSupportSection: View {
 
 #Preview {
     List {
-        ProfileSupportSection(viewModel: ProfileViewModel(auth: AuthService()))
+        ProfileSupportSection(viewModel: AppContainer.preview.makeProfileViewModel())
     }
 }

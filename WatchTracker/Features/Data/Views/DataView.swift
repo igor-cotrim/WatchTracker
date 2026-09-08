@@ -3,10 +3,15 @@ import UniformTypeIdentifiers
 
 /// One screen for both halves of moving a library in and out of WatchTracker.
 struct DataView: View {
-    @State private var exportViewModel = ExportViewModel()
-    @State private var importViewModel = ImportViewModel()
+    @State private var exportViewModel: ExportViewModel
+    @State private var importViewModel: ImportViewModel
     @State private var format: ExportFormat = .watchTracker
     @State private var showFileImporter = false
+
+    init(container: AppContainer) {
+        _exportViewModel = State(wrappedValue: container.makeExportViewModel())
+        _importViewModel = State(wrappedValue: container.makeImportViewModel())
+    }
 
     var body: some View {
         List {
@@ -173,6 +178,6 @@ struct DataView: View {
 
 #Preview {
     NavigationStack {
-        DataView()
+        DataView(container: .preview)
     }
 }

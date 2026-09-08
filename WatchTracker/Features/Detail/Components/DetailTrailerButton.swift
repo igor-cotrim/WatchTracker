@@ -4,7 +4,7 @@ import SwiftUI
 /// video, so this only has to decide between the app and the browser.
 struct DetailTrailerButton: View {
     let trailer: MediaTrailer
-    let title: String
+    let viewModel: MediaDetailViewModel
 
     var body: some View {
         Button {
@@ -44,11 +44,6 @@ struct DetailTrailerButton: View {
     }
 
     private func track(openedVia: String) {
-        AnalyticsService.shared.capture(.trailerOpened, properties: [
-            "title": title,
-            "trailer_key": trailer.key,
-            "site": trailer.site,
-            "opened_via": openedVia
-        ])
+        viewModel.trailerOpened(trailer, openedVia: openedVia)
     }
 }

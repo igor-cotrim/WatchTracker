@@ -2,8 +2,6 @@ import Foundation
 
 @Observable
 final class AppRouter {
-    static let shared = AppRouter()
-
     enum AppTab: Hashable {
         case home, watching, discover, ai, profile
 
@@ -21,12 +19,14 @@ final class AppRouter {
     var selectedTab: AppTab = .home {
         didSet {
             guard selectedTab != oldValue else { return }
-            AnalyticsService.shared.capture(.screenView, properties: ["tab": selectedTab.analyticsName])
+            analytics.capture(.screenView, properties: ["tab": selectedTab.analyticsName])
         }
     }
     var pendingShowId: Int?
 
-    /// Internal rather than private so tests can inject an isolated router, the same
-    /// way `WatchlistStore` does. Production code always goes through `shared`.
-    init() {}
+    @ObservationIgnored private let analytics: any AnalyticsTracking
+
+    init(analytics: any AnalyticsTracking) {
+        self.analytics = analytics
+    }
 }

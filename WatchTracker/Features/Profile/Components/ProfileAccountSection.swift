@@ -44,6 +44,6 @@ struct ProfileAccountSection: View {
 
 #Preview {
     List {
-        ProfileAccountSection(viewModel: ProfileViewModel(auth: AuthService()))
+        ProfileAccountSection(viewModel: AppContainer.preview.makeProfileViewModel())
     }
 }

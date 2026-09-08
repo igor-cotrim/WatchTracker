@@ -4,7 +4,6 @@ import Foundation
 /// ViewModels read from and write to this store instead of hitting the network on every appearance.
 @Observable
 final class WatchlistStore {
-    static let shared = WatchlistStore()
     init() {}
 
     var cachedItems: [WatchItem] = []

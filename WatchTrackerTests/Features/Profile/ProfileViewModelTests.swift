@@ -9,7 +9,7 @@ struct ProfileViewModelTests {
 
     private func makeViewModel() -> (ProfileViewModel, MockProfileService) {
         let service = MockProfileService()
-        return (ProfileViewModel(service: service, auth: MockAuthService()), service)
+        return (ProfileViewModel(service: service, auth: MockAuthService(), notifications: MockNotificationScheduler()), service)
     }
 
     @Test func `fetchStats publishes the stats`() async {
@@ -86,7 +86,7 @@ struct ProfileViewModelTests {
 
     @Test func `currentUser comes straight from the auth service`() {
         let auth = MockAuthService(currentUser: AuthFixtures.user(email: "her@example.com"))
-        let vm = ProfileViewModel(service: MockProfileService(), auth: auth)
+        let vm = ProfileViewModel(service: MockProfileService(), auth: auth, notifications: MockNotificationScheduler())
 
         #expect(vm.currentUser?.email == "her@example.com")
     }
@@ -178,6 +178,7 @@ struct ProfileViewModelTests {
             ProfileViewModel(
                 service: MockProfileService(),
                 auth: MockAuthService(currentUser: AuthFixtures.user()),
+                notifications: MockNotificationScheduler(),
                 canSendMail: { canSendMail }
             )
         }
@@ -224,7 +225,7 @@ struct ProfileViewModelTests {
     struct AccountTests {
 
         private func makeViewModel(auth: MockAuthService) -> ProfileViewModel {
-            ProfileViewModel(service: MockProfileService(), auth: auth)
+            ProfileViewModel(service: MockProfileService(), auth: auth, notifications: MockNotificationScheduler())
         }
 
         @Test func `signOut delegates to the auth service`() async {

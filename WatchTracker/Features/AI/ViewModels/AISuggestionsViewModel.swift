@@ -16,9 +16,9 @@ final class AISuggestionsViewModel {
     private let store: WatchlistStore
 
     init(
-        aiService: any AIServiceProtocol = AIService(),
-        watchlistService: any WatchlistServiceProtocol = WatchlistService(),
-        store: WatchlistStore = .shared
+        aiService: any AIServiceProtocol,
+        watchlistService: any WatchlistServiceProtocol,
+        store: WatchlistStore
     ) {
         self.aiService = aiService
         self.watchlistService = watchlistService

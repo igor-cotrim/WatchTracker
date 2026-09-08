@@ -22,7 +22,7 @@ final class ImportViewModel {
     private let episodeBatchSize: Int
 
     init(
-        service: ImportServiceProtocol = ImportService(),
+        service: ImportServiceProtocol,
         batchSize: Int = 100,
         episodeBatchSize: Int = 400,
     ) {

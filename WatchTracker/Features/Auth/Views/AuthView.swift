@@ -153,5 +153,5 @@ struct AuthView: View {
 }
 
 #Preview {
-    AuthView(auth: AuthService())
+    AuthView(auth: PreviewAuthService())
 }

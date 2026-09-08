@@ -7,6 +7,7 @@ final class MockAuthService: AuthServiceProtocol {
 
     // MARK: - Configurable results
 
+    var isAuthenticated = false
     var currentUser: User?
     var signInError: Error?
     var signUpError: Error?
@@ -24,6 +25,7 @@ final class MockAuthService: AuthServiceProtocol {
     private(set) var resetPasswordCalls: [String] = []
     private(set) var confirmPasswordResetCalls: [(email: String, code: String, newPassword: String)] = []
     private(set) var clearSessionExpiredMessageCallCount = 0
+    private(set) var checkSessionCallCount = 0
     private(set) var signOutCallCount = 0
     private(set) var deleteAccountCallCount = 0
 
@@ -41,6 +43,11 @@ final class MockAuthService: AuthServiceProtocol {
     func clearSessionExpiredMessage() {
         clearSessionExpiredMessageCallCount += 1
         sessionExpiredMessage = nil
+    }
+
+    func checkSession() async {
+        checkSessionCallCount += 1
+        await onCall?()
     }
 
     func signIn(email: String, password: String) async throws {

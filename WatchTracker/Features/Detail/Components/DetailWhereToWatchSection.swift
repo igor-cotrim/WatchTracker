@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DetailWhereToWatchSection: View {
     let media: MediaDetail
+    let viewModel: MediaDetailViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -53,11 +54,6 @@ struct DetailWhereToWatchSection: View {
     }
 
     private func trackTap(provider: StreamingProvider, openedVia: String) {
-        AnalyticsService.shared.capture(.providerLinkTapped, properties: [
-            "provider_id": provider.providerId,
-            "provider_name": provider.providerName,
-            "title": media.displayTitle,
-            "opened_via": openedVia
-        ])
+        viewModel.providerLinkTapped(provider, openedVia: openedVia)
     }
 }
