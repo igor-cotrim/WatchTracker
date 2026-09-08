@@ -25,6 +25,19 @@ final class MediaDetailViewModel {
     /// Season number the view should scroll to (set when marking a show as "watching").
     var scrollTargetSeason: Int?
 
+    // In-flight writes. Every mark/unmark is a round trip, so the row, the season pill
+    // and the stars each need to show that the tap landed and lock out a second tap
+    // before the server answers.
+    var pendingEpisodes: Set<EpisodeRef> = []
+    var pendingSeasons: Set<Int> = []
+    var isSubmittingRating = false
+
+    /// Identifies one episode within the currently-open show.
+    struct EpisodeRef: Hashable {
+        let season: Int
+        let episode: Int
+    }
+
     private var mediaType: MediaType = .movie
     private var mediaId: Int = 0
     private let mediaDetailService: MediaDetailServiceProtocol
@@ -157,7 +170,9 @@ final class MediaDetailViewModel {
     }
 
     func removeFromWatchlist() async {
-        guard let itemId = watchlistItemId else { return }
+        guard let itemId = watchlistItemId, !isUpdatingStatus else { return }
+        isUpdatingStatus = true
+        defer { isUpdatingStatus = false }
         do {
             try await watchlistService.removeFromWatchlist(id: itemId)
             analytics.capture(.watchlistRemoved, properties: [
@@ -207,6 +222,8 @@ final class MediaDetailViewModel {
     func rateMedia(rating: Int) async {
         let previous = userRating
         userRating = rating
+        isSubmittingRating = true
+        defer { isSubmittingRating = false }
         do {
             try await mediaDetailService.rateMedia(type: mediaType, id: mediaId, rating: rating)
             analytics.capture(.mediaRated, properties: [
@@ -223,6 +240,8 @@ final class MediaDetailViewModel {
     func removeRating() async {
         let previous = userRating
         userRating = nil
+        isSubmittingRating = true
+        defer { isSubmittingRating = false }
         do {
             try await mediaDetailService.removeRating(type: mediaType, id: mediaId)
             analytics.capture(.ratingRemoved, properties: [
@@ -237,6 +256,11 @@ final class MediaDetailViewModel {
 
     func toggleEpisodeWatched(season: Int, episode: Int) async {
         guard mediaType == .tv else { return }
+
+        let ref = EpisodeRef(season: season, episode: episode)
+        guard !pendingEpisodes.contains(ref) else { return }
+        pendingEpisodes.insert(ref)
+        defer { pendingEpisodes.remove(ref) }
 
         let isCurrentlyWatched = seasonEpisodes[season]?
             .first(where: { $0.episodeNumber == episode })?.isWatched ?? false
@@ -261,7 +285,9 @@ final class MediaDetailViewModel {
     }
 
     func toggleSeasonWatched(_ seasonNumber: Int) async {
-        guard mediaType == .tv else { return }
+        guard mediaType == .tv, !pendingSeasons.contains(seasonNumber) else { return }
+        pendingSeasons.insert(seasonNumber)
+        defer { pendingSeasons.remove(seasonNumber) }
 
         let allWatched = seasonEpisodes[seasonNumber]?.allSatisfy(\.isWatched) ?? false
 
@@ -330,6 +356,10 @@ final class MediaDetailViewModel {
     }
 
     // MARK: - Helpers
+
+    func isEpisodePending(season: Int, episode: Int) -> Bool {
+        pendingEpisodes.contains(EpisodeRef(season: season, episode: episode))
+    }
 
     func isSeasonAllWatched(_ seasonNumber: Int) -> Bool {
         guard let episodes = seasonEpisodes[seasonNumber], !episodes.isEmpty else { return false }

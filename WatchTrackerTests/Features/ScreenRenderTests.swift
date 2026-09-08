@@ -102,6 +102,40 @@ struct ScreenRenderTests {
         _ = render(MediaDetailView(mediaType: type, mediaId: 550))
     }
 
+    @Test func `person screen renders`() {
+        _ = render(PersonView(personId: 25072, personName: "Oscar Isaac"))
+    }
+
+    /// The loaded state, which the bare screen render never reaches: `render(_:)` does not
+    /// appear the view, so `PersonView`'s `.task` never runs and its body stays on the
+    /// spinner branch. Injecting a primed ViewModel is what exercises the real layout.
+    @Test func `person screen renders a loaded filmography`() async {
+        let service = MockMediaDetailService()
+        service.fetchPersonResult = .success(TestFixtures.person(
+            credits: [
+                (id: 438631, mediaType: .movie, title: "Duna", character: "Duke Leto Atreides"),
+                (id: 60059, mediaType: .tv, title: "Cavaleiro da Lua", character: nil)
+            ]
+        ))
+        let viewModel = PersonViewModel(service: service, analytics: MockAnalytics())
+        await viewModel.load(id: 25072)
+
+        _ = render(NavigationStack {
+            PersonView(personId: 25072, personName: "Oscar Isaac", viewModel: viewModel)
+        })
+    }
+
+    @Test func `person screen renders someone with no biography and no credits`() async {
+        let service = MockMediaDetailService()
+        service.fetchPersonResult = .success(TestFixtures.person(biography: nil, credits: []))
+        let viewModel = PersonViewModel(service: service, analytics: MockAnalytics())
+        await viewModel.load(id: 1)
+
+        _ = render(NavigationStack {
+            PersonView(personId: 1, personName: "Nobody", viewModel: viewModel)
+        })
+    }
+
     // MARK: - Profile
 
     @Test func `profile screen renders`() {

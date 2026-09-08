@@ -13,6 +13,10 @@ final class MockWatchlistService: WatchlistServiceProtocol {
     var markAllEpisodesWatchedError: Error? = nil
     var addToWatchlistError: Error? = nil
     var removeFromWatchlistError: Error? = nil
+
+    /// Runs inside `removeFromWatchlist`, before it returns — the seam a test uses to
+    /// observe the ViewModel's `isUpdatingStatus` while the request is still out.
+    var duringRemove: (() -> Void)?
     var updateStatusError: Error? = nil
 
     // MARK: - Call tracking
@@ -61,6 +65,7 @@ final class MockWatchlistService: WatchlistServiceProtocol {
 
     func removeFromWatchlist(id: Int) async throws {
         removeFromWatchlistCalls.append(id)
+        duringRemove?()
         if let error = removeFromWatchlistError { throw error }
     }
 

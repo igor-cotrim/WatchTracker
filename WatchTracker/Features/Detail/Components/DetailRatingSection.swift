@@ -36,6 +36,7 @@ struct DetailRatingSection: View {
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.6), value: viewModel.userRating)
         .animation(.spring(response: 0.35, dampingFraction: 0.6), value: viewModel.watchlistStatus)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.isSubmittingRating)
         .sensoryFeedback(.selection, trigger: feedbackTrigger)
         .confirmationDialog(
             Strings.Rating.removeConfirmTitle,
@@ -57,10 +58,20 @@ struct DetailRatingSection: View {
                 feedbackTrigger += 1
                 Task { await rate(rating) }
             }
+            .opacity(viewModel.isSubmittingRating ? 0.5 : 1)
 
             caption
 
-            if viewModel.userRating != nil {
+            // The stars update optimistically, so the only thing that tells the user the
+            // rating hasn't been saved yet is this spinner — and the disabled state below,
+            // which stops a second drag from racing the request that is already out.
+            if viewModel.isSubmittingRating {
+                ProgressView()
+                    .controlSize(.small)
+                    .transition(.opacity)
+            }
+
+            if viewModel.userRating != nil, !viewModel.isSubmittingRating {
                 Button(role: .destructive) {
                     showRemoveConfirmation = true
                 } label: {
@@ -74,6 +85,7 @@ struct DetailRatingSection: View {
                 .transition(.scale.combined(with: .opacity))
             }
         }
+        .disabled(viewModel.isSubmittingRating)
     }
 
     private func rate(_ rating: Int) async {

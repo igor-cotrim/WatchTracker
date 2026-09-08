@@ -71,7 +71,9 @@ enum TestFixtures {
         runtime: Int? = nil,
         episodeRunTime: [Int]? = nil,
         genres: [String]? = nil,
-        certification: String? = nil
+        certification: String? = nil,
+        cast: [(name: String, character: String?)]? = nil,
+        trailerKey: String? = nil
     ) -> MediaDetail {
         let titleValue = title.map { "\"\($0)\"" } ?? "null"
         let nameValue = name.map { "\"\($0)\"" } ?? "null"
@@ -90,6 +92,20 @@ enum TestFixtures {
                 """
             }
             return "[\(entries.joined(separator: ","))]"
+        } ?? "null"
+        let creditsValue = cast.map { members in
+            let entries = members.enumerated().map { index, member in
+                let characterValue = member.character.map { "\"\($0)\"" } ?? "null"
+                return """
+                {"id": \(index + 1), "name": "\(member.name)", "character": \(characterValue), "profile_path": null}
+                """
+            }
+            return "{\"cast\": [\(entries.joined(separator: ","))]}"
+        } ?? "null"
+        let trailerValue = trailerKey.map {
+            """
+            {"key": "\($0)", "name": "Official Trailer", "site": "YouTube"}
+            """
         } ?? "null"
         let providersValue = flatrateProviders.map { names in
             let entries = names.enumerated().map { index, name in
@@ -115,11 +131,12 @@ enum TestFixtures {
             "genres": \(genresValue),
             "runtime": \(runtimeValue),
             "episode_run_time": \(episodeRunTimeValue),
-            "credits": null,
+            "credits": \(creditsValue),
             "watch_providers": \(providersValue),
             "seasons": null,
             "watchlist_status": \(statusValue),
-            "certification": \(certificationValue)
+            "certification": \(certificationValue),
+            "trailer": \(trailerValue)
         }
         """
         return try! fixtureDecoder.decode(MediaDetail.self, from: Data(json.utf8))
@@ -338,6 +355,54 @@ enum TestFixtures {
             airDate: nil,
             episodes: episodes
         )
+    }
+
+    // MARK: PersonDetail
+
+    /// Builds a `PersonDetail` through JSON so the snake_case wire names are exercised —
+    /// `PersonCredit` declares explicit `CodingKeys`, which is exactly the kind of thing
+    /// a hand-built struct would hide.
+    static func person(
+        id: Int = 25072,
+        name: String = "Oscar Isaac",
+        biography: String? = "An actor.",
+        profilePath: String? = nil,
+        knownForDepartment: String? = "Acting",
+        placeOfBirth: String? = "Guatemala City, Guatemala",
+        credits: [(id: Int, mediaType: MediaType, title: String, character: String?)] = []
+    ) -> PersonDetail {
+        let biographyValue = biography.map { "\"\($0)\"" } ?? "null"
+        let profileValue = profilePath.map { "\"\($0)\"" } ?? "null"
+        let departmentValue = knownForDepartment.map { "\"\($0)\"" } ?? "null"
+        let birthplaceValue = placeOfBirth.map { "\"\($0)\"" } ?? "null"
+        let creditsValue = credits.enumerated().map { index, credit in
+            let characterValue = credit.character.map { "\"\($0)\"" } ?? "null"
+            let titleKey = credit.mediaType == .movie ? "title" : "name"
+            let otherKey = credit.mediaType == .movie ? "name" : "title"
+            let dateKey = credit.mediaType == .movie ? "release_date" : "first_air_date"
+            let otherDateKey = credit.mediaType == .movie ? "first_air_date" : "release_date"
+            return """
+            {"credit_id": "credit-\(index)", "id": \(credit.id),
+             "media_type": "\(credit.mediaType.rawValue)",
+             "\(titleKey)": "\(credit.title)", "\(otherKey)": null,
+             "character": \(characterValue), "poster_path": null,
+             "\(dateKey)": "2021-09-15", "\(otherDateKey)": null}
+            """
+        }.joined(separator: ",")
+
+        let json = """
+        {
+            "id": \(id),
+            "name": "\(name)",
+            "biography": \(biographyValue),
+            "profile_path": \(profileValue),
+            "known_for_department": \(departmentValue),
+            "birthday": null,
+            "place_of_birth": \(birthplaceValue),
+            "credits": [\(creditsValue)]
+        }
+        """
+        return try! fixtureDecoder.decode(PersonDetail.self, from: Data(json.utf8))
     }
 
     // MARK: ProfileStats

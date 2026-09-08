@@ -19,6 +19,7 @@ struct DetailWatchlistSection: View {
                 watchedButton
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.isUpdatingStatus)
         .sensoryFeedback(.impact(flexibility: .soft), trigger: softFeedbackTrigger)
         .sensoryFeedback(.impact(flexibility: .rigid), trigger: mediumFeedbackTrigger)
     }
@@ -55,10 +56,18 @@ struct DetailWatchlistSection: View {
                 }
             }
         } label: {
-            Label(
-                viewModel.isOnWatchlist ? viewModel.displayStatus : Strings.Detail.watchlistAdd,
-                systemImage: viewModel.isOnWatchlist ? "checkmark.circle.fill" : "plus.circle.fill"
-            )
+            Label {
+                Text(viewModel.isOnWatchlist ? viewModel.displayStatus : Strings.Detail.watchlistAdd)
+            } icon: {
+                // Changing status writes to the server and then refetches the whole
+                // watchlist to refresh the shared cache, which is slow enough that the
+                // button has to say so — otherwise the menu just closes and nothing moves.
+                if viewModel.isUpdatingStatus {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Image(systemName: viewModel.isOnWatchlist ? "checkmark.circle.fill" : "plus.circle.fill")
+                }
+            }
             .font(.subheadline.bold())
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
@@ -69,6 +78,7 @@ struct DetailWatchlistSection: View {
             .foregroundStyle(viewModel.isOnWatchlist ? Color.brandPrimary : Color.brandAccent)
             .clipShape(.rect(cornerRadius: 10))
         }
+        .disabled(viewModel.isUpdatingStatus)
         .accessibilityLabel(
             viewModel.isOnWatchlist
                 ? Strings.Detail.watchlistAccessibilityOnList(viewModel.displayStatus)
@@ -83,10 +93,15 @@ struct DetailWatchlistSection: View {
             softFeedbackTrigger += 1
             Task { await viewModel.addToWatchlist(status: .completed) }
         } label: {
-            Label(
-                Strings.Detail.watchlistWatched,
-                systemImage: isWatched ? "eye.fill" : "eye"
-            )
+            Label {
+                Text(Strings.Detail.watchlistWatched)
+            } icon: {
+                if viewModel.isUpdatingStatus {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Image(systemName: isWatched ? "eye.fill" : "eye")
+                }
+            }
             .font(.subheadline.bold())
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
@@ -97,5 +112,6 @@ struct DetailWatchlistSection: View {
             .foregroundStyle(isWatched ? Color.brandPrimary : .secondary)
             .clipShape(.rect(cornerRadius: 10))
         }
+        .disabled(viewModel.isUpdatingStatus)
     }
 }

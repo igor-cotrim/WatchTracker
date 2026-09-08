@@ -13,15 +13,23 @@ struct SeasonContentView: View {
             Divider()
 
             let allWatched = viewModel.isSeasonAllWatched(season.seasonNumber)
+            let isPending = viewModel.pendingSeasons.contains(season.seasonNumber)
             HStack {
                 Spacer()
                 Button {
                     Task { await viewModel.toggleSeasonWatched(season.seasonNumber) }
                 } label: {
-                    Label(
-                        allWatched ? Strings.Detail.seasonUnmarkWatched : Strings.Detail.seasonMarkWatched,
-                        systemImage: allWatched ? "eye.slash" : "eye"
-                    )
+                    Label {
+                        Text(allWatched ? Strings.Detail.seasonUnmarkWatched : Strings.Detail.seasonMarkWatched)
+                    } icon: {
+                        // Marking a whole season is the slowest write on this screen —
+                        // the spinner replaces the icon so the pill keeps its width.
+                        if isPending {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Image(systemName: allWatched ? "eye.slash" : "eye")
+                        }
+                    }
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(allWatched ? Color(.secondaryLabel) : Color.brandAccent)
                     .padding(.horizontal, 16)
@@ -29,6 +37,7 @@ struct SeasonContentView: View {
                     .background(allWatched ? Color(.systemGray5) : Color.brandAccent.opacity(0.12))
                     .clipShape(Capsule())
                 }
+                .disabled(isPending)
                 Spacer()
             }
             .padding(.vertical, 10)

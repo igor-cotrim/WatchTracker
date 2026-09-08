@@ -16,6 +16,9 @@ extension Strings {
         static var recommendations: String { String(localized: "detail.recommendations.title") }
         static var whereToWatchUnavailable: String { String(localized: "detail.where_to_watch.unavailable") }
         static var openInProviderHint: String { String(localized: "detail.where_to_watch.open_in_provider_hint") }
+        static var watchTrailer: String { String(localized: "detail.trailer.watch") }
+        static var watchTrailerAccessibility: String { String(localized: "detail.trailer.accessibility") }
+        static var watchTrailerHint: String { String(localized: "detail.trailer.hint") }
         static var seasonMarkWatched: String { String(localized: "detail.season.mark_watched") }
         static var seasonUnmarkWatched: String { String(localized: "detail.season.unmark_watched") }
 

@@ -189,6 +189,96 @@ struct DetailComponentRenderTests {
         )
     }
 
+    // MARK: - Cast and trailer
+
+    @Test func `cast section renders members with and without a character name`() {
+        let cast = TestFixtures.mediaDetail(
+            cast: [(name: "Bob Odenkirk", character: "Jimmy McGill"), (name: "Rhea Seehorn", character: nil)]
+        ).credits!.cast
+        _ = render(DetailCastSection(cast: cast), height: 160)
+    }
+
+    /// When no member has a character name the cards drop the second line entirely
+    /// instead of every one reserving an empty row.
+    @Test func `cast section renders when no member has a character name`() {
+        let cast = TestFixtures.mediaDetail(
+            cast: [(name: "Bob Odenkirk", character: nil), (name: "Rhea Seehorn", character: "")]
+        ).credits!.cast
+        _ = render(DetailCastSection(cast: cast), height: 160)
+    }
+
+    /// The section caps the carousel at 20 — this is the branch that does the trimming.
+    @Test func `cast section caps a very long billing list`() {
+        let cast = TestFixtures.mediaDetail(
+            cast: (1...30).map { (name: "Actor \($0)", character: "Role \($0)") }
+        ).credits!.cast
+        _ = render(DetailCastSection(cast: cast), height: 160)
+    }
+
+    @Test func `trailer button renders`() {
+        let media = TestFixtures.mediaDetail(trailerKey: "abc123")
+        _ = render(DetailTrailerButton(trailer: media.trailer!, title: media.displayTitle), height: 80)
+    }
+
+    // MARK: - Person page
+
+    @Test func `person credit card renders with and without a role`() {
+        let person = TestFixtures.person(credits: [
+            (id: 438631, mediaType: .movie, title: "Dune", character: "Duke Leto Atreides"),
+            (id: 60059, mediaType: .tv, title: "Better Call Saul", character: nil)
+        ])
+        for credit in person.credits {
+            _ = render(PersonCreditCard(credit: credit), height: 220)
+        }
+    }
+
+    /// The cast carousel now pushes a `PersonView`, so its cards build a `NavigationLink`
+    /// and need a `NavigationStack` around them to render.
+    @Test func `cast section renders inside a navigation stack`() {
+        let cast = TestFixtures.mediaDetail(
+            cast: [(name: "Oscar Isaac", character: "Duke Leto Atreides")]
+        ).credits!.cast
+        _ = render(NavigationStack { DetailCastSection(cast: cast) }, height: 220)
+    }
+
+    // MARK: - In-flight states
+
+    @Test func `episode list renders a row whose mark request is in flight`() {
+        let vm = makeVM()
+        vm.pendingEpisodes = [.init(season: 1, episode: 2)]
+        _ = render(
+            EpisodeListView(
+                episodes: (1...3).map { TestFixtures.episode(id: $0, episodeNumber: $0) },
+                seasonNumber: 1,
+                viewModel: vm
+            ),
+            height: 500
+        )
+    }
+
+    @Test func `season content renders a mark-all request in flight`() {
+        let vm = makeVM()
+        vm.seasonEpisodes[1] = [TestFixtures.episode(episodeNumber: 1)]
+        vm.pendingSeasons = [1]
+        _ = render(SeasonContentView(season: TestFixtures.season(seasonNumber: 1), viewModel: vm), height: 400)
+    }
+
+    @Test func `rating section renders while the rating is being saved`() {
+        let vm = makeVM()
+        vm.userRating = 8
+        vm.isSubmittingRating = true
+        _ = render(DetailRatingSection(viewModel: vm, mediaType: .movie), height: 120)
+    }
+
+    @Test(arguments: [MediaType.movie, .tv])
+    func `watchlist section renders while a status change is in flight`(mediaType: MediaType) {
+        let vm = makeVM()
+        vm.isOnWatchlist = true
+        vm.watchlistStatus = .watching
+        vm.isUpdatingStatus = true
+        _ = render(DetailWatchlistSection(viewModel: vm, mediaType: mediaType), height: 80)
+    }
+
     // MARK: - ShareSheet
 
     /// A `UIViewControllerRepresentable`. Its context cannot be constructed directly, so

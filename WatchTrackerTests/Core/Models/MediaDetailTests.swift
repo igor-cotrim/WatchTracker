@@ -144,4 +144,46 @@ struct MediaDetailTests {
         #expect(url.absoluteString.contains("w780"))
         #expect(url.absoluteString.contains("/backdrop.jpg"))
     }
+
+    // MARK: - Trailer
+
+    @Test func `trailer is absent when the backend found no video`() {
+        #expect(TestFixtures.mediaDetail().trailer == nil)
+    }
+
+    @Test func `trailer builds a youtube app deep link and a web fallback`() throws {
+        let detail = TestFixtures.mediaDetail(trailerKey: "dQw4w9WgXcQ")
+        let trailer = try #require(detail.trailer)
+
+        #expect(trailer.key == "dQw4w9WgXcQ")
+        #expect(try #require(trailer.appURL).absoluteString == "youtube://watch?v=dQw4w9WgXcQ")
+        #expect(try #require(trailer.webURL).absoluteString == "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    }
+
+    // MARK: - Cast
+
+    @Test func `cast decodes with an optional character name`() throws {
+        let detail = TestFixtures.mediaDetail(
+            cast: [(name: "Bob Odenkirk", character: "Jimmy McGill"), (name: "Rhea Seehorn", character: nil)]
+        )
+        let cast = try #require(detail.credits?.cast)
+
+        #expect(cast.count == 2)
+        #expect(cast[0].character == "Jimmy McGill")
+        #expect(cast[1].character == nil)
+        #expect(cast[0].profileURL == nil)
+    }
+
+    /// `h632` is deliberate: TMDB only offers w45, w185, h632 and original for profiles,
+    /// and w185 is fewer pixels than a 72pt avatar needs on a 3x screen.
+    @Test func `profileURL uses the h632 TMDB profile size`() throws {
+        let json = Data("""
+        {"id":1,"name":"Bob Odenkirk","character":"Jimmy McGill","profile_path":"/face.jpg"}
+        """.utf8)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let member = try decoder.decode(CastMember.self, from: json)
+
+        #expect(member.profileURL?.absoluteString == "https://image.tmdb.org/t/p/h632/face.jpg")
+    }
 }

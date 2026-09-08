@@ -17,8 +17,16 @@ struct DetailSeasonsSection: View {
                         SeasonContentView(season: season, viewModel: viewModel)
                     }
                 }
-                .background(Color(.secondarySystemGroupedBackground))
+                // `secondarySystemGroupedBackground` is pure white in light mode, so on this
+                // plain (ungrouped) ScrollView the card had no edge at all — it only read as
+                // a card in dark mode. `secondarySystemBackground` contrasts in both, and the
+                // hairline stroke keeps the boundary crisp against tinted wallpapers.
+                .background(Color(.secondarySystemBackground))
                 .clipShape(.rect(cornerRadius: 12))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(Color(.separator).opacity(0.5), lineWidth: 0.5)
+                }
                 .id(season.seasonNumber)
             }
         }

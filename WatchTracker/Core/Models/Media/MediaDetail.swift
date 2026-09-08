@@ -19,6 +19,7 @@ struct MediaDetail: Codable, Identifiable {
     let watchlistStatus: WatchlistStatus?  // Present when authenticated and show is in watchlist
     let certification: String?  // Content rating for the request locale's region (e.g. "12", "PG-13")
     let userRating: Int?  // The caller's own rating (1–10 scale), present when authenticated and rated
+    let trailer: MediaTrailer?  // Best YouTube trailer TMDB knows about, already picked by the backend
 
     var mediaType: MediaType {
         title != nil ? .movie : .tv
@@ -73,6 +74,25 @@ struct MediaDetail: Codable, Identifiable {
     }
 }
 
+/// The single trailer the detail screen links to. The backend collapses TMDB's whole
+/// `videos` list down to this, so there is nothing to rank or filter on the client.
+struct MediaTrailer: Codable {
+    let key: String
+    let name: String
+    let site: String
+
+    /// Opens the YouTube app when it is installed. `UIApplication.open` reports back
+    /// whether it succeeded, so the caller can fall back to `webURL` — that is why this
+    /// needs no `LSApplicationQueriesSchemes` entry.
+    var appURL: URL? {
+        URL(string: "youtube://watch?v=\(key)")
+    }
+
+    var webURL: URL? {
+        URL(string: "https://www.youtube.com/watch?v=\(key)")
+    }
+}
+
 struct Genre: Codable, Identifiable {
     let id: Int
     let name: String
@@ -88,9 +108,13 @@ struct CastMember: Codable, Identifiable {
     let character: String?
     let profilePath: String?
 
+    /// `h632` rather than `w185`: TMDB's profile sizes are only w45, w185, h632 and
+    /// original, and w185 lands *under* the pixels a 72pt avatar needs on a 3x screen,
+    /// so it arrived visibly upscaled. The cast carousel is lazy, so the larger file is
+    /// only fetched for the faces actually scrolled into view.
     var profileURL: URL? {
         guard let profilePath else { return nil }
-        return URL(string: "https://image.tmdb.org/t/p/w185\(profilePath)")
+        return URL(string: "https://image.tmdb.org/t/p/h632\(profilePath)")
     }
 }
 

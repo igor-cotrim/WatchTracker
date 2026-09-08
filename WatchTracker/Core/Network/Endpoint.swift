@@ -29,6 +29,9 @@ enum Endpoint: Sendable {
     case seasonDetail(tvId: Int, season: Int)
     case watchedEpisodes(tvId: Int, season: Int)
 
+    // Person
+    case person(id: Int)
+
     // Profile
     case profileStats
     case deleteAccount
@@ -87,6 +90,8 @@ enum Endpoint: Sendable {
             return "/media/tv/\(tvId)/season/\(season)"
         case .watchedEpisodes(let tvId, let season):
             return "/media/tv/\(tvId)/seasons/\(season)/watched"
+        case .person(let id):
+            return "/person/\(id)"
         case .profileStats:
             return "/profile/stats"
         case .deleteAccount:
@@ -119,7 +124,7 @@ enum Endpoint: Sendable {
     var method: HTTPMethod {
         switch self {
         case .watchlist, .continueWatching, .watchlistUpcoming, .mediaDetail, .mediaRecommendations, .seasonDetail, .watchedEpisodes, .discover, .discoverFiltered, .trending, .search, .nowPlaying,
-             .topRated, .upcoming, .popular, .genres, .providers, .profileStats, .exportData:
+             .topRated, .upcoming, .popular, .genres, .providers, .person, .profileStats, .exportData:
             return .GET
         case .addToWatchlist, .rateMedia, .watchEpisode, .watchSeason, .watchAllEpisodes, .importData:
             return .POST

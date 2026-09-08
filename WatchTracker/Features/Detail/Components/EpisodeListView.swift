@@ -24,6 +24,8 @@ struct EpisodeListView: View {
     var body: some View {
         VStack(spacing: 0) {
             ForEach(episodes) { episode in
+                let isPending = viewModel.isEpisodePending(season: seasonNumber, episode: episode.episodeNumber)
+
                 Button {
                     hapticTrigger += 1
                     Task { await viewModel.toggleEpisodeWatched(season: seasonNumber, episode: episode.episodeNumber) }
@@ -64,19 +66,30 @@ struct EpisodeListView: View {
 
                         Spacer()
 
-                        Image(systemName: episode.hasAired
-                              ? (episode.isWatched ? "checkmark.circle.fill" : "circle")
-                              : "lock.circle")
-                            .font(.title3)
-                            .foregroundStyle(watchButtonColor(for: episode))
-                            .contentTransition(.symbolEffect(.replace))
+                        // The mark is a round trip, so the spinner takes the checkmark's
+                        // exact slot — swapping in a differently-sized view would make the
+                        // whole row twitch on every tap.
+                        ZStack {
+                            if isPending {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Image(systemName: episode.hasAired
+                                      ? (episode.isWatched ? "checkmark.circle.fill" : "circle")
+                                      : "lock.circle")
+                                    .font(.title3)
+                                    .foregroundStyle(watchButtonColor(for: episode))
+                                    .contentTransition(.symbolEffect(.replace))
+                            }
+                        }
+                        .frame(width: 24, height: 24)
                     }
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .disabled(!episode.hasAired)
+                .disabled(!episode.hasAired || isPending)
                 .accessibilityLabel(Strings.Episode.accessibilityLabel(number: episode.episodeNumber, name: episode.name))
                 .accessibilityValue(episode.hasAired
                                     ? (episode.isWatched ? Strings.Episode.accessibilityWatched : Strings.Episode.accessibilityNotWatched)

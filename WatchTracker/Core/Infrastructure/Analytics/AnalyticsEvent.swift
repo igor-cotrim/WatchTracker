@@ -11,5 +11,7 @@ enum AnalyticsEvent: String {
     case mediaRated = "media_rated"
     case ratingRemoved = "rating_removed"
     case providerLinkTapped = "provider_link_tapped"
+    case trailerOpened = "trailer_opened"
+    case personViewed = "person_viewed"
     case dataExported = "data_exported"
 }

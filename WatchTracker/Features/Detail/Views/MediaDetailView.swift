@@ -27,11 +27,19 @@ struct MediaDetailView: View {
 
                             DetailWatchlistSection(viewModel: viewModel, mediaType: mediaType)
 
+                            if let trailer = media.trailer {
+                                DetailTrailerButton(trailer: trailer, title: media.displayTitle)
+                            }
+
                             DetailRatingSection(viewModel: viewModel, mediaType: mediaType)
 
                             DetailWhereToWatchSection(media: media)
 
                             DetailSynopsisSection(media: media)
+
+                            if let cast = media.credits?.cast, !cast.isEmpty {
+                                DetailCastSection(cast: cast)
+                            }
 
                             if let seasons = media.seasons, !seasons.isEmpty {
                                 DetailSeasonsSection(seasons: seasons, viewModel: viewModel)

@@ -1145,6 +1145,57 @@
         }
       }
     },
+    "detail.trailer.accessibility" : {
+      "comment" : "Accessibility label for the trailer button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch trailer"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver trailer"
+          }
+        }
+      }
+    },
+    "detail.trailer.hint" : {
+      "comment" : "Accessibility hint for the trailer button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the trailer on YouTube"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre o trailer no YouTube"
+          }
+        }
+      }
+    },
+    "detail.trailer.watch" : {
+      "comment" : "Button that opens the title's trailer on YouTube",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch trailer"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver trailer"
+          }
+        }
+      }
+    },
     "detail.watchlist.accessibility.add" : {
       "comment" : "VoiceOver label for the add-to-watchlist button",
       "localizations" : {
@@ -2718,6 +2769,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notificações"
+          }
+        }
+      }
+    },
+    "person.appears_in.empty" : {
+      "comment" : "Shown when TMDB lists no filmography for a person",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No titles found for this person."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum título encontrado para esta pessoa."
+          }
+        }
+      }
+    },
+    "person.appears_in.title" : {
+      "comment" : "Section header above a person's filmography",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appears in"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparece em"
+          }
+        }
+      }
+    },
+    "person.biography.read_less" : {
+      "comment" : "Collapses a long biography back to a few lines",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read less"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ler menos"
+          }
+        }
+      }
+    },
+    "person.biography.read_more" : {
+      "comment" : "Expands a truncated biography",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read more"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ler mais"
+          }
+        }
+      }
+    },
+    "person.biography.title" : {
+      "comment" : "Section header above a person's biography",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biography"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biografia"
+          }
+        }
+      }
+    },
+    "person.credit.accessibility" : {
+      "comment" : "VoiceOver label for one filmography card: title, then role",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, as %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, como %2$@"
+          }
+        }
+      }
+    },
+    "person.open.hint" : {
+      "comment" : "Accessibility hint on a cast member in the detail screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens this person's page"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre a página desta pessoa"
           }
         }
       }
