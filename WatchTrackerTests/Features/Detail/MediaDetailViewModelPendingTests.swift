@@ -10,24 +10,33 @@ struct MediaDetailViewModelPendingTests {
 
     private func makeVM(
         _ service: MockMediaDetailService,
-        watchlistService: MockWatchlistService? = nil
+        type: MediaType = .movie,
+        id: Int = 1,
+        watchlistService: MockWatchlistService? = nil,
+        store: WatchlistStore? = nil
     ) -> MediaDetailViewModel {
         MediaDetailViewModel(
+            mediaType: type,
+            mediaId: id,
             mediaDetailService: service,
             watchlistService: watchlistService ?? MockWatchlistService(),
-            store: WatchlistStore()
+            store: store ?? WatchlistStore(),
+            analytics: MockAnalytics()
         )
     }
 
-    /// The ViewModel only routes episode writes for TV, so every case has to load a show first.
+    /// The ViewModel only routes episode writes for TV, so every case has to load a show
+    /// and its first season. Both go through the mock rather than being written onto the
+    /// ViewModel, which is the only way in now that its state is `private(set)`.
     private func makeTVVM(_ service: MockMediaDetailService) async -> MediaDetailViewModel {
         service.fetchMediaDetailResult = .success(TestFixtures.tvDetail(seasons: [(1, 2)]))
-        let vm = makeVM(service)
-        await vm.fetchDetails(type: .tv, id: 2)
-        vm.seasonEpisodes[1] = [
-            TestFixtures.episode(episodeNumber: 1, isWatched: false),
-            TestFixtures.episode(id: 2, episodeNumber: 2, isWatched: false)
-        ]
+        service.fetchSeasonDetailResult = .success(TestFixtures.season(episodes: [
+            TestFixtures.episode(episodeNumber: 1),
+            TestFixtures.episode(id: 2, episodeNumber: 2)
+        ]))
+        let vm = makeVM(service, type: .tv, id: 2)
+        await vm.fetchDetails()
+        await vm.loadSeasonIfNeeded(1)
         return vm
     }
 
@@ -66,7 +75,7 @@ struct MediaDetailViewModelPendingTests {
         await vm.toggleEpisodeWatched(season: 1, episode: 1)
 
         #expect(vm.pendingEpisodes.isEmpty)
-        #expect(vm.errorMessage != nil)
+        #expect(vm.actionError != nil)
     }
 
     /// Tapping a row twice before the server answers would otherwise send a mark *and*
@@ -119,7 +128,7 @@ struct MediaDetailViewModelPendingTests {
     @Test func `rating is submitting while the request is in flight`() async {
         let service = MockMediaDetailService()
         let vm = makeVM(service)
-        await vm.fetchDetails(type: .movie, id: 1)
+        await vm.fetchDetails()
 
         var submittingDuringCall: Bool?
         service.duringCall = { submittingDuringCall = vm.isSubmittingRating }
@@ -133,7 +142,7 @@ struct MediaDetailViewModelPendingTests {
     @Test func `removing a rating is submitting while the request is in flight`() async {
         let service = MockMediaDetailService()
         let vm = makeVM(service)
-        await vm.fetchDetails(type: .movie, id: 1)
+        await vm.fetchDetails()
 
         var submittingDuringCall: Bool?
         service.duringCall = { submittingDuringCall = vm.isSubmittingRating }
@@ -148,7 +157,7 @@ struct MediaDetailViewModelPendingTests {
         let service = MockMediaDetailService()
         service.rateMediaError = MockError.generic("offline")
         let vm = makeVM(service)
-        await vm.fetchDetails(type: .movie, id: 1)
+        await vm.fetchDetails()
 
         await vm.rateMedia(rating: 8)
 
@@ -161,10 +170,14 @@ struct MediaDetailViewModelPendingTests {
     @Test func `removing from the watchlist reports an in-flight status change`() async {
         let service = MockMediaDetailService()
         let watchlist = MockWatchlistService()
-        let vm = makeVM(service, watchlistService: watchlist)
-        await vm.fetchDetails(type: .movie, id: 1)
-        vm.watchlistItemId = 42
-        vm.isOnWatchlist = true
+        // The entry comes from the shared cache, the same way it does in the app — there
+        // is no longer a way (or a reason) to poke `isOnWatchlist` from outside.
+        let store = WatchlistStore()
+        store.cachedItems = [TestFixtures.watchItem(id: 42, tmdbId: 1, mediaType: .movie, status: .watching)]
+        let vm = makeVM(service, watchlistService: watchlist, store: store)
+        await vm.fetchDetails()
+        await vm.checkWatchlistStatus()
+        #expect(vm.entry?.id == 42)
 
         var updatingDuringCall: Bool?
         watchlist.duringRemove = { updatingDuringCall = vm.isUpdatingStatus }

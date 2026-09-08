@@ -15,7 +15,7 @@ protocol WatchlistServiceProtocol: Sendable {
 final class WatchlistService {
     private let api: APIClient
 
-    init(api: APIClient = .shared) {
+    init(api: APIClient) {
         self.api = api
     }
 
@@ -57,3 +57,21 @@ final class WatchlistService {
 }
 
 extension WatchlistService: WatchlistServiceProtocol {}
+
+/// Offline double for `#Preview` and `AppContainer.preview`. Reads come from
+/// `PreviewLibrary`; writes are accepted and dropped.
+struct PreviewWatchlistService: WatchlistServiceProtocol {
+    func fetchWatchlist(status: WatchlistStatus?, mediaType: MediaType?) async throws -> [WatchItem] {
+        PreviewLibrary.watchlist.filter {
+            (status == nil || $0.status == status) && (mediaType == nil || $0.mediaType == mediaType)
+        }
+    }
+    func fetchContinueWatching() async throws -> [ContinueWatchingItem] { PreviewLibrary.continueWatching }
+    func fetchUpcoming() async throws -> [UpcomingItem] { PreviewLibrary.upcoming }
+    @discardableResult
+    func markEpisodeWatched(tvId: Int, season: Int, episode: Int) async throws -> WatchlistStatus? { nil }
+    func markAllEpisodesWatched(tvId: Int) async throws {}
+    func addToWatchlist(tmdbId: Int, mediaType: MediaType, status: WatchlistStatus) async throws {}
+    func removeFromWatchlist(id: Int) async throws {}
+    func updateStatus(id: Int, status: WatchlistStatus) async throws {}
+}

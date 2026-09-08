@@ -17,6 +17,10 @@ final class MockWatchlistService: WatchlistServiceProtocol {
     /// Runs inside `removeFromWatchlist`, before it returns — the seam a test uses to
     /// observe the ViewModel's `isUpdatingStatus` while the request is still out.
     var duringRemove: (() -> Void)?
+
+    /// The same seam for `addToWatchlist`, but `async`: a re-entrant tap has to happen
+    /// *inside* the first request, which a synchronous hook cannot express.
+    var duringAdd: (@MainActor () async -> Void)?
     var updateStatusError: Error? = nil
 
     // MARK: - Call tracking
@@ -60,6 +64,7 @@ final class MockWatchlistService: WatchlistServiceProtocol {
 
     func addToWatchlist(tmdbId: Int, mediaType: MediaType, status: WatchlistStatus) async throws {
         addToWatchlistCalls.append((tmdbId: tmdbId, mediaType: mediaType, status: status))
+        await duringAdd?()
         if let error = addToWatchlistError { throw error }
     }
 

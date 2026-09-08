@@ -151,5 +151,5 @@ struct ForgotPasswordView: View {
 }
 
 #Preview {
-    ForgotPasswordView(auth: AuthService(), prefillEmail: "user@example.com")
+    ForgotPasswordView(auth: PreviewAuthService(), prefillEmail: "user@example.com")
 }

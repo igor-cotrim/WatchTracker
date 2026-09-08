@@ -2,6 +2,13 @@ import Foundation
 import UserNotifications
 
 final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    private let router: AppRouter
+
+    init(router: AppRouter) {
+        self.router = router
+        super.init()
+    }
+
     // Show notification banner even when app is in foreground
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -19,9 +26,9 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     ) {
         let userInfo = response.notification.request.content.userInfo
         if let tmdbId = userInfo["tmdbId"] as? Int {
-            DispatchQueue.main.async {
-                AppRouter.shared.selectedTab = .watching
-                AppRouter.shared.pendingShowId = tmdbId
+            DispatchQueue.main.async { [router] in
+                router.selectedTab = .watching
+                router.pendingShowId = tmdbId
             }
         }
         completionHandler()

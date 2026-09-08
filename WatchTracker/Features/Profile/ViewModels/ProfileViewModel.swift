@@ -41,9 +41,9 @@ final class ProfileViewModel {
     private let canSendMail: @MainActor () -> Bool
 
     init(
-        service: ProfileServiceProtocol = ProfileService(),
+        service: ProfileServiceProtocol,
         auth: any AuthServiceProtocol,
-        notifications: NotificationScheduling = NotificationService.shared,
+        notifications: NotificationScheduling,
         defaults: UserDefaults = .standard,
         canSendMail: @escaping @MainActor () -> Bool = { MFMailComposeViewController.canSendMail() }
     ) {

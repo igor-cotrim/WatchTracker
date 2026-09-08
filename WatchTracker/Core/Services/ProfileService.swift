@@ -7,7 +7,7 @@ protocol ProfileServiceProtocol: Sendable {
 final class ProfileService {
     private let api: APIClient
 
-    init(api: APIClient = .shared) {
+    init(api: APIClient) {
         self.api = api
     }
 
@@ -17,3 +17,8 @@ final class ProfileService {
 }
 
 extension ProfileService: ProfileServiceProtocol {}
+
+/// Offline double for `#Preview` and `AppContainer.preview`.
+struct PreviewProfileService: ProfileServiceProtocol {
+    func fetchStats() async throws -> ProfileStats { PreviewLibrary.stats }
+}

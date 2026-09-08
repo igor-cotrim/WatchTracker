@@ -1,55 +1,39 @@
 import SwiftUI
 
 struct DiscoverView: View {
-    @State private var viewModel = DiscoverViewModel(
-        service: DiscoverService(),
-        searchHistoryManager: SearchHistoryManager()
-    )
+    @State private var browse: DiscoverBrowseViewModel
+    @State private var search: SearchViewModel
 
-    // Stored once per view lifetime — prevents allocating new @Observable instances on every body evaluation.
-    @State private var trendingGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchTrending(page: page) }
-    @State private var nowPlayingGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchNowPlaying(page: page) }
-    @State private var popularMoviesGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchPopular(type: .movie, page: page) }
-    @State private var topRatedMoviesGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchTopRated(type: .movie, page: page) }
-    @State private var upcomingGridVM = BrowseGridViewModel { page in try await DiscoverService().fetchUpcoming(page: page) }
+    init(container: AppContainer) {
+        _browse = State(wrappedValue: container.makeDiscoverBrowseViewModel())
+        _search = State(wrappedValue: container.makeSearchViewModel())
+    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    if viewModel.isSearching {
+                    if search.isSearching {
                         searchSection
                             .transition(.opacity.combined(with: .offset(y: 8)))
                     } else {
                         browseContent
                     }
                 }
-                .animation(.easeInOut(duration: 0.2), value: viewModel.isSearching)
+                .animation(.easeInOut(duration: 0.2), value: search.isSearching)
                 .padding(.vertical)
             }
             .navigationTitle(Strings.Discover.title)
-            .searchable(text: $viewModel.searchQuery, prompt: Strings.Discover.searchPrompt)
+            .searchable(text: $search.query, prompt: Strings.Discover.searchPrompt)
             .onSubmit(of: .search) {
-                Task { await viewModel.search() }
+                Task { await search.search() }
             }
-            .onChange(of: viewModel.searchQuery) {
-                if viewModel.searchQuery.isEmpty {
-                    viewModel.searchResults = []
-                    viewModel.searchSuggestions = []
-                } else {
-                    viewModel.fetchSuggestions()
-                }
+            .onChange(of: search.query) {
+                search.queryChanged()
             }
             .task {
-                async let t: () = viewModel.fetchTrending()
-                async let n: () = viewModel.fetchNowPlaying()
-                async let p: () = viewModel.fetchPopular()
-                async let tr: () = viewModel.fetchTopRated()
-                async let u: () = viewModel.fetchUpcoming()
-                async let pr: () = viewModel.fetchProviders()
-                _ = await (t, n, p, tr, u, pr)
-                viewModel.loadSearchHistory()
-                viewModel.restoreLastProviderIfNeeded()
+                await browse.load()
+                search.loadHistory()
             }
         }
     }
@@ -59,117 +43,61 @@ struct DiscoverView: View {
     private var browseContent: some View {
         VStack(alignment: .leading, spacing: 24) {
             ProviderStripView(
-                providers: viewModel.providers,
-                selectedProviderId: viewModel.selectedProvider?.providerId
+                providers: browse.providers,
+                selectedProviderId: browse.selectedProvider?.providerId
             ) { provider in
-                viewModel.selectProvider(provider)
+                browse.selectProvider(provider)
             }
 
             MoodStripView()
 
-            if viewModel.selectedProvider != nil {
-                providerScopedSections
+            if let provider = browse.selectedProvider {
+                providerRows(for: provider)
                     .transition(.opacity)
             } else {
-                genericSections
+                genericRows
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: viewModel.selectedProvider?.providerId)
+        .animation(.easeInOut(duration: 0.2), value: browse.selectedProvider?.providerId)
     }
 
-    // MARK: - Generic Sections
-
     @ViewBuilder
-    private var genericSections: some View {
+    private var genericRows: some View {
         VStack(alignment: .leading, spacing: 24) {
-            if !viewModel.trending.isEmpty {
-                MediaRowSection(
-                    title: Strings.Discover.trending,
-                    items: viewModel.trending,
-                    seeAllViewModel: trendingGridVM
-                )
-            }
-            if !viewModel.nowPlaying.isEmpty {
-                MediaRowSection(
-                    title: Strings.Discover.nowPlaying,
-                    items: viewModel.nowPlaying,
-                    seeAllViewModel: nowPlayingGridVM
-                )
-            }
-            if !viewModel.popular.isEmpty {
-                MediaRowSection(
-                    title: Strings.Discover.popular,
-                    items: viewModel.popular,
-                    seeAllViewModel: popularMoviesGridVM
-                )
-            }
-            if !viewModel.topRated.isEmpty {
-                MediaRowSection(
-                    title: Strings.Discover.topRated,
-                    items: viewModel.topRated,
-                    seeAllViewModel: topRatedMoviesGridVM
-                )
-            }
-            if !viewModel.upcoming.isEmpty {
-                MediaRowSection(
-                    title: Strings.Discover.upcoming,
-                    items: viewModel.upcoming,
-                    seeAllViewModel: upcomingGridVM
-                )
-            }
+            row(Strings.Discover.trending, browse.trending, seeAll: .trending)
+            row(Strings.Discover.nowPlaying, browse.nowPlaying, seeAll: .nowPlaying)
+            row(Strings.Discover.popular, browse.popular, seeAll: .popularMovies)
+            row(Strings.Discover.topRated, browse.topRated, seeAll: .topRatedMovies)
+            row(Strings.Discover.upcoming, browse.upcoming, seeAll: .upcoming)
         }
     }
-
-    // MARK: - Provider-Scoped Sections
 
     @ViewBuilder
-    private var providerScopedSections: some View {
-        if let provider = viewModel.selectedProvider {
-            VStack(alignment: .leading, spacing: 24) {
-                if !viewModel.newOnProvider.isEmpty {
-                    MediaRowSection(
-                        title: Strings.Discover.newOnProvider(provider.providerName),
-                        items: viewModel.newOnProvider,
-                        seeAllViewModel: providerSeeAllViewModel(for: provider, sortBy: "primary_release_date.desc")
-                    )
-                }
-                if !viewModel.topTenOnProvider.isEmpty {
-                    RankedMediaRowSection(
-                        title: Strings.Discover.topTenOnProvider(provider.providerName),
-                        items: viewModel.topTenOnProvider,
-                        seeAllViewModel: providerSeeAllViewModel(for: provider, sortBy: "popularity.desc")
-                    )
-                }
-                if !viewModel.trendingOnProvider.isEmpty {
-                    MediaRowSection(
-                        title: Strings.Discover.trendingOnProvider(provider.providerName),
-                        items: viewModel.trendingOnProvider,
-                        seeAllViewModel: providerSeeAllViewModel(for: provider, sortBy: "popularity.desc")
-                    )
-                }
-                if !viewModel.acclaimedOnProvider.isEmpty {
-                    MediaRowSection(
-                        title: Strings.Discover.acclaimedOnProvider(provider.providerName),
-                        items: viewModel.acclaimedOnProvider,
-                        seeAllViewModel: providerSeeAllViewModel(for: provider, sortBy: "vote_average.desc")
-                    )
+    private func providerRows(for provider: StreamingProvider) -> some View {
+        VStack(alignment: .leading, spacing: 24) {
+            ForEach(ProviderRow.allCases, id: \.self) { providerRow in
+                let state = browse.providerRows[providerRow] ?? .loading
+                let title = providerRow.title(providerName: provider.providerName)
+                let feed = providerRow.seeAllFeed(provider: provider)
+
+                if providerRow.isRanked {
+                    if !state.items.isEmpty {
+                        RankedMediaRowSection(title: title, items: state.items, seeAllFeed: feed)
+                    }
+                } else {
+                    row(title, state, seeAll: feed)
                 }
             }
         }
     }
 
-    private func providerSeeAllViewModel(for provider: StreamingProvider, sortBy: String) -> BrowseGridViewModel {
-        let service = DiscoverService()
-        let providerId = provider.providerId
-        return BrowseGridViewModel { page in
-            try await service.discoverFiltered(
-                type: .movie,
-                providers: String(providerId),
-                watchRegion: "BR",
-                sortBy: sortBy,
-                page: page
-            )
+    /// A row only appears once it has something to show — a still-loading or failed feed
+    /// leaves no gap, which is what the screen did before each feed had its own state.
+    @ViewBuilder
+    private func row(_ title: String, _ state: FeedState, seeAll feed: BrowseFeed) -> some View {
+        if !state.items.isEmpty {
+            MediaRowSection(title: title, items: state.items, seeAllFeed: feed)
         }
     }
 
@@ -178,25 +106,25 @@ struct DiscoverView: View {
     private var searchSection: some View {
         Group {
             SearchFilterBar(
-                selectedType: $viewModel.selectedSearchType,
-                selectedYear: $viewModel.selectedSearchYear
+                selectedType: $search.selectedType,
+                selectedYear: $search.selectedYear
             )
 
-            if !viewModel.searchSuggestions.isEmpty && viewModel.searchResults.isEmpty && !viewModel.isLoading {
-                SearchSuggestionsList(suggestions: viewModel.searchSuggestions)
+            if !search.suggestions.isEmpty && search.results.isEmpty && !search.isLoading {
+                SearchSuggestionsList(suggestions: search.suggestions)
             }
 
             SearchResultsGrid(
-                results: viewModel.searchResults,
-                isLoading: viewModel.isLoading
+                results: search.results,
+                isLoading: search.isLoading
             )
 
-            if viewModel.searchResults.isEmpty && !viewModel.isLoading && viewModel.searchSuggestions.isEmpty {
+            if search.results.isEmpty && !search.isLoading && search.suggestions.isEmpty {
                 SearchHistoryList(
-                    history: viewModel.searchHistory,
-                    onSelect: { viewModel.selectHistoryItem($0) },
-                    onRemove: { viewModel.removeSearchHistoryItem($0) },
-                    onClear: { viewModel.clearSearchHistory() }
+                    history: search.history,
+                    onSelect: { search.selectHistoryItem($0) },
+                    onRemove: { search.removeHistoryItem($0) },
+                    onClear: { search.clearHistory() }
                 )
             }
         }
@@ -204,5 +132,6 @@ struct DiscoverView: View {
 }
 
 #Preview {
-    DiscoverView()
+    DiscoverView(container: .preview)
+        .environment(AppContainer.preview)
 }

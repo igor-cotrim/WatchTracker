@@ -16,7 +16,7 @@ protocol DiscoverServiceProtocol: Sendable {
 final class DiscoverService {
     private let api: APIClient
 
-    init(api: APIClient = .shared) {
+    init(api: APIClient) {
         self.api = api
     }
 
@@ -75,3 +75,19 @@ final class DiscoverService {
 }
 
 extension DiscoverService: DiscoverServiceProtocol {}
+
+/// Offline double for `#Preview` and `AppContainer.preview`.
+struct PreviewDiscoverService: DiscoverServiceProtocol {
+    func fetchTrending(page: Int?) async throws -> [MediaDetail] { PreviewLibrary.catalogue }
+    func search(query: String, type: MediaType?, year: Int?) async throws -> [MediaDetail] { PreviewLibrary.catalogue }
+    func discover(provider: String?, type: MediaType?, region: String?) async throws -> [MediaDetail] { PreviewLibrary.catalogue }
+    func discoverFiltered(type: MediaType, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?, releaseDateGte: String?, firstAirDateGte: String?) async throws -> [MediaDetail] {
+        PreviewLibrary.catalogue
+    }
+    func fetchNowPlaying(page: Int?) async throws -> [MediaDetail] { PreviewLibrary.catalogue }
+    func fetchTopRated(type: MediaType, page: Int?) async throws -> [MediaDetail] { PreviewLibrary.catalogue }
+    func fetchUpcoming(page: Int?) async throws -> [MediaDetail] { PreviewLibrary.catalogue }
+    func fetchPopular(type: MediaType, page: Int?) async throws -> [MediaDetail] { PreviewLibrary.catalogue }
+    func fetchGenres(type: MediaType) async throws -> [Genre] { PreviewLibrary.genres }
+    func fetchProviders(type: MediaType) async throws -> [StreamingProvider] { PreviewLibrary.providers }
+}

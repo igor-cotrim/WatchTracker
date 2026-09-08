@@ -11,7 +11,8 @@ struct AuthServiceTests {
     /// and defaults suite instead of touching the app-wide singletons.
     private final class Harness {
         let client = MockSupabaseAuthClient()
-        let router = AppRouter()
+        let analytics = MockAnalytics()
+        let router: AppRouter
         let store = WatchlistStore()
         let defaults: UserDefaults
         let notifications = MockNotificationScheduler()
@@ -27,6 +28,7 @@ struct AuthServiceTests {
         init() {
             suiteName = "test-\(UUID().uuidString)"
             defaults = UserDefaults(suiteName: suiteName)!
+            router = AppRouter(analytics: analytics)
             let (session, recorder) = StubURLProtocol.session(.json("{}"))
             self.recorder = recorder
             service = AuthService(
@@ -346,8 +348,9 @@ struct AuthServiceTests {
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
         let service = AuthService(
-            client: client, api: api, router: AppRouter(), store: store,
-            userDefaults: defaults, notificationCenter: NotificationCenter()
+            client: client, api: api, router: AppRouter(analytics: MockAnalytics()), store: store,
+            userDefaults: defaults, notifications: MockNotificationScheduler(),
+            notificationCenter: NotificationCenter()
         )
         try await service.signIn(email: "a@b.com", password: "secret")
         store.cachedItems = [TestFixtures.watchItem()]
@@ -371,8 +374,9 @@ struct AuthServiceTests {
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
         let service = AuthService(
-            client: client, api: api, router: AppRouter(), store: WatchlistStore(),
-            userDefaults: defaults, notificationCenter: NotificationCenter()
+            client: client, api: api, router: AppRouter(analytics: MockAnalytics()), store: WatchlistStore(),
+            userDefaults: defaults, notifications: MockNotificationScheduler(),
+            notificationCenter: NotificationCenter()
         )
         try await service.signIn(email: "a@b.com", password: "secret")
 

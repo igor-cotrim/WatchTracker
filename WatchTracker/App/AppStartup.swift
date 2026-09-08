@@ -12,8 +12,8 @@ struct AppStartup {
     private let defaults: UserDefaults
 
     init(
-        service: WatchlistServiceProtocol = WatchlistService(),
-        notifications: NotificationScheduling = NotificationService.shared,
+        service: WatchlistServiceProtocol,
+        notifications: NotificationScheduling,
         defaults: UserDefaults = .standard
     ) {
         self.service = service

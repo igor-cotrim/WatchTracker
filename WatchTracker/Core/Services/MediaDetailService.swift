@@ -30,7 +30,7 @@ private struct SeasonStatusResponse: Decodable {
 final class MediaDetailService {
     private let api: APIClient
 
-    init(api: APIClient = .shared) {
+    init(api: APIClient) {
         self.api = api
     }
 
@@ -85,3 +85,20 @@ final class MediaDetailService {
 }
 
 extension MediaDetailService: MediaDetailServiceProtocol {}
+
+/// Offline double for `#Preview` and `AppContainer.preview`.
+struct PreviewMediaDetailService: MediaDetailServiceProtocol {
+    func fetchMediaDetail(type: MediaType, id: Int) async throws -> MediaDetail {
+        type == .movie ? PreviewLibrary.movie : PreviewLibrary.show
+    }
+    func fetchRecommendations(type: MediaType, id: Int) async throws -> [MediaDetail] { PreviewLibrary.catalogue }
+    func fetchPerson(id: Int) async throws -> PersonDetail { PreviewLibrary.person }
+    func fetchSeasonDetail(tvId: Int, season: Int) async throws -> Season { PreviewLibrary.season }
+    func fetchWatchedEpisodes(tvId: Int, season: Int) async throws -> [Int] { [1, 2] }
+    func markEpisodeWatched(tvId: Int, season: Int, episode: Int) async throws -> WatchlistStatus? { nil }
+    func unmarkEpisodeWatched(tvId: Int, season: Int, episode: Int) async throws -> WatchlistStatus? { nil }
+    func markSeasonWatched(tvId: Int, season: Int) async throws -> WatchlistStatus? { nil }
+    func unmarkSeasonWatched(tvId: Int, season: Int) async throws -> WatchlistStatus? { nil }
+    func rateMedia(type: MediaType, id: Int, rating: Int) async throws {}
+    func removeRating(type: MediaType, id: Int) async throws {}
+}

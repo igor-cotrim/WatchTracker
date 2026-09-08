@@ -6,24 +6,32 @@ import UserNotifications
 @main
 struct WatchTrackerApp: App {
     @State private var showSplash = true
-    @State private var authService = AuthService()
+    @State private var container: AppContainer
     @AppStorage(AppAppearance.storageKey) private var appearance: AppAppearance = .system
 
-    private static let notificationDelegate = NotificationDelegate()
+    /// Held for the lifetime of the app because `UNUserNotificationCenter` keeps its
+    /// delegate weakly.
+    private let notificationDelegate: NotificationDelegate
 
     init() {
         Self.clearKeychainIfFirstLaunch()
-        AnalyticsService.shared.start()
-        UNUserNotificationCenter.current().delegate = Self.notificationDelegate
+
+        // The one place the object graph is built. Everything below — and every screen —
+        // gets its dependencies from this instance rather than reaching for a singleton.
+        let container = AppContainer.live
+        _container = State(initialValue: container)
+
+        notificationDelegate = NotificationDelegate(router: container.router)
+        UNUserNotificationCenter.current().delegate = notificationDelegate
     }
 
     var body: some Scene {
         WindowGroup {
             ZStack {
-                if authService.isAuthenticated {
+                if container.auth.isAuthenticated {
                     AppTabView()
                 } else {
-                    AuthView(auth: authService)
+                    AuthView(auth: container.auth)
                 }
 
                 if showSplash {
@@ -34,10 +42,10 @@ struct WatchTrackerApp: App {
             }
             .animation(.easeOut(duration: 0.4), value: showSplash)
             .preferredColorScheme(appearance.colorScheme)
-            .environment(authService)
-            .environment(AppRouter.shared)
+            .environment(container)
+            .environment(container.router)
             .task {
-                async let session: () = authService.checkSession()
+                async let session: () = container.auth.checkSession()
                 async let minDelay: () = { try? await Task.sleep(for: .seconds(1.2)) }()
                 _ = await (session, minDelay)
                 showSplash = false

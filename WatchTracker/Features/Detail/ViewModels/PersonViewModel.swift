@@ -11,8 +11,8 @@ final class PersonViewModel {
     private let analytics: AnalyticsTracking
 
     init(
-        service: MediaDetailServiceProtocol = MediaDetailService(),
-        analytics: AnalyticsTracking = AnalyticsService.shared
+        service: MediaDetailServiceProtocol,
+        analytics: AnalyticsTracking
     ) {
         self.service = service
         self.analytics = analytics

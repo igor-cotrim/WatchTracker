@@ -6,15 +6,15 @@ private enum WatchingTab {
 
 struct WatchingView: View {
     @Environment(AppRouter.self) private var appRouter
-    @State private var viewModel = ContinueWatchingViewModel(
-        service: WatchlistService(),
-        store: .shared
-    )
-    @State private var upcomingViewModel = UpcomingViewModel(
-        service: WatchlistService()
-    )
+    @State private var viewModel: ContinueWatchingViewModel
+    @State private var upcomingViewModel: UpcomingViewModel
     @State private var selectedTab: WatchingTab = .watching
     @State private var navigationPath = NavigationPath()
+
+    init(container: AppContainer) {
+        _viewModel = State(wrappedValue: container.makeContinueWatchingViewModel())
+        _upcomingViewModel = State(wrappedValue: container.makeUpcomingViewModel())
+    }
 
     var body: some View {
         NavigationStack(path: $navigationPath) {

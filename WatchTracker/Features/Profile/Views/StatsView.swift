@@ -28,6 +28,6 @@ struct StatsView: View {
 
 #Preview {
     NavigationStack {
-        StatsView(viewModel: ProfileViewModel(auth: AuthService()))
+        StatsView(viewModel: AppContainer.preview.makeProfileViewModel())
     }
 }

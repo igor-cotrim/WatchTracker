@@ -16,13 +16,18 @@ enum AuthServiceError: LocalizedError {
 
 // MARK: - Protocols
 
-/// What the auth screens and the Profile tab need from `AuthService`. Views and view models
-/// depend on this rather than the concrete service, so they can be driven by a stub in tests.
+/// What the app root, the auth screens and the Profile tab need from `AuthService`. Views and
+/// view models depend on this rather than the concrete service, so they can be driven by a stub
+/// in tests and by `PreviewAuthService` in the canvas.
 @MainActor
 protocol AuthServiceProtocol: AnyObject {
+    /// Gates the whole UI: `WatchTrackerApp` shows `AppTabView` or `AuthView` from this.
+    var isAuthenticated: Bool { get }
     var currentUser: User? { get }
     var sessionExpiredMessage: String? { get }
     func clearSessionExpiredMessage()
+    /// Restores an existing session at launch. Never throws — failure means "signed out".
+    func checkSession() async
     func signIn(email: String, password: String) async throws
     func signUp(email: String, password: String, name: String) async throws
     func resetPassword(email: String) async throws
@@ -50,7 +55,7 @@ protocol SupabaseAuthClient: Sendable {
 struct LiveSupabaseAuthClient: SupabaseAuthClient {
     private let client: SupabaseClient
 
-    init(_ client: SupabaseClient = SupabaseManager.shared.client) {
+    init(_ client: SupabaseClient) {
         self.client = client
     }
 
@@ -127,12 +132,12 @@ final class AuthService: AuthServiceProtocol {
     }
 
     init(
-        client: any SupabaseAuthClient = LiveSupabaseAuthClient(),
-        api: APIClient = .shared,
-        router: AppRouter = .shared,
-        store: WatchlistStore = .shared,
+        client: any SupabaseAuthClient,
+        api: APIClient,
+        router: AppRouter,
+        store: WatchlistStore,
         userDefaults: UserDefaults = .standard,
-        notifications: NotificationScheduling = NotificationService.shared,
+        notifications: NotificationScheduling,
         // Injectable so parallel tests don't sign each other out: `.authUnauthorized`
         // is a process-wide broadcast, and every live service reacts to it.
         notificationCenter: NotificationCenter = .default
@@ -313,4 +318,29 @@ final class AuthService: AuthServiceProtocol {
             }
         }
     }
+}
+
+/// Offline double for `#Preview` and `AppContainer.preview`. Every call succeeds and
+/// nothing is persisted, so a canvas render never reaches Supabase or the keychain.
+@MainActor
+final class PreviewAuthService: AuthServiceProtocol {
+    /// `nil` rather than a fabricated `User`: Supabase's model has no public initialiser,
+    /// and the account card already renders a signed-out placeholder for it.
+    var isAuthenticated = true
+    var currentUser: User? { nil }
+    var sessionExpiredMessage: String? { nil }
+
+    /// Defaults to signed-in so previews land on the app rather than the login screen.
+    init(isAuthenticated: Bool = true) {
+        self.isAuthenticated = isAuthenticated
+    }
+
+    func clearSessionExpiredMessage() {}
+    func checkSession() async {}
+    func signIn(email: String, password: String) async throws {}
+    func signUp(email: String, password: String, name: String) async throws {}
+    func resetPassword(email: String) async throws {}
+    func confirmPasswordReset(email: String, code: String, newPassword: String) async throws {}
+    func signOut() async throws {}
+    func deleteAccount() async throws {}
 }

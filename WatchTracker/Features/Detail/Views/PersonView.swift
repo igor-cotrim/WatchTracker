@@ -5,16 +5,18 @@ struct PersonView: View {
     let personId: Int
     let personName: String
 
-    @State private var viewModel: PersonViewModel
+    /// Reached from the cast carousel inside `MediaDetailView`, which does not carry the
+    /// container itself — so this screen reads it the same way the detail screen does.
+    @Environment(AppContainer.self) private var container
+    @State private var viewModel: PersonViewModel?
     @State private var isBiographyExpanded = false
 
-    /// `viewModel` is optional rather than defaulted so the cast carousel's call site stays
-    /// `PersonView(personId:personName:)`. It cannot be a default *argument* — building a
-    /// `@MainActor` ViewModel in one is a nonisolated call. Tests pass a mock-backed one.
+    /// `viewModel` stays injectable so tests can drive the screen from a mock; production
+    /// leaves it nil and the container builds one on first appearance.
     init(personId: Int, personName: String, viewModel: PersonViewModel? = nil) {
         self.personId = personId
         self.personName = personName
-        _viewModel = State(initialValue: viewModel ?? PersonViewModel())
+        _viewModel = State(initialValue: viewModel)
     }
 
     private let columns = [
@@ -24,6 +26,30 @@ struct PersonView: View {
     ]
 
     var body: some View {
+        content
+            // The name is already on screen behind the navigation bar, so the title starts
+            // out of the way and slides in as the header scrolls past.
+            .navigationTitle(viewModel?.person?.name ?? personName)
+            .navigationBarTitleDisplayMode(.inline)
+            .task {
+                let viewModel = viewModel ?? container.makePersonViewModel()
+                self.viewModel = viewModel
+                guard viewModel.person == nil else { return }
+                await viewModel.load(id: personId)
+            }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if let viewModel {
+            loaded(viewModel)
+        } else {
+            ProgressView()
+                .frame(maxWidth: .infinity, minHeight: 400)
+        }
+    }
+
+    private func loaded(_ viewModel: PersonViewModel) -> some View {
         ScrollView {
             if viewModel.isLoading && viewModel.person == nil {
                 ProgressView()
@@ -40,14 +66,6 @@ struct PersonView: View {
                     await viewModel.load(id: personId)
                 }
             }
-        }
-        // The name is already on screen behind the navigation bar, so the title starts
-        // out of the way and slides in as the header scrolls past.
-        .navigationTitle(viewModel.person?.name ?? personName)
-        .navigationBarTitleDisplayMode(.inline)
-        .task {
-            guard viewModel.person == nil else { return }
-            await viewModel.load(id: personId)
         }
     }
 

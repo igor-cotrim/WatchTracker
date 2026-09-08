@@ -15,8 +15,12 @@ struct MediaDetailViewModelSupplementalTests {
         let analytics = MockAnalytics()
         let viewModel: MediaDetailViewModel
 
-        init() {
+        /// The title is construction-time identity now, so the harness takes it rather
+        /// than each `load(...)` call.
+        init(type: MediaType = .movie, id: Int = 550) {
             viewModel = MediaDetailViewModel(
+                mediaType: type,
+                mediaId: id,
                 mediaDetailService: detail,
                 watchlistService: watchlist,
                 store: store,
@@ -24,10 +28,9 @@ struct MediaDetailViewModelSupplementalTests {
             )
         }
 
-        /// `mediaType`/`mediaId` are private and only set by `fetchDetails`.
-        func load(type: MediaType = .movie, id: Int = 550, media: MediaDetail? = nil) async {
+        func load(media: MediaDetail? = nil) async {
             if let media { detail.fetchMediaDetailResult = .success(media) }
-            await viewModel.fetchDetails(type: type, id: id)
+            await viewModel.fetchDetails()
         }
     }
 
@@ -40,7 +43,7 @@ struct MediaDetailViewModelSupplementalTests {
             TestFixtures.mediaDetail(id: 2),
         ])
 
-        await harness.viewModel.fetchRecommendations(type: .movie, id: 550)
+        await harness.viewModel.fetchRecommendations()
 
         #expect(harness.viewModel.recommendations.map(\.id) == [1, 2])
         #expect(harness.detail.fetchRecommendationsCalls.count == 1)
@@ -49,13 +52,14 @@ struct MediaDetailViewModelSupplementalTests {
 
     @Test func `fetchRecommendations fails silently to an empty list`() async {
         let harness = Harness()
-        harness.viewModel.recommendations = [TestFixtures.mediaDetail()]
-        harness.detail.fetchRecommendationsResult = .failure(MockError.generic("boom"))
+        harness.detail.fetchRecommendationsResult = .success([TestFixtures.mediaDetail()])
+        await harness.viewModel.fetchRecommendations()
 
-        await harness.viewModel.fetchRecommendations(type: .movie, id: 550)
+        harness.detail.fetchRecommendationsResult = .failure(MockError.generic("boom"))
+        await harness.viewModel.fetchRecommendations()
 
         #expect(harness.viewModel.recommendations.isEmpty)
-        #expect(harness.viewModel.errorMessage == nil, "Recommendations are non-essential")
+        #expect(harness.viewModel.actionError == nil, "Recommendations are non-essential")
     }
 
     // MARK: - Rating
@@ -80,12 +84,12 @@ struct MediaDetailViewModelSupplementalTests {
         await harness.viewModel.rateMedia(rating: 10)
 
         #expect(harness.viewModel.userRating == 7, "Should restore the previous rating")
-        #expect(harness.viewModel.errorMessage != nil)
+        #expect(harness.viewModel.actionError != nil)
     }
 
     @Test func `rateMedia captures an analytics event`() async {
-        let harness = Harness()
-        await harness.load(type: .tv, id: 1399)
+        let harness = Harness(type: .tv, id: 1399)
+        await harness.load()
 
         await harness.viewModel.rateMedia(rating: 8)
 
@@ -128,7 +132,7 @@ struct MediaDetailViewModelSupplementalTests {
         await harness.viewModel.removeRating()
 
         #expect(harness.viewModel.userRating == 9)
-        #expect(harness.viewModel.errorMessage != nil)
+        #expect(harness.viewModel.actionError != nil)
     }
 
     @Test func `removeRating captures an analytics event`() async {
@@ -144,7 +148,7 @@ struct MediaDetailViewModelSupplementalTests {
 
     @Test func `fetchDetails captures a detailViewed event`() async {
         let harness = Harness()
-        await harness.load(type: .movie, id: 550, media: TestFixtures.mediaDetail(id: 550, title: "Fight Club"))
+        await harness.load(media: TestFixtures.mediaDetail(id: 550, title: "Fight Club"))
 
         let properties = harness.analytics.properties(for: .detailViewed)
         #expect(properties?["media_type"] as? String == "movie")
@@ -156,10 +160,12 @@ struct MediaDetailViewModelSupplementalTests {
         let harness = Harness()
         harness.detail.fetchMediaDetailResult = .failure(MockError.generic("boom"))
 
-        await harness.viewModel.fetchDetails(type: .movie, id: 550)
+        await harness.viewModel.fetchDetails()
 
         #expect(harness.analytics.capturedEvents.isEmpty)
-        #expect(harness.viewModel.errorMessage != nil)
+        guard case .failed = harness.viewModel.state else {
+            return #expect(Bool(false), "expected .failed")
+        }
     }
 
     // MARK: - Cache reconciliation
@@ -173,13 +179,11 @@ struct MediaDetailViewModelSupplementalTests {
             TestFixtures.watchItem(id: 9, tmdbId: 550, mediaType: .movie, status: .completed),
             TestFixtures.watchItem(id: 5, tmdbId: 550, mediaType: .movie, status: .watching),
         ]
-        await harness.load(type: .movie, id: 550)
+        await harness.load()
 
         await harness.viewModel.checkWatchlistStatus()
 
-        #expect(harness.viewModel.watchlistItemId == 9)
-        #expect(harness.viewModel.watchlistStatus == .completed)
-        #expect(harness.viewModel.isOnWatchlist)
+        #expect(harness.viewModel.entry == WatchlistEntry(id: 9, status: .completed))
     }
 
     @Test func `a cache entry of the other media type is ignored`() async {
@@ -187,12 +191,11 @@ struct MediaDetailViewModelSupplementalTests {
         harness.store.cachedItems = [
             TestFixtures.watchItem(id: 1, tmdbId: 550, mediaType: .tv, status: .watching),
         ]
-        await harness.load(type: .movie, id: 550)
+        await harness.load()
 
         await harness.viewModel.checkWatchlistStatus()
 
-        #expect(harness.viewModel.isOnWatchlist == false)
-        #expect(harness.viewModel.watchlistItemId == nil)
+        #expect(harness.viewModel.entry == nil)
     }
 
     // MARK: - Watchlist mutations
@@ -213,7 +216,7 @@ struct MediaDetailViewModelSupplementalTests {
         harness.store.cachedItems = [
             TestFixtures.watchItem(id: 7, tmdbId: 550, mediaType: .movie, status: .planToWatch),
         ]
-        await harness.load(type: .movie, id: 550)
+        await harness.load()
         await harness.viewModel.checkWatchlistStatus()
 
         await harness.viewModel.addToWatchlist(status: .completed)
@@ -224,28 +227,30 @@ struct MediaDetailViewModelSupplementalTests {
     }
 
     @Test func `completing a show marks every cached episode watched`() async {
-        let harness = Harness()
-        await harness.load(type: .tv, id: 1399, media: TestFixtures.tvDetail(id: 1399, seasons: [(1, 2)]))
-        harness.viewModel.seasonEpisodes = [
-            1: [TestFixtures.episode(id: 1, episodeNumber: 1), TestFixtures.episode(id: 2, episodeNumber: 2)],
-        ]
+        let harness = Harness(type: .tv, id: 1399)
+        harness.detail.seasonResults[1] = TestFixtures.season(seasonNumber: 1, episodes: [
+            TestFixtures.episode(id: 1, episodeNumber: 1),
+            TestFixtures.episode(id: 2, episodeNumber: 2)
+        ])
+        await harness.load(media: TestFixtures.tvDetail(id: 1399, seasons: [(1, 2)]))
+        await harness.viewModel.loadSeasonIfNeeded(1)
 
         await harness.viewModel.addToWatchlist(status: .completed)
 
         #expect(harness.watchlist.markAllEpisodesWatchedCalls.count == 1)
-        #expect(harness.viewModel.seasonEpisodes[1]?.allSatisfy(\.isWatched) == true)
+        #expect(harness.viewModel.episodes(inSeason: 1).allSatisfy { $0.isWatched })
     }
 
     @Test func `completing a movie does not bulk-mark episodes`() async {
         let harness = Harness()
-        await harness.load(type: .movie, id: 550)
+        await harness.load()
 
         await harness.viewModel.addToWatchlist(status: .completed)
 
         #expect(harness.watchlist.markAllEpisodesWatchedCalls.count == 0)
     }
 
-    @Test func `removeFromWatchlist is a no-op without a watchlist id`() async {
+    @Test func `removeFromWatchlist is a no-op without a watchlist entry`() async {
         let harness = Harness()
         await harness.load()
 
@@ -259,32 +264,28 @@ struct MediaDetailViewModelSupplementalTests {
         harness.store.cachedItems = [
             TestFixtures.watchItem(id: 7, tmdbId: 550, mediaType: .movie, status: .watching),
         ]
-        await harness.load(type: .movie, id: 550)
+        await harness.load()
         await harness.viewModel.checkWatchlistStatus()
         harness.watchlist.fetchWatchlistResult = .success([])
 
         await harness.viewModel.removeFromWatchlist()
 
+        #expect(harness.viewModel.entry == nil)
         #expect(harness.viewModel.isOnWatchlist == false)
-        #expect(harness.viewModel.watchlistItemId == nil)
-        #expect(harness.viewModel.watchlistStatus == nil)
         #expect(harness.analytics.capturedEvents.contains(.watchlistRemoved))
     }
 
     // MARK: - openFirstUnwatchedSeason
 
     @Test func `openFirstUnwatchedSeason targets the first season with unwatched episodes`() async {
-        let harness = Harness()
-        harness.detail.fetchSeasonDetailResult = .success(
-            TestFixtures.season(seasonNumber: 1, episodes: [TestFixtures.episode(id: 1, episodeNumber: 1)])
-        )
-        // Season 1 fully watched, season 2 not.
-        harness.detail.fetchWatchedEpisodesResult = .success([1])
-        await harness.load(type: .tv, id: 1399, media: TestFixtures.tvDetail(id: 1399, seasons: [(1, 1), (2, 1)]))
-        harness.viewModel.seasonEpisodes = [
-            1: [TestFixtures.episode(id: 1, episodeNumber: 1, isWatched: true)],
-            2: [TestFixtures.episode(id: 2, episodeNumber: 1, isWatched: false)],
+        let harness = Harness(type: .tv, id: 1399)
+        harness.detail.seasonResults = [
+            1: TestFixtures.season(seasonNumber: 1, episodes: [TestFixtures.episode(id: 1, episodeNumber: 1)]),
+            2: TestFixtures.season(seasonNumber: 2, episodes: [TestFixtures.episode(id: 2, episodeNumber: 1)])
         ]
+        // Season 1 fully watched, season 2 not.
+        harness.detail.watchedEpisodesBySeason = [1: [1], 2: []]
+        await harness.load(media: TestFixtures.tvDetail(id: 1399, seasons: [(1, 1), (2, 1)]))
 
         await harness.viewModel.openFirstUnwatchedSeason()
 
@@ -293,12 +294,13 @@ struct MediaDetailViewModelSupplementalTests {
     }
 
     @Test func `openFirstUnwatchedSeason falls back to the first season when all are watched`() async {
-        let harness = Harness()
-        await harness.load(type: .tv, id: 1399, media: TestFixtures.tvDetail(id: 1399, seasons: [(1, 1), (2, 1)]))
-        harness.viewModel.seasonEpisodes = [
-            1: [TestFixtures.episode(id: 1, episodeNumber: 1, isWatched: true)],
-            2: [TestFixtures.episode(id: 2, episodeNumber: 1, isWatched: true)],
+        let harness = Harness(type: .tv, id: 1399)
+        harness.detail.seasonResults = [
+            1: TestFixtures.season(seasonNumber: 1, episodes: [TestFixtures.episode(id: 1, episodeNumber: 1)]),
+            2: TestFixtures.season(seasonNumber: 2, episodes: [TestFixtures.episode(id: 2, episodeNumber: 1)])
         ]
+        harness.detail.watchedEpisodesBySeason = [1: [1], 2: [1]]
+        await harness.load(media: TestFixtures.tvDetail(id: 1399, seasons: [(1, 1), (2, 1)]))
 
         await harness.viewModel.openFirstUnwatchedSeason()
 
@@ -306,19 +308,23 @@ struct MediaDetailViewModelSupplementalTests {
     }
 
     @Test func `openFirstUnwatchedSeason skips seasons with no episodes`() async {
-        let harness = Harness()
         // Season 0 is the specials bucket and often reports zero episodes.
-        await harness.load(type: .tv, id: 1399, media: TestFixtures.tvDetail(id: 1399, seasons: [(0, 0), (1, 1)]))
-        harness.viewModel.seasonEpisodes = [1: [TestFixtures.episode(id: 1, episodeNumber: 1, isWatched: false)]]
+        let harness = Harness(type: .tv, id: 1399)
+        harness.detail.seasonResults[1] = TestFixtures.season(
+            seasonNumber: 1,
+            episodes: [TestFixtures.episode(id: 1, episodeNumber: 1)]
+        )
+        await harness.load(media: TestFixtures.tvDetail(id: 1399, seasons: [(0, 0), (1, 1)]))
 
         await harness.viewModel.openFirstUnwatchedSeason()
 
         #expect(harness.viewModel.scrollTargetSeason == 1)
+        #expect(harness.detail.fetchSeasonDetailCalls.contains { $0.season == 0 } == false)
     }
 
     @Test func `openFirstUnwatchedSeason is a no-op for movies`() async {
         let harness = Harness()
-        await harness.load(type: .movie, id: 550)
+        await harness.load()
 
         await harness.viewModel.openFirstUnwatchedSeason()
 
@@ -327,13 +333,18 @@ struct MediaDetailViewModelSupplementalTests {
 
     // MARK: - Reentrancy
 
+    /// Tapping the menu twice before the server answers must not send two writes.
     @Test func `addToWatchlist ignores a concurrent call`() async {
         let harness = Harness()
         await harness.load()
-        harness.viewModel.isUpdatingStatus = true
+
+        // Runs inside the first request, which is the only window where the guard applies.
+        harness.watchlist.duringAdd = { [viewModel = harness.viewModel] in
+            await viewModel.addToWatchlist(status: .watching)
+        }
 
         await harness.viewModel.addToWatchlist(status: .watching)
 
-        #expect(harness.watchlist.addToWatchlistCalls.count == 0)
+        #expect(harness.watchlist.addToWatchlistCalls.count == 1)
     }
 }

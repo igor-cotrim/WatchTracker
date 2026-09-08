@@ -7,7 +7,7 @@ protocol ExportServiceProtocol: Sendable {
 final class ExportService {
     private let api: APIClient
 
-    init(api: APIClient = .shared) {
+    init(api: APIClient) {
         self.api = api
     }
 
@@ -17,3 +17,10 @@ final class ExportService {
 }
 
 extension ExportService: ExportServiceProtocol {}
+
+/// Offline double for `#Preview` and `AppContainer.preview`.
+struct PreviewExportService: ExportServiceProtocol {
+    func fetchExport() async throws -> ExportPayload {
+        ExportPayload(generatedAt: .now, unresolved: 0, items: [], episodes: [])
+    }
+}

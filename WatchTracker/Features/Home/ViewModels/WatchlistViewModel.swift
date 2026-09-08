@@ -33,7 +33,7 @@ final class WatchlistViewModel {
     init(
         service: WatchlistServiceProtocol,
         store: WatchlistStore,
-        notifications: NotificationScheduling = NotificationService.shared
+        notifications: NotificationScheduling
     ) {
         self.service = service
         self.store = store

@@ -21,6 +21,10 @@ extension Strings {
         static var watchTrailerHint: String { String(localized: "detail.trailer.hint") }
         static var seasonMarkWatched: String { String(localized: "detail.season.mark_watched") }
         static var seasonUnmarkWatched: String { String(localized: "detail.season.unmark_watched") }
+        /// Shown on the watchlist button while the title is on the list but its status
+        /// has not been read back from the cache yet.
+        static var watchlistOnList: String { String(localized: "detail.watchlist.on_list") }
+        static var actionErrorTitle: String { String(localized: "detail.action_error.title") }
 
         static func watchlistAccessibilityOnList(_ status: String) -> String {
             String(format: String(localized: "detail.watchlist.accessibility.on_list"), status)

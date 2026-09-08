@@ -3,9 +3,7 @@ import FoundationModels
 
 struct AppTabView: View {
     @Environment(AppRouter.self) private var appRouter
-    @Environment(AuthService.self) private var authService
-
-    private let startup = AppStartup()
+    @Environment(AppContainer.self) private var container
 
     private var isAIAvailable: Bool {
         if #available(iOS 26, *) {
@@ -18,31 +16,31 @@ struct AppTabView: View {
         @Bindable var router = appRouter
         TabView(selection: $router.selectedTab) {
             Tab(Strings.Tab.home, systemImage: "house.fill", value: AppRouter.AppTab.home) {
-                HomeView()
+                HomeView(container: container)
             }
             Tab(Strings.Tab.watching, systemImage: "play.circle.fill", value: AppRouter.AppTab.watching) {
-                WatchingView()
+                WatchingView(container: container)
             }
             Tab(Strings.Tab.discover, systemImage: "magnifyingglass", value: AppRouter.AppTab.discover) {
-                DiscoverView()
+                DiscoverView(container: container)
             }
             if #available(iOS 26, *), isAIAvailable {
                 Tab(Strings.Tab.ai, systemImage: "sparkles", value: AppRouter.AppTab.ai) {
-                    AISuggestionsView()
+                    AISuggestionsView(container: container)
                 }
             }
             Tab(Strings.Tab.profile, systemImage: "person.fill", value: AppRouter.AppTab.profile) {
-                ProfileView(auth: authService)
+                ProfileView(container: container)
             }
         }
         .task {
-            await startup.run()
+            await container.startup.run()
         }
     }
 }
 
 #Preview {
     AppTabView()
-        .environment(AppRouter.shared)
-        .environment(AuthService())
+        .environment(AppContainer.preview)
+        .environment(AppContainer.preview.router)
 }

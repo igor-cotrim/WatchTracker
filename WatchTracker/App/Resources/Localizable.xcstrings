@@ -958,6 +958,23 @@
         }
       }
     },
+    "detail.action_error.title" : {
+      "comment" : "Alert title shown when a watchlist, rating or episode write fails on the detail screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível salvar"
+          }
+        }
+      }
+    },
     "detail.cast.title" : {
       "comment" : "Section header for the cast member list",
       "localizations" : {
@@ -1260,6 +1277,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicionar"
+          }
+        }
+      }
+    },
+    "detail.watchlist.on_list" : {
+      "comment" : "Watchlist button label when the title is on the list but its status is not known yet",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On List"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na Lista"
           }
         }
       }

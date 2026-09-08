@@ -3,7 +3,7 @@ import SwiftUI
 struct RankedMediaRowSection: View {
     let title: String
     let items: [MediaDetail]
-    var seeAllViewModel: BrowseGridViewModel? = nil
+    var seeAllFeed: BrowseFeed? = nil
 
     private var rankedItems: [MediaDetail] {
         Array(items.prefix(10))
@@ -36,12 +36,12 @@ struct RankedMediaRowSection: View {
 
     @ViewBuilder
     private var header: some View {
-        if let seeAllViewModel {
+        if let seeAllFeed {
             SectionHeaderView(
                 title: title,
                 seeAllTitle: Strings.Discover.seeAll
             ) {
-                BrowseGridView(viewModel: seeAllViewModel)
+                BrowseGridView(feed: seeAllFeed)
                     .navigationTitle(title)
             }
         } else {

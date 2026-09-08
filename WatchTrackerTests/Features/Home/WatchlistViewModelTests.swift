@@ -6,7 +6,7 @@ import Testing
 struct WatchlistViewModelTests {
 
     private func makeVM() -> WatchlistViewModel {
-        WatchlistViewModel(service: MockWatchlistService(), store: WatchlistStore())
+        WatchlistViewModel(service: MockWatchlistService(), store: WatchlistStore(), notifications: MockNotificationScheduler())
     }
 
     // MARK: - items(for:) — pure filtering
@@ -102,7 +102,7 @@ struct WatchlistViewModelTests {
     @Test func `syncFromCache updates allItems from non-empty store`() {
         let store = WatchlistStore()
         store.cachedItems = [TestFixtures.watchItem()]
-        let vm = WatchlistViewModel(service: MockWatchlistService(), store: store)
+        let vm = WatchlistViewModel(service: MockWatchlistService(), store: store, notifications: MockNotificationScheduler())
         store.cachedItems = [TestFixtures.watchItem(), TestFixtures.watchItem(id: 2)]
         vm.syncFromCache()
         #expect(vm.allItems.count == 2)
@@ -110,7 +110,7 @@ struct WatchlistViewModelTests {
 
     @Test func `syncFromCache does not clear allItems when store is empty`() {
         let store = WatchlistStore()
-        let vm = WatchlistViewModel(service: MockWatchlistService(), store: store)
+        let vm = WatchlistViewModel(service: MockWatchlistService(), store: store, notifications: MockNotificationScheduler())
         vm.allItems = [TestFixtures.watchItem()]
         store.cachedItems = []
         vm.syncFromCache()
@@ -127,7 +127,7 @@ struct WatchlistViewModelTests {
             let mock = MockWatchlistService()
             mock.fetchWatchlistResult = .success([TestFixtures.watchItem()])
             let store = WatchlistStore()
-            let vm = WatchlistViewModel(service: mock, store: store)
+            let vm = WatchlistViewModel(service: mock, store: store, notifications: MockNotificationScheduler())
             await vm.fetchWatchlist()
             #expect(vm.allItems.count == 1)
             #expect(vm.errorMessage == nil)
@@ -138,7 +138,7 @@ struct WatchlistViewModelTests {
             let item = TestFixtures.watchItem()
             mock.fetchWatchlistResult = .success([item])
             let store = WatchlistStore()
-            let vm = WatchlistViewModel(service: mock, store: store)
+            let vm = WatchlistViewModel(service: mock, store: store, notifications: MockNotificationScheduler())
             await vm.fetchWatchlist()
             #expect(store.cachedItems.count == 1)
             #expect(store.needsRefresh == false)
@@ -148,7 +148,7 @@ struct WatchlistViewModelTests {
             let mock = MockWatchlistService()
             mock.fetchWatchlistResult = .failure(MockError.generic("network error"))
             let store = WatchlistStore()
-            let vm = WatchlistViewModel(service: mock, store: store)
+            let vm = WatchlistViewModel(service: mock, store: store, notifications: MockNotificationScheduler())
             await vm.fetchWatchlist()
             #expect(vm.errorMessage != nil)
             #expect(vm.allItems.isEmpty)
@@ -160,7 +160,7 @@ struct WatchlistViewModelTests {
             let store = WatchlistStore()
             store.cachedItems = [TestFixtures.watchItem()]
             store.needsRefresh = false
-            let vm = WatchlistViewModel(service: mock, store: store)
+            let vm = WatchlistViewModel(service: mock, store: store, notifications: MockNotificationScheduler())
             await vm.fetchWatchlist(forceRefresh: false)
             #expect(mock.fetchWatchlistCallCount == 0)
         }
@@ -171,7 +171,7 @@ struct WatchlistViewModelTests {
             let store = WatchlistStore()
             store.cachedItems = [TestFixtures.watchItem()]
             store.needsRefresh = false
-            let vm = WatchlistViewModel(service: mock, store: store)
+            let vm = WatchlistViewModel(service: mock, store: store, notifications: MockNotificationScheduler())
             await vm.fetchWatchlist(forceRefresh: true)
             #expect(mock.fetchWatchlistCallCount == 1)
         }
@@ -180,7 +180,7 @@ struct WatchlistViewModelTests {
             let mock = MockWatchlistService()
             mock.fetchWatchlistResult = .success([])
             let store = WatchlistStore()
-            let vm = WatchlistViewModel(service: mock, store: store)
+            let vm = WatchlistViewModel(service: mock, store: store, notifications: MockNotificationScheduler())
             await vm.fetchWatchlist()
             #expect(vm.isLoading == false)
         }
@@ -189,7 +189,7 @@ struct WatchlistViewModelTests {
             let mock = MockWatchlistService()
             mock.fetchWatchlistResult = .failure(MockError.generic("fail"))
             let store = WatchlistStore()
-            let vm = WatchlistViewModel(service: mock, store: store)
+            let vm = WatchlistViewModel(service: mock, store: store, notifications: MockNotificationScheduler())
             await vm.fetchWatchlist()
             #expect(vm.isLoading == false)
         }

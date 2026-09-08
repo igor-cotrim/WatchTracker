@@ -7,16 +7,42 @@ import Testing
 /// The sections that take a `MediaDetailViewModel` get a real one wired to mocks, so no
 /// request leaves the process. `render(_:)` does not appear the view, so none of the
 /// `.task` bodies run either — see `RenderHostTests`.
+///
+/// The view model's state is `private(set)`, so the in-flight states below are reached by
+/// rendering *inside* the mock's `duringCall` hook — the one moment those flags are set —
+/// rather than by assigning them from the test.
 @MainActor
 @Suite("Detail components render", .tags(.view, .pure))
 struct DetailComponentRenderTests {
 
-    private func makeVM() -> MediaDetailViewModel {
+    private func makeVM(
+        type: MediaType = .movie,
+        id: Int = 1,
+        service: MockMediaDetailService? = nil,
+        watchlistService: MockWatchlistService? = nil,
+        store: WatchlistStore? = nil
+    ) -> MediaDetailViewModel {
         MediaDetailViewModel(
-            mediaDetailService: MockMediaDetailService(),
-            watchlistService: MockWatchlistService(),
-            store: WatchlistStore()
+            mediaType: type,
+            mediaId: id,
+            mediaDetailService: service ?? MockMediaDetailService(),
+            watchlistService: watchlistService ?? MockWatchlistService(),
+            store: store ?? WatchlistStore(),
+            analytics: MockAnalytics()
         )
+    }
+
+    /// A TV view model with season 1's episodes loaded through the mock.
+    private func tvVM(
+        _ service: MockMediaDetailService,
+        episodes: [Episode],
+        watched: [Int] = []
+    ) async -> MediaDetailViewModel {
+        service.fetchSeasonDetailResult = .success(TestFixtures.season(episodes: episodes))
+        service.fetchWatchedEpisodesResult = .success(watched)
+        let vm = makeVM(type: .tv, id: 2, service: service)
+        await vm.loadSeasonIfNeeded(1)
+        return vm
     }
 
     private var movie: MediaDetail {
@@ -75,7 +101,7 @@ struct DetailComponentRenderTests {
     }
 
     @Test func `where to watch renders when the payload has no providers`() {
-        _ = render(DetailWhereToWatchSection(media: movie), height: 200)
+        _ = render(DetailWhereToWatchSection(media: movie, viewModel: makeVM()), height: 200)
     }
 
     @Test func `where to watch renders the provider strip`() {
@@ -84,7 +110,7 @@ struct DetailComponentRenderTests {
             backdropPath: nil,
             flatrateProviders: ["Netflix", "Disney"]
         )
-        _ = render(DetailWhereToWatchSection(media: withProviders), height: 200)
+        _ = render(DetailWhereToWatchSection(media: withProviders, viewModel: makeVM()), height: 200)
     }
 
     @Test func `streaming badge renders`() {
@@ -163,18 +189,31 @@ struct DetailComponentRenderTests {
         )
     }
 
-    @Test func `season content renders its loading state`() {
-        let vm = makeVM()
-        vm.isLoadingSeason = [1]
+    @Test func `season content renders its loading state`() async {
+        let service = MockMediaDetailService()
+        let vm = makeVM(type: .tv, id: 2, service: service)
+        service.duringSeasonFetch = {
+            _ = render(SeasonContentView(season: TestFixtures.season(seasonNumber: 1), viewModel: vm), height: 400)
+        }
+        await vm.loadSeasonIfNeeded(1)
+    }
+
+    @Test func `season content renders its failed state`() async {
+        let service = MockMediaDetailService()
+        service.fetchSeasonDetailResult = .failure(MockError.generic("offline"))
+        let vm = makeVM(type: .tv, id: 2, service: service)
+        await vm.loadSeasonIfNeeded(1)
         _ = render(SeasonContentView(season: TestFixtures.season(seasonNumber: 1), viewModel: vm), height: 400)
     }
 
     @Test(arguments: [false, true])
-    func `season content renders loaded episodes`(allWatched: Bool) {
-        let vm = makeVM()
-        vm.seasonEpisodes[1] = (1...3).map {
-            TestFixtures.episode(id: $0, episodeNumber: $0, isWatched: allWatched)
-        }
+    func `season content renders loaded episodes`(allWatched: Bool) async {
+        let episodes = (1...3).map { TestFixtures.episode(id: $0, episodeNumber: $0) }
+        let vm = await tvVM(
+            MockMediaDetailService(),
+            episodes: episodes,
+            watched: allWatched ? [1, 2, 3] : []
+        )
         _ = render(SeasonContentView(season: TestFixtures.season(seasonNumber: 1), viewModel: vm), height: 600)
     }
 
@@ -217,7 +256,7 @@ struct DetailComponentRenderTests {
 
     @Test func `trailer button renders`() {
         let media = TestFixtures.mediaDetail(trailerKey: "abc123")
-        _ = render(DetailTrailerButton(trailer: media.trailer!, title: media.displayTitle), height: 80)
+        _ = render(DetailTrailerButton(trailer: media.trailer!, viewModel: makeVM()), height: 80)
     }
 
     // MARK: - Person page
@@ -243,40 +282,52 @@ struct DetailComponentRenderTests {
 
     // MARK: - In-flight states
 
-    @Test func `episode list renders a row whose mark request is in flight`() {
-        let vm = makeVM()
-        vm.pendingEpisodes = [.init(season: 1, episode: 2)]
-        _ = render(
-            EpisodeListView(
-                episodes: (1...3).map { TestFixtures.episode(id: $0, episodeNumber: $0) },
-                seasonNumber: 1,
-                viewModel: vm
-            ),
-            height: 500
-        )
+    @Test func `episode list renders a row whose mark request is in flight`() async {
+        let service = MockMediaDetailService()
+        let episodes = (1...3).map { TestFixtures.episode(id: $0, episodeNumber: $0) }
+        let vm = await tvVM(service, episodes: episodes)
+
+        service.duringCall = {
+            _ = render(
+                EpisodeListView(episodes: episodes, seasonNumber: 1, viewModel: vm),
+                height: 500
+            )
+        }
+        await vm.toggleEpisodeWatched(season: 1, episode: 2)
     }
 
-    @Test func `season content renders a mark-all request in flight`() {
-        let vm = makeVM()
-        vm.seasonEpisodes[1] = [TestFixtures.episode(episodeNumber: 1)]
-        vm.pendingSeasons = [1]
-        _ = render(SeasonContentView(season: TestFixtures.season(seasonNumber: 1), viewModel: vm), height: 400)
+    @Test func `season content renders a mark-all request in flight`() async {
+        let service = MockMediaDetailService()
+        let vm = await tvVM(service, episodes: [TestFixtures.episode(episodeNumber: 1)])
+
+        service.duringCall = {
+            _ = render(SeasonContentView(season: TestFixtures.season(seasonNumber: 1), viewModel: vm), height: 400)
+        }
+        await vm.toggleSeasonWatched(1)
     }
 
-    @Test func `rating section renders while the rating is being saved`() {
-        let vm = makeVM()
-        vm.userRating = 8
-        vm.isSubmittingRating = true
-        _ = render(DetailRatingSection(viewModel: vm, mediaType: .movie), height: 120)
+    @Test func `rating section renders while the rating is being saved`() async {
+        let service = MockMediaDetailService()
+        let vm = makeVM(service: service)
+
+        service.duringCall = {
+            _ = render(DetailRatingSection(viewModel: vm, mediaType: .movie), height: 120)
+        }
+        await vm.rateMedia(rating: 8)
     }
 
     @Test(arguments: [MediaType.movie, .tv])
-    func `watchlist section renders while a status change is in flight`(mediaType: MediaType) {
-        let vm = makeVM()
-        vm.isOnWatchlist = true
-        vm.watchlistStatus = .watching
-        vm.isUpdatingStatus = true
-        _ = render(DetailWatchlistSection(viewModel: vm, mediaType: mediaType), height: 80)
+    func `watchlist section renders while a status change is in flight`(mediaType: MediaType) async {
+        let watchlist = MockWatchlistService()
+        let store = WatchlistStore()
+        store.cachedItems = [TestFixtures.watchItem(id: 42, tmdbId: 1, mediaType: mediaType, status: .watching)]
+        let vm = makeVM(type: mediaType, watchlistService: watchlist, store: store)
+        await vm.checkWatchlistStatus()
+
+        watchlist.duringRemove = {
+            _ = render(DetailWatchlistSection(viewModel: vm, mediaType: mediaType), height: 80)
+        }
+        await vm.removeFromWatchlist()
     }
 
     // MARK: - ShareSheet

@@ -13,7 +13,7 @@ final class UpcomingViewModel {
     private let now: @Sendable () -> Date
 
     init(service: WatchlistServiceProtocol,
-         notifications: NotificationScheduling = NotificationService.shared,
+         notifications: NotificationScheduling,
          calendar: Calendar = .current,
          now: @escaping @Sendable () -> Date = Date.init) {
         self.service = service

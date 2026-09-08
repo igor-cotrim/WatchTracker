@@ -18,8 +18,8 @@ final class ExportViewModel {
     private let directory: URL
 
     init(
-        service: ExportServiceProtocol = ExportService(),
-        analytics: AnalyticsTracking = AnalyticsService.shared,
+        service: ExportServiceProtocol,
+        analytics: AnalyticsTracking,
         directory: URL = FileManager.default.temporaryDirectory,
     ) {
         self.service = service

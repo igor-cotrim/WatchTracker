@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var viewModel = WatchlistViewModel(
-        service: WatchlistService(),
-        store: .shared
-    )
+    @State private var viewModel: WatchlistViewModel
+
+    init(container: AppContainer) {
+        _viewModel = State(wrappedValue: container.makeWatchlistViewModel())
+    }
 
     var body: some View {
         NavigationStack {
@@ -34,5 +35,6 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(container: .preview)
+        .environment(AppContainer.preview)
 }
