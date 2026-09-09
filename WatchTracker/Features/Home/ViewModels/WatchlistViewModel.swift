@@ -116,7 +116,9 @@ final class WatchlistViewModel {
     }
 
     private func rebuildDerived() {
-        let byStatus = allItems.filter { $0.status == selectedStatus }
+        let byStatus = allItems
+            .filter { $0.status == selectedStatus }
+            .sorted { $0.addedAt > $1.addedAt }
         filteredAll = byStatus
         filteredMovies = byStatus.filter { $0.mediaType == .movie }
         filteredTV = byStatus.filter { $0.mediaType == .tv && $0.isAnime != true }

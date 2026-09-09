@@ -24,6 +24,11 @@ final class ContinueWatchingViewModel {
         do {
             items = try await service.fetchContinueWatching()
                 .filter { $0.nextEpisode?.isReleased != false }
+                .sorted { first, second in
+                    let firstAirDate = first.nextEpisode?.airDateValue ?? .distantPast
+                    let secondAirDate = second.nextEpisode?.airDateValue ?? .distantPast
+                    return firstAirDate > secondAirDate
+                }
         } catch {
             errorMessage = error.userFacingMessage
         }

@@ -30,14 +30,23 @@ struct NextEpisode: Codable {
         "T\(seasonNumber) E\(episodeNumber) · \(name)"
     }
 
-    /// `true` if the episode has already aired or the air date is unknown.
-    var isReleased: Bool {
-        guard let airDate else { return true }
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = .current
-        guard let date = formatter.date(from: airDate) else { return true }
+        return formatter
+    }()
+
+    /// Parsed `airDate`, used for release checks and sorting.
+    var airDateValue: Date? {
+        guard let airDate else { return nil }
+        return Self.dateFormatter.date(from: airDate)
+    }
+
+    /// `true` if the episode has already aired or the air date is unknown.
+    var isReleased: Bool {
+        guard let date = airDateValue else { return true }
         let today = Calendar.current.startOfDay(for: Date())
         let airDay = Calendar.current.startOfDay(for: date)
         return airDay <= today
