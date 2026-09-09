@@ -8,8 +8,6 @@ extension Strings {
         static var loading: String { String(localized: "ai.loading") }
         static var emptyTitle: String { String(localized: "ai.empty.title") }
         static var emptySubtitle: String { String(localized: "ai.empty.subtitle") }
-        static var emptyWatchlistTitle: String { String(localized: "ai.empty_watchlist.title") }
-        static var emptyWatchlistSubtitle: String { String(localized: "ai.empty_watchlist.subtitle") }
         static var unavailableNotEligible: String { String(localized: "ai.unavailable.not_eligible") }
         static var unavailableNotEligibleSubtitle: String { String(localized: "ai.unavailable.not_eligible.subtitle") }
         static var unavailableNotEnabled: String { String(localized: "ai.unavailable.not_enabled") }

@@ -160,6 +160,11 @@ Each file also carries a **`Preview<X>Service`** — an offline double serving `
 fixtures, used by `AppContainer.preview` and therefore by every `#Preview`. It lives beside the
 protocol for the same reason the live impl does.
 
+`WatchlistStore` owns the shared watchlist cache **and the policy for when it is stale** —
+`replace(with:)`, `invalidate()`, `clear()` and `refresh(using:)`. Its properties are
+`private(set)`: no ViewModel refetches-and-writes-both-fields by hand, which is what three of
+them used to do.
+
 Everything that is *not* a service lives elsewhere: `SupabaseManager` (shared `SupabaseClient`
 singleton) in `Core/Infrastructure/Persistence/`, `AppRouter` in `Core/Navigation/`, and analytics,
 notifications, and `UserDefaults` persistence under `Core/Infrastructure/`.
@@ -169,8 +174,9 @@ notifications, and `UserDefaults` persistence under `Core/Infrastructure/`.
 - ViewModels are `@Observable @MainActor final class`, never `ObservableObject`
 - **Observable state is `private(set)`.** The only writable properties are the ones a View
   genuinely binds to: text fields, pickers, sheet/alert flags. Anything else changes through a
-  method named for the user's action. (Home, Watching, AI and Data still expose plain `var` —
-  a known gap, not the pattern to copy.)
+  method named for the user's action. Every ViewModel now holds to this; the writable
+  properties left in the app are exactly the bindings — `selectedFilter`, `query`,
+  `selectedType`/`selectedYear`, the auth text fields, `userInput` and the sheet flags.
 - **Mutually exclusive situations are an enum, not loose flags.** `Detail` and `Discover` are the
   reference: `MediaDetailState`, `SeasonState`, `FeedState`. Write new screens this way. Keep a
   separate boolean only for work that is genuinely *concurrent* with the screen load — an
@@ -182,6 +188,9 @@ notifications, and `UserDefaults` persistence under `Core/Infrastructure/`.
 - Views call async ViewModel methods via `.task { }` modifier
 - Parallel fetches use `async let` pattern (see `DiscoverView`)
 - Loading/error states follow a consistent `isLoading` / `errorMessage` pattern in every ViewModel
+- **User-facing error text always comes from `error.userFacingMessage`**, never
+  `error.localizedDescription` — the extension is what turns a dropped connection into
+  localized copy instead of a raw `NSURLError` string
 - Custom brand colors defined in `Color+Extensions.swift` — use `Color.brandPrimary`, `.brandSecondary`, `.brandAccent`
 - Image loading uses `AsyncImage` with `SkeletonView` placeholders — no third-party image library
 - Five-tab navigation: Home (watchlist), Watching, Discover (search/trending), AI (suggestions), Profile
@@ -241,7 +250,7 @@ that something needs promoting. Current global components and their consumers:
 | `ErrorStateView` | AI, Detail, Discover, Home, Profile |
 | `PressedButtonStyle` | AI, Detail, Discover, Home |
 | `MediaRowSection` | Discover, Detail |
-| `SectionHeaderView` | Discover, Watching |
+| `SectionHeaderView` | Discover, and `MediaRowSection` itself |
 | `PosterCardView` | Discover, and `MediaRowSection` itself |
 
 Do not merge visually-similar rows from different features into a generic component unless the

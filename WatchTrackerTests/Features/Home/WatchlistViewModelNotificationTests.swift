@@ -8,8 +8,11 @@ struct WatchlistViewModelNotificationTests {
 
     private func makeViewModel(
         items: [WatchItem],
-        store: WatchlistStore = WatchlistStore()
+        store: WatchlistStore? = nil
     ) -> (WatchlistViewModel, MockNotificationScheduler) {
+        // Built here rather than as a default argument: `WatchlistStore` is `@MainActor`
+        // and default arguments are evaluated outside the suite's isolation.
+        let store = store ?? WatchlistStore()
         let service = MockWatchlistService()
         service.fetchWatchlistResult = .success(items)
         let notifications = MockNotificationScheduler()
@@ -101,8 +104,7 @@ struct WatchlistViewModelNotificationTests {
     @Test func `a skipped fetch notifies nothing`() async {
         // A warm cache short-circuits the fetch entirely.
         let store = WatchlistStore()
-        store.cachedItems = [TestFixtures.watchItem()]
-        store.needsRefresh = false
+        store.replace(with: [TestFixtures.watchItem()])
         let (vm, notifications) = makeViewModel(
             items: [revivedItem(id: 1, tmdbId: 1, title: "A", season: 2)],
             store: store

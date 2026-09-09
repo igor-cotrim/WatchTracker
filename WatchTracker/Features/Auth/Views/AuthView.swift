@@ -5,7 +5,7 @@ struct AuthView: View {
 
     @State private var viewModel: AuthViewModel
     @State private var showForgotPassword = false
-    @FocusState private var focusedField: AuthFocusField?
+    @FocusState private var focusedField: AuthField?
 
     init(auth: any AuthServiceProtocol) {
         self.auth = auth
@@ -77,9 +77,8 @@ struct AuthView: View {
                 AuthTextField(
                     placeholder: Strings.Auth.namePlaceholder,
                     text: $viewModel.name,
-                    kind: .name,
-                    focusState: $focusedField,
-                    focusValue: .name
+                    field: .name,
+                    focusState: $focusedField
                 )
                 .onSubmit { focusedField = .email }
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -88,18 +87,16 @@ struct AuthView: View {
             AuthTextField(
                 placeholder: Strings.Auth.email,
                 text: $viewModel.email,
-                kind: .email,
-                focusState: $focusedField,
-                focusValue: .email
+                field: .email,
+                focusState: $focusedField
             )
             .onSubmit { focusedField = .password }
 
             AuthTextField(
                 placeholder: Strings.Auth.password,
                 text: $viewModel.password,
-                kind: .password,
-                focusState: $focusedField,
-                focusValue: .password
+                field: .password,
+                focusState: $focusedField
             )
             .onSubmit {
                 if viewModel.canSubmit {

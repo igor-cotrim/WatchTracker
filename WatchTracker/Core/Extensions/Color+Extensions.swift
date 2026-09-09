@@ -7,8 +7,6 @@ extension Color {
     static let brandAccent = Color(red: 1.0, green: 0.75, blue: 0.0)      // Gold/yellow
 
     // MARK: - Semantic Colors
-    static let cardBackground = Color(.systemBackground)
-    static let subtitleText = Color(.secondaryLabel)
     static let ratingStarFilled = Color.brandAccent
     static let ratingStarEmpty = Color(.systemGray4)
 

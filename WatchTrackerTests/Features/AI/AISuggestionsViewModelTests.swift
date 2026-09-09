@@ -55,7 +55,7 @@ struct AISuggestionsViewModelTests {
     @Test func `generateSuggestions prefers the cached watchlist over the network`() async {
         guard #available(iOS 26, *) else { return }
         let harness = Harness()
-        harness.store.cachedItems = [TestFixtures.watchItem(tmdbId: 1)]
+        harness.store.replace(with: [TestFixtures.watchItem(tmdbId: 1)])
         _ = stubSuggestions(harness, count: 1)
 
         await harness.viewModel.generateSuggestions()
@@ -108,7 +108,7 @@ struct AISuggestionsViewModelTests {
         let harness = Harness()
         let ids = stubSuggestions(harness, count: 3)
         // The user already has the second suggestion.
-        harness.store.cachedItems = [TestFixtures.watchItem(tmdbId: ids[1])]
+        harness.store.replace(with: [TestFixtures.watchItem(tmdbId: ids[1])])
 
         await harness.viewModel.generateSuggestions()
 

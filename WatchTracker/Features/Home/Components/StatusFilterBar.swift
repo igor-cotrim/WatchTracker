@@ -18,7 +18,7 @@ struct StatusFilterBar: View {
                             pillID: status.rawValue
                         ) {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                                viewModel.selectedStatus = status
+                                viewModel.select(status: status)
                                 proxy.scrollTo(status, anchor: .center)
                             }
                         }

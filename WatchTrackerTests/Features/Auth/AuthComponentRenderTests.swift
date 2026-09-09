@@ -12,17 +12,15 @@ struct AuthComponentRenderTests {
 
     /// `AuthTextField` needs a `FocusState.Binding`, which only a real view can provide.
     private struct FocusHost: View {
-        @FocusState private var focus: AuthFocusField?
-        let kind: AuthFieldKind
-        let field: AuthFocusField
+        @FocusState private var focus: AuthField?
+        let field: AuthField
 
         var body: some View {
             AuthTextField(
                 placeholder: "Placeholder",
                 text: .constant("value"),
-                kind: kind,
-                focusState: $focus,
-                focusValue: field
+                field: field,
+                focusState: $focus
             )
         }
     }
@@ -46,14 +44,9 @@ struct AuthComponentRenderTests {
         )
     }
 
-    @Test(arguments: [
-        (AuthFieldKind.name, AuthFocusField.name),
-        (AuthFieldKind.email, AuthFocusField.email),
-        (AuthFieldKind.password, AuthFocusField.password),
-        (AuthFieldKind.code, AuthFocusField.code)
-    ])
-    func `text field renders every kind`(kind: AuthFieldKind, field: AuthFocusField) {
-        _ = render(FocusHost(kind: kind, field: field), height: 80)
+    @Test(arguments: AuthField.allCases)
+    func `text field renders every kind`(field: AuthField) {
+        _ = render(FocusHost(field: field), height: 80)
     }
 
     @Test(arguments: [

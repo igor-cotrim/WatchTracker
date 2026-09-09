@@ -3,12 +3,11 @@ import SwiftUI
 struct AuthTextField: View {
     let placeholder: String
     @Binding var text: String
-    let kind: AuthFieldKind
-    var focusState: FocusState<AuthFocusField?>.Binding
-    var focusValue: AuthFocusField
+    let field: AuthField
+    var focusState: FocusState<AuthField?>.Binding
 
     var body: some View {
-        field
+        input
             .textFieldStyle(.plain)
             .padding(14)
             .background(Color.primary.opacity(0.08))
@@ -17,13 +16,13 @@ struct AuthTextField: View {
     }
 
     @ViewBuilder
-    private var field: some View {
-        switch kind {
+    private var input: some View {
+        switch field {
         case .name:
             TextField(placeholder, text: $text)
                 .textContentType(.name)
                 .textInputAutocapitalization(.words)
-                .focused(focusState, equals: focusValue)
+                .focused(focusState, equals: field)
                 .submitLabel(.next)
         case .email:
             TextField(placeholder, text: $text)
@@ -31,18 +30,18 @@ struct AuthTextField: View {
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
                 .keyboardType(.emailAddress)
-                .focused(focusState, equals: focusValue)
+                .focused(focusState, equals: field)
                 .submitLabel(.next)
         case .password:
             SecureField(placeholder, text: $text)
                 .textContentType(.password)
-                .focused(focusState, equals: focusValue)
+                .focused(focusState, equals: field)
                 .submitLabel(.go)
         case .code:
             TextField(placeholder, text: $text)
                 .textContentType(.oneTimeCode)
                 .keyboardType(.numberPad)
-                .focused(focusState, equals: focusValue)
+                .focused(focusState, equals: field)
                 .submitLabel(.next)
         }
     }

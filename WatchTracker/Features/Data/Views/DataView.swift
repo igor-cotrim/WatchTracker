@@ -38,7 +38,7 @@ struct DataView: View {
             case .success(let urls):
                 Task { await importViewModel.importFiles(urls) }
             case .failure(let error):
-                importViewModel.errorMessage = error.localizedDescription
+                importViewModel.fileSelectionFailed(error)
             }
         }
     }

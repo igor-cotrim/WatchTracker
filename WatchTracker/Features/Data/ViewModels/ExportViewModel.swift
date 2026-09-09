@@ -8,10 +8,10 @@ final class ExportViewModel {
         var unresolved: Int
     }
 
-    var isExporting = false
-    var errorMessage: String?
-    var result: Summary?
-    var shareURLs: [URL] = []
+    private(set) var isExporting = false
+    private(set) var errorMessage: String?
+    private(set) var result: Summary?
+    private(set) var shareURLs: [URL] = []
 
     private let service: ExportServiceProtocol
     private let analytics: AnalyticsTracking

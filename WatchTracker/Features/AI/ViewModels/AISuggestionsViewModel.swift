@@ -4,11 +4,13 @@ import Foundation
 @Observable
 @MainActor
 final class AISuggestionsViewModel {
-    var availability: AIModelAvailability
-    var suggestions: [ResolvedSuggestion] = []
-    var isLoading = false
-    var errorMessage: String?
-    var hasGenerated = false
+    private(set) var availability: AIModelAvailability
+    private(set) var suggestions: [ResolvedSuggestion] = []
+    private(set) var isLoading = false
+    private(set) var errorMessage: String?
+    private(set) var hasGenerated = false
+
+    /// The one writable property: it is the prompt field's binding.
     var userInput: String = ""
 
     private let aiService: any AIServiceProtocol
@@ -48,7 +50,7 @@ final class AISuggestionsViewModel {
             suggestions = resolved
             hasGenerated = true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
         
         isLoading = false

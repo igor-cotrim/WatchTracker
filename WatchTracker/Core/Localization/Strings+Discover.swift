@@ -18,10 +18,6 @@ extension Strings {
         static var recentSearches: String { String(localized: "discover.search.recent") }
         static var clear: String { String(localized: "discover.search.clear") }
         static var seeAll: String { String(localized: "discover.see_all") }
-        static var tabMovies: String { String(localized: "discover.tab.movies") }
-        static var tabTV: String { String(localized: "discover.tab.tv") }
-        static var popularTV: String { String(localized: "discover.section.popular_tv") }
-        static var topRatedTV: String { String(localized: "discover.section.top_rated_tv") }
         static var allProviders: String { String(localized: "discover.providers.all") }
         static var moodsTitle: String { String(localized: "discover.moods.title") }
         static var moodRelax: String { String(localized: "discover.mood.relax") }

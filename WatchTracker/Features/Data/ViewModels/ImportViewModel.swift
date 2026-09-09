@@ -12,10 +12,10 @@ final class ImportViewModel {
         var unmatched: [ImportBatchResult.UnmatchedItem]
     }
 
-    var isImporting = false
-    var progress: Double = 0
-    var errorMessage: String?
-    var result: Summary?
+    private(set) var isImporting = false
+    private(set) var progress: Double = 0
+    private(set) var errorMessage: String?
+    private(set) var result: Summary?
 
     private let service: ImportServiceProtocol
     private let batchSize: Int
@@ -29,6 +29,12 @@ final class ImportViewModel {
         self.service = service
         self.batchSize = batchSize
         self.episodeBatchSize = episodeBatchSize
+    }
+
+    /// The file picker failed before any file was read. Routed through here so the view
+    /// neither writes this state nor decides how the error should read.
+    func fileSelectionFailed(_ error: Error) {
+        errorMessage = error.userFacingMessage
     }
 
     func importFiles(_ urls: [URL]) async {

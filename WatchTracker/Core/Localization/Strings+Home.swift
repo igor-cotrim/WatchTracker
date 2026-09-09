@@ -5,7 +5,6 @@ extension Strings {
 
     enum Home {
         static var title: String { String(localized: "home.title") }
-        static var filterAll: String { String(localized: "home.filter.all") }
         static var continueWatching: String { String(localized: "home.continue_watching") }
     }
 

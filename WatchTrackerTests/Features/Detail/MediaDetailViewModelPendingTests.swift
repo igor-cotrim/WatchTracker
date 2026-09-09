@@ -173,7 +173,7 @@ struct MediaDetailViewModelPendingTests {
         // The entry comes from the shared cache, the same way it does in the app — there
         // is no longer a way (or a reason) to poke `isOnWatchlist` from outside.
         let store = WatchlistStore()
-        store.cachedItems = [TestFixtures.watchItem(id: 42, tmdbId: 1, mediaType: .movie, status: .watching)]
+        store.replace(with: [TestFixtures.watchItem(id: 42, tmdbId: 1, mediaType: .movie, status: .watching)])
         let vm = makeVM(service, watchlistService: watchlist, store: store)
         await vm.fetchDetails()
         await vm.checkWatchlistStatus()

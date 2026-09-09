@@ -10,8 +10,6 @@ extension Strings {
         static var password: String { String(localized: "auth.password") }
         static var signIn: String { String(localized: "auth.sign_in") }
         static var signUp: String { String(localized: "auth.sign_up") }
-        static var haveAccount: String { String(localized: "auth.have_account") }
-        static var noAccount: String { String(localized: "auth.no_account") }
         static var haveAccountPrefix: String { String(localized: "auth.have_account_prefix") }
         static var noAccountPrefix: String { String(localized: "auth.no_account_prefix") }
         static var trackYourShows: String { String(localized: "auth.track_your_shows") }

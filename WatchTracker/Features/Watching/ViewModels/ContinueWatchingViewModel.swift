@@ -3,9 +3,9 @@ import Foundation
 @Observable
 @MainActor
 final class ContinueWatchingViewModel {
-    var items: [ContinueWatchingItem] = []
-    var isLoading = false
-    var errorMessage: String?
+    private(set) var items: [ContinueWatchingItem] = []
+    private(set) var isLoading = false
+    private(set) var errorMessage: String?
 
     private let service: WatchlistServiceProtocol
     private let store: WatchlistStore
@@ -25,7 +25,7 @@ final class ContinueWatchingViewModel {
             items = try await service.fetchContinueWatching()
                 .filter { $0.nextEpisode?.isReleased != false }
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
         isLoading = false
     }
@@ -41,23 +41,11 @@ final class ContinueWatchingViewModel {
             // When the backend transitions the show's status (e.g. watching → completed),
             // refresh the shared cache so Home and Detail reflect the change immediately.
             if statusChanged != nil {
-                await refreshWatchlistCache()
+                await store.refresh(using: service)
             }
             await fetch()
         } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    // MARK: - Private
-
-    private func refreshWatchlistCache() async {
-        do {
-            let items = try await service.fetchWatchlist(status: nil, mediaType: nil)
-            store.cachedItems = items
-            store.needsRefresh = false
-        } catch {
-            store.needsRefresh = true
+            errorMessage = error.userFacingMessage
         }
     }
 }

@@ -29,7 +29,7 @@ struct ScreenRenderTests {
 
     private func watchlistVM(items: [WatchItem] = []) -> WatchlistViewModel {
         let store = WatchlistStore()
-        store.cachedItems = items
+        store.replace(with: items)
         return WatchlistViewModel(
             service: MockWatchlistService(),
             store: store,

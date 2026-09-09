@@ -36,6 +36,16 @@ struct UpcomingViewModelTests {
         )
     }
 
+    /// Builds a view model already holding `items`, loaded through the service — the only
+    /// door into `items`, which is `private(set)`.
+    private func makeViewModel(loaded items: [UpcomingItem], pinned: Bool = false) async -> UpcomingViewModel {
+        let service = MockWatchlistService()
+        service.fetchUpcomingResult = .success(items)
+        let vm = makeViewModel(service: service, pinned: pinned)
+        await vm.fetch()
+        return vm
+    }
+
     // MARK: - groupedItems section keys
 
     @Test(arguments: [
@@ -46,65 +56,58 @@ struct UpcomingViewModelTests {
         (7, "later"),
         (100, "later"),
     ])
-    func `groupedItems places item in correct section`(offset: Int, expectedSection: String) throws {
-        let vm = makeViewModel()
-        vm.items = [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: offset)]
+    func `groupedItems places item in correct section`(offset: Int, expectedSection: String) async throws {
+        let vm = await makeViewModel(loaded: [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: offset)])
         let sectionKey = try #require(vm.groupedItems.first?.sectionKey)
         #expect(sectionKey == expectedSection)
     }
 
-    @Test func `groupedItems day 2 through 6 map to weekday names`() {
-        let vm = makeViewModel()
+    @Test func `groupedItems day 2 through 6 map to weekday names`() async {
         for offset in 2...6 {
-            vm.items = [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: offset)]
+            let vm = await makeViewModel(loaded: [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: offset)])
             let key = vm.groupedItems.first?.sectionKey ?? ""
             #expect(!["today", "tomorrow", "later"].contains(key))
             #expect(key.isEmpty == false)
         }
     }
 
-    @Test func `groupedItems groups multiple items in same section`() {
-        let vm = makeViewModel()
-        vm.items = [
+    @Test func `groupedItems groups multiple items in same section`() async {
+        let vm = await makeViewModel(loaded: [
             TestFixtures.upcomingItem(tmdbId: 1, nextEpisodeDaysFromToday: 0),
             TestFixtures.upcomingItem(tmdbId: 2, nextEpisodeDaysFromToday: 0),
-        ]
+        ])
         #expect(vm.groupedItems.first { $0.sectionKey == "today" }?.items.count == 2)
     }
 
-    @Test func `groupedItems orders sections today before tomorrow before later`() {
-        let vm = makeViewModel()
-        vm.items = [
+    @Test func `groupedItems orders sections today before tomorrow before later`() async {
+        let vm = await makeViewModel(loaded: [
             TestFixtures.upcomingItem(tmdbId: 1, nextEpisodeDaysFromToday: 7),   // later
             TestFixtures.upcomingItem(tmdbId: 2, nextEpisodeDaysFromToday: 0),   // today
             TestFixtures.upcomingItem(tmdbId: 3, nextEpisodeDaysFromToday: 1),   // tomorrow
-        ]
+        ])
         let keys = vm.groupedItems.map(\.sectionKey)
         #expect(keys == ["today", "tomorrow", "later"])
     }
 
-    @Test func `groupedItems puts weekday sections between tomorrow and later`() {
-        let vm = makeViewModel()
-        vm.items = [
+    @Test func `groupedItems puts weekday sections between tomorrow and later`() async {
+        let vm = await makeViewModel(loaded: [
             TestFixtures.upcomingItem(tmdbId: 1, nextEpisodeDaysFromToday: 10),
             TestFixtures.upcomingItem(tmdbId: 2, nextEpisodeDaysFromToday: 3),
             TestFixtures.upcomingItem(tmdbId: 3, nextEpisodeDaysFromToday: 1),
-        ]
+        ])
         let keys = vm.groupedItems.map(\.sectionKey)
         #expect(keys.first == "tomorrow")
         #expect(keys.last == "later")
         #expect(keys.count == 3)
     }
 
-    @Test func `groupedItems omits empty sections`() {
-        let vm = makeViewModel()
-        vm.items = [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: 0)]
+    @Test func `groupedItems omits empty sections`() async {
+        let vm = await makeViewModel(loaded: [TestFixtures.upcomingItem(nextEpisodeDaysFromToday: 0)])
         #expect(vm.groupedItems.allSatisfy { !$0.items.isEmpty })
     }
 
-    @Test func `groupedItems is empty when items is empty`() {
-        let vm = makeViewModel()
-        vm.items = []
+    @Test func `groupedItems is empty when items is empty`() async {
+        let vm = await makeViewModel(loaded: [])
         #expect(vm.groupedItems.isEmpty)
     }
 

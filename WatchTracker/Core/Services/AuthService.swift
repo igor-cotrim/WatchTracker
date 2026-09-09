@@ -262,8 +262,7 @@ final class AuthService: AuthServiceProtocol {
         router.pendingShowId = nil
 
         // Previous account's cached watchlist.
-        store.cachedItems = []
-        store.needsRefresh = true
+        store.clear()
 
         // URL-keyed GET responses could otherwise serve another account's data.
         URLCache.shared.removeAllCachedResponses()

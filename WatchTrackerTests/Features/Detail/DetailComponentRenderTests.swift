@@ -320,7 +320,7 @@ struct DetailComponentRenderTests {
     func `watchlist section renders while a status change is in flight`(mediaType: MediaType) async {
         let watchlist = MockWatchlistService()
         let store = WatchlistStore()
-        store.cachedItems = [TestFixtures.watchItem(id: 42, tmdbId: 1, mediaType: mediaType, status: .watching)]
+        store.replace(with: [TestFixtures.watchItem(id: 42, tmdbId: 1, mediaType: mediaType, status: .watching)])
         let vm = makeVM(type: mediaType, watchlistService: watchlist, store: store)
         await vm.checkWatchlistStatus()
 

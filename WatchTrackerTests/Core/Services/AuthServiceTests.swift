@@ -148,8 +148,7 @@ struct AuthServiceTests {
         let harness = Harness()
         harness.router.selectedTab = .profile
         harness.router.pendingShowId = 1399
-        harness.store.cachedItems = [TestFixtures.watchItem()]
-        harness.store.needsRefresh = false
+        harness.store.replace(with: [TestFixtures.watchItem()])
         harness.defaults.set(8, forKey: "discover.lastProviderId")
         SearchHistoryManager(userDefaults: harness.defaults).save(query: "dune")
 
@@ -166,7 +165,7 @@ struct AuthServiceTests {
     @Test func `a failing signOut leaves local state untouched`() async {
         let harness = Harness()
         harness.client.signOutError = APIError.serverError
-        harness.store.cachedItems = [TestFixtures.watchItem()]
+        harness.store.replace(with: [TestFixtures.watchItem()])
 
         await #expect(throws: APIError.serverError) {
             try await harness.service.signOut()
@@ -353,7 +352,7 @@ struct AuthServiceTests {
             notificationCenter: NotificationCenter()
         )
         try await service.signIn(email: "a@b.com", password: "secret")
-        store.cachedItems = [TestFixtures.watchItem()]
+        store.replace(with: [TestFixtures.watchItem()])
 
         try await service.deleteAccount()
 

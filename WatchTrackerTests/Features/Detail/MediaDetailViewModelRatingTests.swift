@@ -174,11 +174,11 @@ struct MediaDetailViewModelSupplementalTests {
         // Legacy data can hold duplicate rows for one (tmdbId, mediaType); the highest
         // id is the most recently created one.
         let harness = Harness()
-        harness.store.cachedItems = [
+        harness.store.replace(with: [
             TestFixtures.watchItem(id: 3, tmdbId: 550, mediaType: .movie, status: .planToWatch),
             TestFixtures.watchItem(id: 9, tmdbId: 550, mediaType: .movie, status: .completed),
             TestFixtures.watchItem(id: 5, tmdbId: 550, mediaType: .movie, status: .watching),
-        ]
+        ])
         await harness.load()
 
         await harness.viewModel.checkWatchlistStatus()
@@ -188,9 +188,9 @@ struct MediaDetailViewModelSupplementalTests {
 
     @Test func `a cache entry of the other media type is ignored`() async {
         let harness = Harness()
-        harness.store.cachedItems = [
+        harness.store.replace(with: [
             TestFixtures.watchItem(id: 1, tmdbId: 550, mediaType: .tv, status: .watching),
-        ]
+        ])
         await harness.load()
 
         await harness.viewModel.checkWatchlistStatus()
@@ -213,9 +213,9 @@ struct MediaDetailViewModelSupplementalTests {
 
     @Test func `changing an existing entry calls updateStatus and captures a status change`() async {
         let harness = Harness()
-        harness.store.cachedItems = [
+        harness.store.replace(with: [
             TestFixtures.watchItem(id: 7, tmdbId: 550, mediaType: .movie, status: .planToWatch),
-        ]
+        ])
         await harness.load()
         await harness.viewModel.checkWatchlistStatus()
 
@@ -261,9 +261,9 @@ struct MediaDetailViewModelSupplementalTests {
 
     @Test func `removeFromWatchlist clears local state and captures the event`() async {
         let harness = Harness()
-        harness.store.cachedItems = [
+        harness.store.replace(with: [
             TestFixtures.watchItem(id: 7, tmdbId: 550, mediaType: .movie, status: .watching),
-        ]
+        ])
         await harness.load()
         await harness.viewModel.checkWatchlistStatus()
         harness.watchlist.fetchWatchlistResult = .success([])

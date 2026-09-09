@@ -133,7 +133,7 @@ final class MediaDetailViewModel {
                let current = entry,
                backendStatus != current.status {
                 entry = WatchlistEntry(id: current.id, status: backendStatus)
-                store.needsRefresh = true
+                store.invalidate()
             }
         } catch {
             state = .failed(error.userFacingMessage)
@@ -182,7 +182,7 @@ final class MediaDetailViewModel {
                 markEveryLoadedEpisode(watched: true)
             }
             // Refresh the store cache so other screens (Home) see the change immediately.
-            await refreshStoreCache()
+            await store.refresh(using: watchlistService)
             // Read back from the updated cache to get the server-assigned id.
             syncEntryFromCache()
             // When starting to watch a show, open the first not-fully-watched season
@@ -207,7 +207,7 @@ final class MediaDetailViewModel {
             ])
             self.entry = nil
             // Refresh the store cache so Home sees the change immediately.
-            await refreshStoreCache()
+            await store.refresh(using: watchlistService)
         } catch {
             actionError = error.userFacingMessage
         }
@@ -415,7 +415,7 @@ final class MediaDetailViewModel {
         guard let newStatus, newStatus != entry?.status else { return }
         // Refresh the cache to get the server-assigned id and propagate to Home, then read
         // the whole entry back from it rather than patching a half-known one in place.
-        await refreshStoreCache()
+        await store.refresh(using: watchlistService)
         syncEntryFromCache()
     }
 
@@ -426,18 +426,6 @@ final class MediaDetailViewModel {
                 episode.isWatched = watched
                 return episode
             })
-        }
-    }
-
-    /// Fetches the full watchlist from the API, updates the shared store cache,
-    /// and clears the `needsRefresh` flag so Home won't refetch redundantly.
-    private func refreshStoreCache() async {
-        do {
-            store.cachedItems = try await watchlistService.fetchWatchlist(status: nil, mediaType: nil)
-            store.needsRefresh = false
-        } catch {
-            // If the refresh fails, mark dirty so Home retries later.
-            store.needsRefresh = true
         }
     }
 

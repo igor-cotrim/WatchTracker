@@ -3,9 +3,9 @@ import Foundation
 @Observable
 @MainActor
 final class PersonViewModel {
-    var person: PersonDetail?
-    var isLoading = true
-    var errorMessage: String?
+    private(set) var person: PersonDetail?
+    private(set) var isLoading = true
+    private(set) var errorMessage: String?
 
     private let service: MediaDetailServiceProtocol
     private let analytics: AnalyticsTracking
@@ -30,7 +30,7 @@ final class PersonViewModel {
                 "credits": detail.credits.count
             ])
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
         isLoading = false
     }

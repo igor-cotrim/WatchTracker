@@ -3,15 +3,22 @@ import Foundation
 @Observable
 @MainActor
 final class WatchlistViewModel {
-    var allItems: [WatchItem] = [] {
+    private(set) var allItems: [WatchItem] = [] {
         didSet { rebuildDerived() }
     }
-    var isLoading = false
+    private(set) var isLoading = false
+    private(set) var errorMessage: String?
+
+    /// The status pill the user picked. `private(set)` with `select(status:)` as the door:
+    /// the setter has a `didSet` that rebuilds every derived list, which is a side effect
+    /// a caller assigning a property has no reason to expect.
+    private(set) var selectedStatus: WatchlistStatus = .watching {
+        didSet { rebuildDerived() }
+    }
+
+    /// The media-type tab. Genuinely two-way — `HomeView` binds its `TabView` selection
+    /// to it — so this one stays writable.
     var selectedFilter: MediaFilter = .all
-    var selectedStatus: WatchlistStatus = .watching {
-        didSet { rebuildDerived() }
-    }
-    var errorMessage: String?
 
     // Precomputed per-filter lists for the current selectedStatus.
     // Updated atomically whenever allItems or selectedStatus changes,
@@ -40,6 +47,10 @@ final class WatchlistViewModel {
         self.notifications = notifications
         allItems = store.cachedItems
         rebuildDerived()
+    }
+
+    func select(status: WatchlistStatus) {
+        selectedStatus = status
     }
 
     /// Returns precomputed items for the given filter under the current selectedStatus.
@@ -71,17 +82,16 @@ final class WatchlistViewModel {
         do {
             let items = try await service.fetchWatchlist(status: nil, mediaType: nil)
             allItems = items
-            store.cachedItems = items
-            store.needsRefresh = false
+            store.replace(with: items)
             await notifyRevivedSeasons(in: items)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
     }
 
     /// Instantly refreshes `allItems` from the shared cache.
     /// Called on every appearance so the grid reflects mutations made in the Detail view
-    /// (which already refreshed the cache via `refreshStoreCache()`).
+    /// (which already refreshed the cache through `WatchlistStore`).
     func syncFromCache() {
         let cached = store.cachedItems
         if !cached.isEmpty {

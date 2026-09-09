@@ -3,9 +3,9 @@ import Foundation
 @Observable
 @MainActor
 final class UpcomingViewModel {
-    var items: [UpcomingItem] = []
-    var isLoading = false
-    var errorMessage: String?
+    private(set) var items: [UpcomingItem] = []
+    private(set) var isLoading = false
+    private(set) var errorMessage: String?
 
     private let service: WatchlistServiceProtocol
     private let notifications: NotificationScheduling
@@ -29,7 +29,7 @@ final class UpcomingViewModel {
             items = try await service.fetchUpcoming()
             await notifications.scheduleNotifications(for: items)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = error.userFacingMessage
         }
         isLoading = false
     }

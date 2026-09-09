@@ -109,7 +109,7 @@ struct MediaDetailViewModelTests {
 
     @Test func `checkWatchlistStatus finds the matching item in the store`() async {
         let store = WatchlistStore()
-        store.cachedItems = [TestFixtures.watchItem(id: 5, tmdbId: 1, mediaType: .movie, status: .watching)]
+        store.replace(with: [TestFixtures.watchItem(id: 5, tmdbId: 1, mediaType: .movie, status: .watching)])
         let vm = makeVM(store: store)
         await vm.checkWatchlistStatus()
         #expect(vm.entry == WatchlistEntry(id: 5, status: .watching))
@@ -118,7 +118,7 @@ struct MediaDetailViewModelTests {
 
     @Test func `checkWatchlistStatus ignores an item of the wrong media type`() async {
         let store = WatchlistStore()
-        store.cachedItems = [TestFixtures.watchItem(tmdbId: 1, mediaType: .tv)]
+        store.replace(with: [TestFixtures.watchItem(tmdbId: 1, mediaType: .tv)])
         let vm = makeVM(store: store)
         await vm.checkWatchlistStatus()
         #expect(vm.entry == nil)
@@ -134,11 +134,11 @@ struct MediaDetailViewModelTests {
     /// (tmdbId, mediaType). The latest row wins.
     @Test func `the entry picks the latest id when duplicates exist`() async {
         let store = WatchlistStore()
-        store.cachedItems = [
+        store.replace(with: [
             TestFixtures.watchItem(id: 10, tmdbId: 1, mediaType: .movie, status: .watching),
             TestFixtures.watchItem(id: 25, tmdbId: 1, mediaType: .movie, status: .completed),
             TestFixtures.watchItem(id: 17, tmdbId: 1, mediaType: .movie, status: .planToWatch),
-        ]
+        ])
         let vm = makeVM(store: store)
         await vm.checkWatchlistStatus()
         #expect(vm.entry == WatchlistEntry(id: 25, status: .completed))
@@ -173,7 +173,7 @@ struct MediaDetailViewModelTests {
     @Test func `fetchDetails detects a watchlistStatus change after the initial load`() async {
         let mock = MockMediaDetailService()
         let store = WatchlistStore()
-        store.cachedItems = [TestFixtures.watchItem(id: 3, tmdbId: 1, mediaType: .movie, status: .watching)]
+        store.replace(with: [TestFixtures.watchItem(id: 3, tmdbId: 1, mediaType: .movie, status: .watching)])
 
         mock.fetchMediaDetailResult = .success(TestFixtures.mediaDetail(watchlistStatus: .watching))
         let vm = makeVM(mediaDetailService: mock, store: store)
@@ -218,9 +218,9 @@ struct MediaDetailViewModelTests {
             TestFixtures.watchItem(id: 42, tmdbId: 1, mediaType: .movie, status: .completed)
         ])
         let store = WatchlistStore()
-        store.cachedItems = [
+        store.replace(with: [
             TestFixtures.watchItem(id: 42, tmdbId: 1, mediaType: .movie, status: .watching)
-        ]
+        ])
         let vm = makeVM(watchlistService: watchlistMock, store: store)
         await vm.checkWatchlistStatus()
 
@@ -257,7 +257,7 @@ struct MediaDetailViewModelTests {
     @Test func `removeFromWatchlist calls the service with the entry's id`() async {
         let watchlistMock = MockWatchlistService()
         let store = WatchlistStore()
-        store.cachedItems = [TestFixtures.watchItem(id: 99, tmdbId: 1, mediaType: .movie)]
+        store.replace(with: [TestFixtures.watchItem(id: 99, tmdbId: 1, mediaType: .movie)])
         let vm = makeVM(watchlistService: watchlistMock, store: store)
         await vm.checkWatchlistStatus()
 
@@ -269,7 +269,7 @@ struct MediaDetailViewModelTests {
     @Test func `removeFromWatchlist clears the entry on success`() async {
         let watchlistMock = MockWatchlistService()
         let store = WatchlistStore()
-        store.cachedItems = [TestFixtures.watchItem(id: 1, tmdbId: 1, mediaType: .movie)]
+        store.replace(with: [TestFixtures.watchItem(id: 1, tmdbId: 1, mediaType: .movie)])
         let vm = makeVM(watchlistService: watchlistMock, store: store)
         await vm.checkWatchlistStatus()
 

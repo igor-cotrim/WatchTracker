@@ -4,7 +4,7 @@ struct ForgotPasswordView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel: ForgotPasswordViewModel
-    @FocusState private var focusedField: AuthFocusField?
+    @FocusState private var focusedField: AuthField?
 
     init(auth: any AuthServiceProtocol, prefillEmail: String = "") {
         _viewModel = State(wrappedValue: ForgotPasswordViewModel(auth: auth, prefillEmail: prefillEmail))
@@ -49,9 +49,8 @@ struct ForgotPasswordView: View {
             AuthTextField(
                 placeholder: Strings.Auth.email,
                 text: $viewModel.email,
-                kind: .email,
-                focusState: $focusedField,
-                focusValue: .email
+                field: .email,
+                focusState: $focusedField
             )
             .onSubmit { Task { await viewModel.sendCode() } }
 
@@ -77,18 +76,16 @@ struct ForgotPasswordView: View {
                 AuthTextField(
                     placeholder: Strings.Auth.resetCodePlaceholder,
                     text: $viewModel.code,
-                    kind: .code,
-                    focusState: $focusedField,
-                    focusValue: .code
+                    field: .code,
+                    focusState: $focusedField
                 )
                 .onSubmit { focusedField = .password }
 
                 AuthTextField(
                     placeholder: Strings.Auth.newPasswordPlaceholder,
                     text: $viewModel.newPassword,
-                    kind: .password,
-                    focusState: $focusedField,
-                    focusValue: .password
+                    field: .password,
+                    focusState: $focusedField
                 )
 
                 PasswordRequirementsView(

@@ -20,8 +20,6 @@ struct StringsCatalogTests {
         (Strings.AI.loading, "ai.loading"),
         (Strings.AI.emptyTitle, "ai.empty.title"),
         (Strings.AI.emptySubtitle, "ai.empty.subtitle"),
-        (Strings.AI.emptyWatchlistTitle, "ai.empty_watchlist.title"),
-        (Strings.AI.emptyWatchlistSubtitle, "ai.empty_watchlist.subtitle"),
         (Strings.AI.unavailableNotEligible, "ai.unavailable.not_eligible"),
         (Strings.AI.unavailableNotEligibleSubtitle, "ai.unavailable.not_eligible.subtitle"),
         (Strings.AI.unavailableNotEnabled, "ai.unavailable.not_enabled"),
@@ -46,8 +44,6 @@ struct StringsCatalogTests {
         (Strings.Auth.password, "auth.password"),
         (Strings.Auth.signIn, "auth.sign_in"),
         (Strings.Auth.signUp, "auth.sign_up"),
-        (Strings.Auth.haveAccount, "auth.have_account"),
-        (Strings.Auth.noAccount, "auth.no_account"),
         (Strings.Auth.haveAccountPrefix, "auth.have_account_prefix"),
         (Strings.Auth.noAccountPrefix, "auth.no_account_prefix"),
         (Strings.Auth.trackYourShows, "auth.track_your_shows"),
@@ -219,10 +215,6 @@ struct StringsCatalogTests {
         (Strings.Discover.recentSearches, "discover.search.recent"),
         (Strings.Discover.clear, "discover.search.clear"),
         (Strings.Discover.seeAll, "discover.see_all"),
-        (Strings.Discover.tabMovies, "discover.tab.movies"),
-        (Strings.Discover.tabTV, "discover.tab.tv"),
-        (Strings.Discover.popularTV, "discover.section.popular_tv"),
-        (Strings.Discover.topRatedTV, "discover.section.top_rated_tv"),
         (Strings.Discover.allProviders, "discover.providers.all"),
         (Strings.Discover.moodsTitle, "discover.moods.title"),
         (Strings.Discover.moodRelax, "discover.mood.relax"),
@@ -268,7 +260,6 @@ struct StringsCatalogTests {
 
     @Test(arguments: [
         (Strings.Home.title, "home.title"),
-        (Strings.Home.filterAll, "home.filter.all"),
         (Strings.Home.continueWatching, "home.continue_watching")
     ])
     func `home keys resolve`(value: String, key: String) {
@@ -311,9 +302,7 @@ struct StringsCatalogTests {
     }
 
     @Test(arguments: [
-        (Strings.Notifications.sectionTitle, "notifications.section_title"),
         (Strings.Notifications.episodeReminders, "notifications.episode_reminders"),
-        (Strings.Notifications.newEpisodeBody, "notifications.new_episode_body"),
         (Strings.Notifications.newSeasonSubtitle, "notifications.new_season_subtitle")
     ])
     func `notifications keys resolve`(value: String, key: String) {

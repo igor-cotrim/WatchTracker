@@ -9,7 +9,7 @@ struct HomeComponentRenderTests {
 
     private func makeVM(items: [WatchItem] = []) -> WatchlistViewModel {
         let store = WatchlistStore()
-        store.cachedItems = items
+        store.replace(with: items)
         return WatchlistViewModel(
             service: MockWatchlistService(),
             store: store,
