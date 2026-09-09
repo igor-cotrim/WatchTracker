@@ -75,6 +75,25 @@ struct BrowseFeedTests {
         #expect(movie.page == 2)
     }
 
+    /// One type, one request: the whole reason `DiscoverFilter` requires a media type is
+    /// that merging two paginated responses would destroy the ordering the user picked.
+    @Test func `a filtered feed is a single request carrying the whole filter`() async throws {
+        let service = MockDiscoverService()
+        var filter = DiscoverFilter(type: .tv)
+        filter.genreIds = [9648]
+        filter.sort = .rating
+
+        _ = try await BrowseFeed.filtered(filter).page(2, using: service)
+
+        #expect(service.discoverFilteredCalls.count == 1)
+        let call = try #require(service.discoverFilteredCalls.first)
+        #expect(call.type == .tv)
+        #expect(call.genres == "9648")
+        #expect(call.sortBy == "vote_average.desc")
+        #expect(call.voteCountGte == 300)
+        #expect(call.page == 2)
+    }
+
     @Test func `a provider see-all feed is movies scoped to the region`() async throws {
         let service = MockDiscoverService()
 

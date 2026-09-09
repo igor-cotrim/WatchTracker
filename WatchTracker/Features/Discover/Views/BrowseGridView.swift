@@ -27,6 +27,14 @@ struct BrowseGridView: View {
                 ErrorStateView(message: message) {
                     await viewModel?.loadInitial()
                 }
+            case .loaded(let items) where items.isEmpty:
+                // A filter combination can legitimately match nothing, which used to render
+                // as a blank scroll view with no explanation.
+                ContentUnavailableView(
+                    Strings.DiscoverFilter.empty,
+                    systemImage: "line.3.horizontal.decrease.circle"
+                )
+                .frame(minHeight: 300)
             case .loaded(let items):
                 grid(items)
             }

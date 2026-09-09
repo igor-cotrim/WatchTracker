@@ -44,7 +44,7 @@ enum Endpoint: Sendable {
 
     // Discover
     case discover(provider: String?, type: MediaType?, region: String?)
-    case discoverFiltered(type: MediaType, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?, releaseDateGte: String?, firstAirDateGte: String?)
+    case discoverFiltered(DiscoverQuery)
     case trending(page: Int?)
     case search(query: String, type: MediaType?, year: Int?)
     case nowPlaying(page: Int?)
@@ -148,17 +148,8 @@ enum Endpoint: Sendable {
             if let type { items.append(URLQueryItem(name: "type", value: type.rawValue)) }
             if let region { items.append(URLQueryItem(name: "region", value: region)) }
             return items.isEmpty ? nil : items
-        case .discoverFiltered(let type, let genres, let originCountry, let providers, let watchRegion, let sortBy, let page, let releaseDateGte, let firstAirDateGte):
-            var items: [URLQueryItem] = [URLQueryItem(name: "type", value: type.rawValue)]
-            if let genres { items.append(URLQueryItem(name: "with_genres", value: genres)) }
-            if let originCountry { items.append(URLQueryItem(name: "with_origin_country", value: originCountry)) }
-            if let providers { items.append(URLQueryItem(name: "with_watch_providers", value: providers)) }
-            if let watchRegion { items.append(URLQueryItem(name: "watch_region", value: watchRegion)) }
-            if let sortBy { items.append(URLQueryItem(name: "sort_by", value: sortBy)) }
-            if let page { items.append(URLQueryItem(name: "page", value: String(page))) }
-            if let releaseDateGte { items.append(URLQueryItem(name: "primary_release_date.gte", value: releaseDateGte)) }
-            if let firstAirDateGte { items.append(URLQueryItem(name: "first_air_date.gte", value: firstAirDateGte)) }
-            return items
+        case .discoverFiltered(let query):
+            return query.queryItems
         case .search(let query, let type, let year):
             var items: [URLQueryItem] = [URLQueryItem(name: "query", value: query)]
             if let type { items.append(URLQueryItem(name: "type", value: type.rawValue)) }

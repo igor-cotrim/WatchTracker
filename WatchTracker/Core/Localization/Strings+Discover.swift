@@ -52,6 +52,37 @@ extension Strings {
         }
     }
 
+    // MARK: - Discover Filter
+
+    enum DiscoverFilter {
+        static var title: String { String(localized: "discover.filter.title") }
+        static var button: String { String(localized: "discover.filter.button") }
+        static var apply: String { String(localized: "discover.filter.apply") }
+        static var clear: String { String(localized: "discover.filter.clear") }
+        static var sectionType: String { String(localized: "discover.filter.section.type") }
+        static var sectionGenres: String { String(localized: "discover.filter.section.genres") }
+        static var sectionSort: String { String(localized: "discover.filter.section.sort") }
+        static var sectionProviders: String { String(localized: "discover.filter.section.providers") }
+        static var sectionDecade: String { String(localized: "discover.filter.section.decade") }
+        static var sortPopularity: String { String(localized: "discover.filter.sort.popularity") }
+        static var sortRating: String { String(localized: "discover.filter.sort.rating") }
+        static var sortNewest: String { String(localized: "discover.filter.sort.newest") }
+        static var sortTitle: String { String(localized: "discover.filter.sort.title") }
+        static var anyDecade: String { String(localized: "discover.filter.decade.any") }
+        static var before1980: String { String(localized: "discover.filter.decade.before_1980") }
+        static var resultsTitle: String { String(localized: "discover.filter.results_title") }
+        static var empty: String { String(localized: "discover.filter.empty") }
+        static var emptyAction: String { String(localized: "discover.filter.empty_action") }
+
+        static func decade(_ startYear: Int) -> String {
+            String(format: String(localized: "discover.filter.decade.value"), startYear)
+        }
+
+        static func buttonAccessibility(activeCount: Int) -> String {
+            String(format: String(localized: "discover.filter.accessibility_count"), activeCount)
+        }
+    }
+
     // MARK: - Search Filter
 
     enum SearchFilter {

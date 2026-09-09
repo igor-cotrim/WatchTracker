@@ -95,15 +95,20 @@ struct DiscoverServiceTests {
     @Test func `discoverFiltered emits the dotted date parameter names`() async throws {
         let (service, recorder) = service()
         _ = try await service.discoverFiltered(
-            type: .movie,
-            genres: "28,12",
-            originCountry: "JP",
-            providers: "8",
-            watchRegion: "BR",
-            sortBy: "popularity.desc",
-            page: 2,
-            releaseDateGte: "2024-01-01",
-            firstAirDateGte: "2023-06-01"
+            DiscoverQuery(
+                type: .movie,
+                genres: "28,12",
+                originCountry: "JP",
+                providers: "8",
+                watchRegion: "BR",
+                sortBy: "popularity.desc",
+                page: 2,
+                releaseDateGte: "2024-01-01",
+                releaseDateLte: "2024-12-31",
+                firstAirDateGte: "2023-06-01",
+                firstAirDateLte: "2023-12-31",
+                voteCountGte: 300
+            )
         )
 
         let items = try queryItems(recorder)
@@ -115,11 +120,14 @@ struct DiscoverServiceTests {
         #expect(items.contains(URLQueryItem(name: "page", value: "2")))
         #expect(items.contains(URLQueryItem(name: "primary_release_date.gte", value: "2024-01-01")))
         #expect(items.contains(URLQueryItem(name: "first_air_date.gte", value: "2023-06-01")))
+        #expect(items.contains(URLQueryItem(name: "primary_release_date.lte", value: "2024-12-31")))
+        #expect(items.contains(URLQueryItem(name: "first_air_date.lte", value: "2023-12-31")))
+        #expect(items.contains(URLQueryItem(name: "vote_count.gte", value: "300")))
     }
 
     @Test func `discoverFiltered always sends type and drops nil filters`() async throws {
         let (service, recorder) = service()
-        _ = try await service.discoverFiltered(type: .tv)
+        _ = try await service.discoverFiltered(DiscoverQuery(type: .tv))
 
         let items = try queryItems(recorder)
         #expect(items.contains(URLQueryItem(name: "type", value: MediaType.tv.rawValue)))

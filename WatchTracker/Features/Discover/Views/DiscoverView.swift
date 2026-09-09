@@ -4,6 +4,12 @@ struct DiscoverView: View {
     @State private var browse: DiscoverBrowseViewModel
     @State private var search: SearchViewModel
 
+    /// The last filter the user committed, kept so reopening the sheet resumes from it
+    /// rather than from a blank form. `appliedFilter` doubles as the navigation trigger.
+    @State private var draftFilter = DiscoverFilter()
+    @State private var appliedFilter: DiscoverFilter?
+    @State private var isShowingFilters = false
+
     init(container: AppContainer) {
         _browse = State(wrappedValue: container.makeDiscoverBrowseViewModel())
         _search = State(wrappedValue: container.makeSearchViewModel())
@@ -24,6 +30,20 @@ struct DiscoverView: View {
                 .padding(.vertical)
             }
             .navigationTitle(Strings.Discover.title)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    filterButton
+                }
+            }
+            .sheet(isPresented: $isShowingFilters) {
+                DiscoverFilterView(initialFilter: draftFilter) { filter in
+                    draftFilter = filter
+                    appliedFilter = filter
+                }
+            }
+            .navigationDestination(item: $appliedFilter) { filter in
+                FilteredResultsView(filter: filter)
+            }
             .searchable(text: $search.query, prompt: Strings.Discover.searchPrompt)
             .onSubmit(of: .search) {
                 Task { await search.search() }
@@ -36,6 +56,27 @@ struct DiscoverView: View {
                 search.loadHistory()
             }
         }
+    }
+
+    /// Badged with how many criteria are active, so the user can tell at a glance that a
+    /// filter is still set without opening the sheet.
+    private var filterButton: some View {
+        Button {
+            isShowingFilters = true
+        } label: {
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .overlay(alignment: .topTrailing) {
+                    if draftFilter.activeCriteriaCount > 0 {
+                        Circle()
+                            .fill(Color.brandAccent)
+                            .frame(width: 8, height: 8)
+                            .offset(x: 3, y: -2)
+                    }
+                }
+        }
+        .accessibilityLabel(
+            Strings.DiscoverFilter.buttonAccessibility(activeCount: draftFilter.activeCriteriaCount)
+        )
     }
 
     // MARK: - Browse (non-search) content

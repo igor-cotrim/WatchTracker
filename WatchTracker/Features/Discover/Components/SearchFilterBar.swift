@@ -19,7 +19,9 @@ struct SearchFilterBar: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(types, id: \.label) { type in
-                    typeChip(label: type.label, value: type.value)
+                    FilterChip(title: type.label, isSelected: selectedType == type.value) {
+                        selectedType = type.value
+                    }
                 }
 
                 Divider()
@@ -29,23 +31,6 @@ struct SearchFilterBar: View {
             }
             .padding(.horizontal)
         }
-    }
-
-    private func typeChip(label: String, value: MediaType?) -> some View {
-        let isSelected = selectedType == value
-        return Button {
-            selectedType = value
-        } label: {
-            Text(verbatim: label)
-                .font(.caption)
-                .fontWeight(.medium)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isSelected ? Color.brandPrimary : Color(.systemGray5))
-                .foregroundStyle(isSelected ? .white : .primary)
-                .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
     }
 
     private var yearMenu: some View {

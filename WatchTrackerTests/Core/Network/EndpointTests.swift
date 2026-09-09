@@ -112,7 +112,7 @@ struct EndpointTests {
     }
 
     @Test func `discoverFiltered path`() {
-        #expect(Endpoint.discoverFiltered(type: .tv, genres: nil, originCountry: nil, providers: nil, watchRegion: nil, sortBy: nil, page: nil, releaseDateGte: nil, firstAirDateGte: nil).path == "/discover")
+        #expect(Endpoint.discoverFiltered(DiscoverQuery(type: .tv)).path == "/discover")
     }
 
     // MARK: - Methods
@@ -184,13 +184,13 @@ struct EndpointTests {
     }
 
     @Test func `discoverFiltered always includes type`() {
-        let items = Endpoint.discoverFiltered(type: .tv, genres: nil, originCountry: nil, providers: nil, watchRegion: nil, sortBy: nil, page: nil, releaseDateGte: nil, firstAirDateGte: nil).queryItems
+        let items = Endpoint.discoverFiltered(DiscoverQuery(type: .tv)).queryItems
         let typeItem = items?.first { $0.name == "type" }
         #expect(typeItem?.value == "tv")
     }
 
     @Test func `discoverFiltered with all params has all query items`() {
-        let items = Endpoint.discoverFiltered(type: .tv, genres: "16", originCountry: "JP", providers: nil, watchRegion: nil, sortBy: nil, page: nil, releaseDateGte: nil, firstAirDateGte: nil).queryItems
+        let items = Endpoint.discoverFiltered(DiscoverQuery(type: .tv, genres: "16", originCountry: "JP")).queryItems
         let genresItem = items?.first { $0.name == "with_genres" }
         let countryItem = items?.first { $0.name == "with_origin_country" }
         #expect(genresItem?.value == "16")

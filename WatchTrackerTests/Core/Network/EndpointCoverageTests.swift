@@ -59,11 +59,7 @@ struct EndpointCoverageTests {
 
     @Test func `discover and discoverFiltered share the discover path`() {
         let plain = Endpoint.discover(provider: nil, type: nil, region: nil)
-        let filtered = Endpoint.discoverFiltered(
-            type: .movie, genres: nil, originCountry: nil, providers: nil,
-            watchRegion: nil, sortBy: nil, page: nil,
-            releaseDateGte: nil, firstAirDateGte: nil
-        )
+        let filtered = Endpoint.discoverFiltered(DiscoverQuery(type: .movie))
         #expect(plain.path == filtered.path)
         #expect(plain.method == .GET)
         #expect(filtered.method == .GET)
@@ -145,9 +141,7 @@ struct EndpointCoverageTests {
 
     @Test func `discoverFiltered uses TMDB dotted date parameter names`() {
         let endpoint = Endpoint.discoverFiltered(
-            type: .movie, genres: nil, originCountry: nil, providers: nil,
-            watchRegion: nil, sortBy: nil, page: nil,
-            releaseDateGte: "2026-01-01", firstAirDateGte: "2026-02-01"
+            DiscoverQuery(type: .movie, releaseDateGte: "2026-01-01", firstAirDateGte: "2026-02-01")
         )
         let names = (endpoint.queryItems ?? []).map(\.name)
         #expect(names.contains("primary_release_date.gte"))

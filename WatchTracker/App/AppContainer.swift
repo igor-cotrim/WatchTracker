@@ -141,6 +141,10 @@ final class AppContainer {
         SearchViewModel(service: discover, historyStore: searchHistory, analytics: analytics)
     }
 
+    func makeDiscoverFilterViewModel(initialFilter: DiscoverFilter) -> DiscoverFilterViewModel {
+        DiscoverFilterViewModel(initialFilter: initialFilter, service: discover, analytics: analytics)
+    }
+
     func makeBrowseGridViewModel(for feed: BrowseFeed) -> BrowseGridViewModel {
         BrowseGridViewModel(feed: feed, service: discover)
     }

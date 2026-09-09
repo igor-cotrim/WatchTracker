@@ -1,17 +1,6 @@
 import Foundation
 @testable import WatchTracker
 
-struct DiscoverFilteredCall {
-    let type: MediaType
-    let genres: String?
-    let originCountry: String?
-    let providers: String?
-    let watchRegion: String?
-    let sortBy: String?
-    let page: Int?
-    let releaseDateGte: String?
-    let firstAirDateGte: String?
-}
 
 @MainActor
 final class MockDiscoverService: DiscoverServiceProtocol {
@@ -38,7 +27,7 @@ final class MockDiscoverService: DiscoverServiceProtocol {
     var searchCallCount = 0
     var trendingPagesRequested: [Int?] = []
     var lastSearchQuery: String? = nil
-    var discoverFilteredCalls: [DiscoverFilteredCall] = []
+    var discoverFilteredCalls: [DiscoverQuery] = []
 
     // MARK: - Protocol conformance
 
@@ -59,18 +48,8 @@ final class MockDiscoverService: DiscoverServiceProtocol {
         try discoverResult.get()
     }
 
-    func discoverFiltered(type: MediaType, genres: String?, originCountry: String?, providers: String?, watchRegion: String?, sortBy: String?, page: Int?, releaseDateGte: String?, firstAirDateGte: String?) async throws -> [MediaDetail] {
-        discoverFilteredCalls.append(DiscoverFilteredCall(
-            type: type,
-            genres: genres,
-            originCountry: originCountry,
-            providers: providers,
-            watchRegion: watchRegion,
-            sortBy: sortBy,
-            page: page,
-            releaseDateGte: releaseDateGte,
-            firstAirDateGte: firstAirDateGte
-        ))
+    func discoverFiltered(_ query: DiscoverQuery) async throws -> [MediaDetail] {
+        discoverFilteredCalls.append(query)
         return try discoverFilteredResult.get()
     }
 

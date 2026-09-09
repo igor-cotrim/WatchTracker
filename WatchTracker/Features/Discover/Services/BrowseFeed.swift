@@ -13,6 +13,8 @@ enum BrowseFeed: Hashable {
     case mood(MoodPreset)
     /// The "see all" grid behind a provider row. Movies only, matching what the row links to.
     case providerMovies(id: Int, sortBy: String)
+    /// Everything the user picked on the filter screen, as one paginated feed.
+    case filtered(DiscoverFilter)
 
     func page(_ page: Int, using service: any DiscoverServiceProtocol) async throws -> [MediaDetail] {
         switch self {
@@ -28,22 +30,34 @@ enum BrowseFeed: Hashable {
             return try await service.fetchUpcoming(page: page)
         case .mood(let preset):
             async let movies = service.discoverFiltered(
-                type: .movie, genres: preset.genresQueryValue(for: .movie), originCountry: nil,
-                providers: nil, watchRegion: nil, sortBy: preset.sortBy, page: page,
-                releaseDateGte: nil, firstAirDateGte: nil
+                DiscoverQuery(
+                    type: .movie,
+                    genres: preset.genresQueryValue(for: .movie),
+                    sortBy: preset.sortBy,
+                    page: page
+                )
             )
             async let shows = service.discoverFiltered(
-                type: .tv, genres: preset.genresQueryValue(for: .tv), originCountry: nil,
-                providers: nil, watchRegion: nil, sortBy: preset.sortBy, page: page,
-                releaseDateGte: nil, firstAirDateGte: nil
+                DiscoverQuery(
+                    type: .tv,
+                    genres: preset.genresQueryValue(for: .tv),
+                    sortBy: preset.sortBy,
+                    page: page
+                )
             )
             return try await MediaMerge.interleaved(movies, shows)
         case .providerMovies(let id, let sortBy):
             return try await service.discoverFiltered(
-                type: .movie, genres: nil, originCountry: nil,
-                providers: String(id), watchRegion: MediaMerge.watchRegion, sortBy: sortBy,
-                page: page, releaseDateGte: nil, firstAirDateGte: nil
+                DiscoverQuery(
+                    type: .movie,
+                    providers: String(id),
+                    watchRegion: MediaMerge.watchRegion,
+                    sortBy: sortBy,
+                    page: page
+                )
             )
+        case .filtered(let filter):
+            return try await service.discoverFiltered(filter.query(page: page))
         }
     }
 }
@@ -68,16 +82,22 @@ enum ProviderRow: CaseIterable {
         switch self {
         case .new:
             async let movies = service.discoverFiltered(
-                type: .movie, genres: nil, originCountry: nil,
-                providers: providers, watchRegion: MediaMerge.watchRegion,
-                sortBy: "primary_release_date.desc", page: nil,
-                releaseDateGte: since, firstAirDateGte: nil
+                DiscoverQuery(
+                    type: .movie,
+                    providers: providers,
+                    watchRegion: MediaMerge.watchRegion,
+                    sortBy: "primary_release_date.desc",
+                    releaseDateGte: since
+                )
             )
             async let shows = service.discoverFiltered(
-                type: .tv, genres: nil, originCountry: nil,
-                providers: providers, watchRegion: MediaMerge.watchRegion,
-                sortBy: "first_air_date.desc", page: nil,
-                releaseDateGte: nil, firstAirDateGte: since
+                DiscoverQuery(
+                    type: .tv,
+                    providers: providers,
+                    watchRegion: MediaMerge.watchRegion,
+                    sortBy: "first_air_date.desc",
+                    firstAirDateGte: since
+                )
             )
             return try await MediaMerge.byReleaseDateDesc(movies, shows)
 
@@ -100,14 +120,22 @@ enum ProviderRow: CaseIterable {
         using service: any DiscoverServiceProtocol
     ) async throws -> [MediaDetail] {
         async let movies = service.discoverFiltered(
-            type: .movie, genres: nil, originCountry: nil,
-            providers: providers, watchRegion: MediaMerge.watchRegion, sortBy: sortBy,
-            page: page, releaseDateGte: nil, firstAirDateGte: nil
+            DiscoverQuery(
+                type: .movie,
+                providers: providers,
+                watchRegion: MediaMerge.watchRegion,
+                sortBy: sortBy,
+                page: page
+            )
         )
         async let shows = service.discoverFiltered(
-            type: .tv, genres: nil, originCountry: nil,
-            providers: providers, watchRegion: MediaMerge.watchRegion, sortBy: sortBy,
-            page: page, releaseDateGte: nil, firstAirDateGte: nil
+            DiscoverQuery(
+                type: .tv,
+                providers: providers,
+                watchRegion: MediaMerge.watchRegion,
+                sortBy: sortBy,
+                page: page
+            )
         )
         return try await MediaMerge.interleaved(movies, shows)
     }
