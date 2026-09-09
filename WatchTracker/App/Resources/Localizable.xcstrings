@@ -380,6 +380,23 @@
         }
       }
     },
+    "auth.invalid_email": {
+      "comment": "Inline hint under the email field on the sign-up form when the address is malformed",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a valid email address."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Digite um email válido."
+          }
+        }
+      }
+    },
     "auth.name": {
       "comment": "Name text field placeholder shown only during sign up",
       "localizations": {

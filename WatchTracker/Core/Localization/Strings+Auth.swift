@@ -19,6 +19,8 @@ extension Strings {
         static var registerTitle: String { String(localized: "auth.register_title") }
         static var registerSubtitle: String { String(localized: "auth.register_subtitle") }
 
+        static var invalidEmail: String { String(localized: "auth.invalid_email") }
+
         static var passwordReqMinLength: String { String(localized: "auth.password_req_min_length") }
         static var passwordReqUppercase: String { String(localized: "auth.password_req_uppercase") }
         static var passwordReqNumber: String { String(localized: "auth.password_req_number") }

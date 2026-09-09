@@ -92,6 +92,14 @@ struct AuthView: View {
             )
             .onSubmit { focusedField = .password }
 
+            if let emailValidationMessage = viewModel.emailValidationMessage {
+                Text(verbatim: emailValidationMessage)
+                    .font(.caption)
+                    .foregroundStyle(Color(red: 1, green: 0.4, blue: 0.4))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity)
+            }
+
             AuthTextField(
                 placeholder: Strings.Auth.password,
                 text: $viewModel.password,

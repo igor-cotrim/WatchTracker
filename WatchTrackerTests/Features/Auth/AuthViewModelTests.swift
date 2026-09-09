@@ -47,10 +47,11 @@ struct AuthViewModelTests {
         (name: "Test", email: "user@example.com", password: "Password1", expected: true),
         (name: "", email: "user@example.com", password: "Password1", expected: false),
         (name: "Test", email: "", password: "Password1", expected: false),
+        (name: "Test", email: "not-an-email", password: "Password1", expected: false),
         (name: "Test", email: "user@example.com", password: "password1", expected: false),
         (name: "Test", email: "user@example.com", password: "Pass1", expected: false)
     ])
-    func `sign-up validity enforces the password policy`(
+    func `sign-up validity enforces the email and password policies`(
         name: String, email: String, password: String, expected: Bool
     ) {
         let (viewModel, _) = makeViewModel()
@@ -60,6 +61,29 @@ struct AuthViewModelTests {
         viewModel.password = password
 
         #expect(viewModel.isFormValid == expected)
+    }
+
+    /// Sign-in leaves the address to the server — an account may predate the policy.
+    @Test func `sign-in validity ignores the email policy`() {
+        let (viewModel, _) = makeViewModel()
+        viewModel.email = "not-an-email"
+        viewModel.password = "secret"
+
+        #expect(viewModel.isFormValid)
+        #expect(viewModel.emailValidationMessage == nil)
+    }
+
+    @Test func `the email hint stays hidden until something is typed`() {
+        let (viewModel, _) = makeViewModel()
+        viewModel.toggleMode()
+
+        #expect(viewModel.emailValidationMessage == nil)
+
+        viewModel.email = "user@"
+        #expect(viewModel.emailValidationMessage == Strings.Auth.invalidEmail)
+
+        viewModel.email = "user@example.com"
+        #expect(viewModel.emailValidationMessage == nil)
     }
 
     @Test func `password requirement flags mirror the policy`() {

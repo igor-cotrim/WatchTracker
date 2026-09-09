@@ -31,10 +31,19 @@ final class AuthViewModel {
     var passwordHasUppercase: Bool { PasswordPolicy.hasUppercase(password) }
     var passwordHasNumber: Bool { PasswordPolicy.hasNumber(password) }
 
-    /// Sign-in only requires both fields filled; the policy applies to new passwords only.
+    var isEmailValid: Bool { EmailPolicy.isValid(email) }
+
+    /// The inline hint under the email field. Stays nil while the field is still
+    /// empty so a fresh form does not open already complaining.
+    var emailValidationMessage: String? {
+        guard isSignUp, !email.isEmpty, !isEmailValid else { return nil }
+        return Strings.Auth.invalidEmail
+    }
+
+    /// Sign-in only requires both fields filled; the policies apply to new accounts only.
     var isFormValid: Bool {
         if isSignUp {
-            return !name.isEmpty && !email.isEmpty && PasswordPolicy.isValid(password)
+            return !name.isEmpty && isEmailValid && PasswordPolicy.isValid(password)
         } else {
             return !email.isEmpty && !password.isEmpty
         }
