@@ -2962,6 +2962,57 @@
         }
       }
     },
+    "offline.banner": {
+      "comment": "Shown app-wide while the device has no internet connection",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're offline."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você está offline."
+          }
+        }
+      }
+    },
+    "offline.banner_pending": {
+      "comment": "Shown app-wide while offline and local changes are waiting to sync",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're offline. Your changes will sync when you're back."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você está offline. Suas alterações serão sincronizadas quando a conexão voltar."
+          }
+        }
+      }
+    },
+    "offline.stale_data": {
+      "comment": "Banner shown above cached content when a refresh failed",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't refresh. Showing saved data."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível atualizar. Mostrando dados salvos."
+          }
+        }
+      }
+    },
     "person.appears_in.empty": {
       "comment": "Shown when TMDB lists no filmography for a person",
       "localizations": {

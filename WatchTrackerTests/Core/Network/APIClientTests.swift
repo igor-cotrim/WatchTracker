@@ -236,6 +236,110 @@ struct APIClientRequestTests {
         }
     }
 
+    // MARK: - Weak connections
+
+    @Test func `retries a read that lost its connection and returns the retried body`() async throws {
+        let (client, recorder, clock) = client([
+            .failing(.networkConnectionLost),
+            .json(Self.statsJSON),
+        ])
+
+        let stats: Stats = try await client.get(.profileStats)
+
+        #expect(stats.episodesWatched == 5)
+        #expect(recorder.requestCount == 2)
+        #expect(clock.sleeps == [.milliseconds(500)])
+    }
+
+    @Test func `gives up after two retries and reports a connectivity failure`() async {
+        let (client, recorder, clock) = client([.failing(.timedOut)])
+
+        await #expect(throws: APIError.self) {
+            let _: Stats = try await client.get(.profileStats)
+        }
+
+        #expect(recorder.requestCount == 3, "The first attempt plus two retries")
+        #expect(clock.sleeps == [.milliseconds(500), .milliseconds(1500)])
+    }
+
+    @Test func `wraps a transport failure as a connectivity APIError`() async throws {
+        let (client, _, _) = client([.failing(.notConnectedToInternet)])
+
+        let error: (any Error)? = await {
+            do {
+                let _: Stats = try await client.get(.profileStats)
+                return nil
+            } catch {
+                return error
+            }
+        }()
+
+        let apiError = try #require(error as? APIError)
+        #expect(apiError.isConnectivity)
+        #expect(apiError.userFacingMessage == Strings.Common.connectionError)
+    }
+
+    /// The backend has no idempotency keys, so a retried write is a duplicate row.
+    @Test func `never retries a write that lost its connection`() async {
+        let (client, recorder, _) = client([.failing(.networkConnectionLost)])
+
+        await #expect(throws: APIError.self) {
+            try await client.post(.addToWatchlist(tmdbId: 550, mediaType: .movie, status: .planToWatch))
+        }
+
+        #expect(recorder.requestCount == 1)
+    }
+
+    @Test func `retries a read that hit a 5xx`() async throws {
+        let (client, recorder, _) = client([
+            .json("{}", statusCode: 502),
+            .json(Self.statsJSON),
+        ])
+
+        let stats: Stats = try await client.get(.profileStats)
+
+        #expect(stats.episodesWatched == 5)
+        #expect(recorder.requestCount == 2)
+    }
+
+    @Test func `does not retry a write that hit a 5xx`() async {
+        let (client, recorder, _) = client([.json("{}", statusCode: 500)])
+
+        await #expect(throws: APIError.serverError) {
+            try await client.delete(.removeFromWatchlist(id: 1))
+        }
+
+        #expect(recorder.requestCount == 1)
+    }
+
+    /// A `.cancelled` request is a dismissed screen or a superseded debounce, not a bad link.
+    @Test func `does not retry a cancelled request`() async {
+        let (client, recorder, _) = client([.failing(.cancelled)])
+
+        await #expect(throws: APIError.self) {
+            let _: Stats = try await client.get(.profileStats)
+        }
+
+        #expect(recorder.requestCount == 1)
+    }
+
+    /// Losing the connection must never degrade into an anonymous request: the backend
+    /// answers 401, and a 401 signs the user out.
+    @Test func `sends nothing when the token provider fails`() async {
+        let (session, recorder) = StubURLProtocol.session([.json(Self.statsJSON)])
+        let client = APIClient(
+            session: session,
+            tokenProvider: { throw APIError.networkError(URLError(.notConnectedToInternet)) },
+            clock: ImmediateClock()
+        )
+
+        await #expect(throws: APIError.self) {
+            let _: Stats = try await client.get(.profileStats)
+        }
+
+        #expect(recorder.requestCount == 0)
+    }
+
     @Test func `encodes the endpoint body into the request`() async throws {
         let (client, recorder, _) = client([.json("", statusCode: 200)])
         try await client.post(.addToWatchlist(tmdbId: 550, mediaType: .movie, status: .planToWatch))

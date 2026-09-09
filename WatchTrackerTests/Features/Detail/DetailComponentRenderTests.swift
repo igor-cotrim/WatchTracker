@@ -28,6 +28,7 @@ struct DetailComponentRenderTests {
             mediaDetailService: service ?? MockMediaDetailService(),
             watchlistService: watchlistService ?? MockWatchlistService(),
             store: store ?? WatchlistStore(),
+            outbox: MutationOutbox(),
             analytics: MockAnalytics()
         )
     }

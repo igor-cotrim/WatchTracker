@@ -20,6 +20,14 @@ extension Strings {
         static var connectionError: String { String(localized: "error.connection") }
     }
 
+    // MARK: - Connectivity
+
+    enum Offline {
+        static var banner: String { String(localized: "offline.banner") }
+        static var bannerWithPendingChanges: String { String(localized: "offline.banner_pending") }
+        static var staleData: String { String(localized: "offline.stale_data") }
+    }
+
     // MARK: - API Errors
 
     enum Errors {

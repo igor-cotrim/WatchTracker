@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel: WatchlistViewModel
+    @Environment(AppContainer.self) private var container
 
     init(container: AppContainer) {
         _viewModel = State(wrappedValue: container.makeWatchlistViewModel())
@@ -29,6 +30,13 @@ struct HomeView: View {
             }
             .onAppear {
                 viewModel.syncFromCache()
+            }
+            // Coming back into signal is the moment the user expects the list to be right,
+            // not the next time they remember to pull down on it. `onChange` rather than
+            // `task(id:)` so the initial value does not fire a second launch fetch.
+            .onChange(of: container.network.isOnline) { _, isOnline in
+                guard isOnline else { return }
+                Task { await viewModel.fetchWatchlist(forceRefresh: true) }
             }
         }
     }

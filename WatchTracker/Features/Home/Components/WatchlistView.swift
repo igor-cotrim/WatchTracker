@@ -18,14 +18,26 @@ struct WatchlistView: View {
 
     var body: some View {
         ScrollView {
+            // Above the content rather than instead of it: a refresh that failed while the
+            // grid is populated leaves every card readable and tappable.
+            if let stale = viewModel.staleMessage {
+                NoticeBanner(
+                    message: stale,
+                    systemImage: "clock.arrow.circlepath",
+                    tint: .secondary
+                )
+                .transition(.opacity)
+            }
+
             Group {
-                if viewModel.isLoading {
+                // The spinner only takes the screen when there is nothing to take it from.
+                if viewModel.isLoading && viewModel.allItems.isEmpty {
                     ProgressView()
                         .frame(maxWidth: .infinity, minHeight: 200)
                         .transition(.opacity)
                 } else if let error = viewModel.errorMessage {
                     ErrorStateView(message: error) {
-                        await viewModel.fetchWatchlist()
+                        await viewModel.fetchWatchlist(forceRefresh: true)
                     }
                     .transition(.opacity)
                 } else if items.isEmpty {

@@ -6,6 +6,7 @@ private enum WatchingTab {
 
 struct WatchingView: View {
     @Environment(AppRouter.self) private var appRouter
+    @Environment(AppContainer.self) private var container
     @State private var viewModel: ContinueWatchingViewModel
     @State private var upcomingViewModel: UpcomingViewModel
     @State private var selectedTab: WatchingTab = .watching
@@ -61,6 +62,15 @@ struct WatchingView: View {
                 navigationPath.append(id)
                 appRouter.pendingShowId = nil
             }
+            // Both lists are stale the moment they were fetched without a connection, and
+            // the queued "mark watched" writes have just been replayed by `AppTabView`.
+            .onChange(of: container.network.isOnline) { _, isOnline in
+                guard isOnline else { return }
+                Task {
+                    await viewModel.fetch()
+                    if selectedTab == .upcoming { await upcomingViewModel.fetch() }
+                }
+            }
         }
     }
 
@@ -68,16 +78,29 @@ struct WatchingView: View {
 
     @ViewBuilder
     private var watchingContent: some View {
-        if viewModel.isLoading && viewModel.items.isEmpty {
-            skeletonList
-        } else if viewModel.items.isEmpty {
-            ContentUnavailableView {
-                Label(Strings.Watching.emptyTitle, systemImage: "play.rectangle.on.rectangle")
-            } description: {
-                Text(Strings.Watching.emptySubtitle)
+        VStack(spacing: 0) {
+            if let stale = viewModel.staleMessage {
+                NoticeBanner(message: stale, systemImage: "clock.arrow.circlepath", tint: .secondary)
             }
-        } else {
-            watchingList
+
+            if viewModel.isLoading && viewModel.items.isEmpty {
+                skeletonList
+            } else if let error = viewModel.errorMessage {
+                // Only reached with nothing on screen: with rows loaded the same failure is
+                // the banner above instead.
+                ErrorStateView(message: error) {
+                    await viewModel.fetch()
+                }
+                Spacer(minLength: 0)
+            } else if viewModel.items.isEmpty {
+                ContentUnavailableView {
+                    Label(Strings.Watching.emptyTitle, systemImage: "play.rectangle.on.rectangle")
+                } description: {
+                    Text(Strings.Watching.emptySubtitle)
+                }
+            } else {
+                watchingList
+            }
         }
     }
 
@@ -137,16 +160,27 @@ struct WatchingView: View {
 
     @ViewBuilder
     private var upcomingContent: some View {
-        if upcomingViewModel.isLoading && upcomingViewModel.items.isEmpty {
-            upcomingSkeletonList
-        } else if upcomingViewModel.items.isEmpty {
-            ContentUnavailableView {
-                Label(Strings.Upcoming.emptyTitle, systemImage: "calendar.badge.clock")
-            } description: {
-                Text(Strings.Upcoming.emptySubtitle)
+        VStack(spacing: 0) {
+            if let stale = upcomingViewModel.staleMessage {
+                NoticeBanner(message: stale, systemImage: "clock.arrow.circlepath", tint: .secondary)
             }
-        } else {
-            upcomingList
+
+            if upcomingViewModel.isLoading && upcomingViewModel.items.isEmpty {
+                upcomingSkeletonList
+            } else if let error = upcomingViewModel.errorMessage {
+                ErrorStateView(message: error) {
+                    await upcomingViewModel.fetch()
+                }
+                Spacer(minLength: 0)
+            } else if upcomingViewModel.items.isEmpty {
+                ContentUnavailableView {
+                    Label(Strings.Upcoming.emptyTitle, systemImage: "calendar.badge.clock")
+                } description: {
+                    Text(Strings.Upcoming.emptySubtitle)
+                }
+            } else {
+                upcomingList
+            }
         }
     }
 

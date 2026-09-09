@@ -21,6 +21,7 @@ struct MediaDetailViewModelPendingTests {
             mediaDetailService: service,
             watchlistService: watchlistService ?? MockWatchlistService(),
             store: store ?? WatchlistStore(),
+            outbox: MutationOutbox(),
             analytics: MockAnalytics()
         )
     }

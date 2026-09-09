@@ -40,4 +40,11 @@ enum SeasonState {
 struct WatchlistEntry: Equatable {
     let id: Int
     let status: WatchlistStatus
+
+    /// Stands in for the row id of a title added while offline, which only the backend can
+    /// assign. An entry wearing it may be shown and removed, but never addressed by id — the
+    /// queued write that created it is keyed by TMDB id instead.
+    static let unsyncedId = -1
+
+    var isSynced: Bool { id != WatchlistEntry.unsyncedId }
 }

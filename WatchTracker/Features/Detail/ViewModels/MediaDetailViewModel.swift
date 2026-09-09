@@ -57,6 +57,7 @@ final class MediaDetailViewModel {
     private let mediaDetailService: MediaDetailServiceProtocol
     private let watchlistService: WatchlistServiceProtocol
     private let store: WatchlistStore
+    private let outbox: MutationOutbox
     private let analytics: any AnalyticsTracking
 
     /// The title is identity, not a call argument: every method here is about *this* one,
@@ -67,6 +68,7 @@ final class MediaDetailViewModel {
         mediaDetailService: MediaDetailServiceProtocol,
         watchlistService: WatchlistServiceProtocol,
         store: WatchlistStore,
+        outbox: MutationOutbox,
         analytics: any AnalyticsTracking
     ) {
         self.mediaType = mediaType
@@ -74,6 +76,7 @@ final class MediaDetailViewModel {
         self.mediaDetailService = mediaDetailService
         self.watchlistService = watchlistService
         self.store = store
+        self.outbox = outbox
         self.analytics = analytics
     }
 
@@ -162,9 +165,10 @@ final class MediaDetailViewModel {
         isUpdatingStatus = true
         defer { isUpdatingStatus = false }
 
+        let previousEntry = entry
         do {
             let isNewEntry = entry == nil
-            if let entry {
+            if let entry, entry.isSynced {
                 try await watchlistService.updateStatus(id: entry.id, status: status)
             } else {
                 try await watchlistService.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: status)
@@ -190,6 +194,16 @@ final class MediaDetailViewModel {
             if status == .watching && mediaType == .tv {
                 await openFirstUnwatchedSeason()
             }
+        } catch where error.isConnectivityFailure {
+            // Queued under whichever key the server will understand: an entry that exists is
+            // addressed by its row id, one that does not yet exist by its TMDB id. Either way
+            // the button shows the status the user picked.
+            if let previousEntry, previousEntry.isSynced {
+                outbox.enqueue(.updateStatus(entryId: previousEntry.id, status: status))
+            } else {
+                outbox.enqueue(.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: status))
+            }
+            entry = WatchlistEntry(id: previousEntry?.id ?? WatchlistEntry.unsyncedId, status: status)
         } catch {
             actionError = error.userFacingMessage
         }
@@ -199,6 +213,14 @@ final class MediaDetailViewModel {
         guard let entry, !isUpdatingStatus else { return }
         isUpdatingStatus = true
         defer { isUpdatingStatus = false }
+
+        // Never sent in the first place: dropping the queued add is the whole removal.
+        guard entry.isSynced else {
+            outbox.cancel(.addToWatchlist(tmdbId: mediaId, mediaType: mediaType, status: entry.status))
+            self.entry = nil
+            return
+        }
+
         do {
             try await watchlistService.removeFromWatchlist(id: entry.id)
             analytics.capture(.watchlistRemoved, properties: [
@@ -208,6 +230,9 @@ final class MediaDetailViewModel {
             self.entry = nil
             // Refresh the store cache so Home sees the change immediately.
             await store.refresh(using: watchlistService)
+        } catch where error.isConnectivityFailure {
+            outbox.enqueue(.removeFromWatchlist(entryId: entry.id))
+            self.entry = nil
         } catch {
             actionError = error.userFacingMessage
         }
@@ -272,6 +297,12 @@ final class MediaDetailViewModel {
 
     // MARK: - Episode / season marking
 
+    /// Toggles one episode, optimistically.
+    ///
+    /// The checkmark moves on the tap and only comes back if the *server* refuses the write.
+    /// A request that never left the device is queued instead: a row that un-checks itself a
+    /// second later reads as the app losing the tap, and on a weak connection it would happen
+    /// constantly.
     func toggleEpisodeWatched(season: Int, episode: Int) async {
         guard mediaType == .tv else { return }
 
@@ -282,20 +313,22 @@ final class MediaDetailViewModel {
 
         let isWatched = episodes(inSeason: season)
             .first { $0.episodeNumber == episode }?.isWatched ?? false
+        setEpisode(season: season, episode: episode, watched: !isWatched)
 
         do {
             let statusChanged = isWatched
                 ? try await mediaDetailService.unmarkEpisodeWatched(tvId: mediaId, season: season, episode: episode)
                 : try await mediaDetailService.markEpisodeWatched(tvId: mediaId, season: season, episode: episode)
-
-            var updated = episodes(inSeason: season)
-            if let index = updated.firstIndex(where: { $0.episodeNumber == episode }) {
-                updated[index].isWatched = !isWatched
-                seasons[season] = .loaded(updated)
-            }
             await applyStatusChange(statusChanged)
+        } catch where error.isConnectivityFailure {
+            outbox.enqueue(.markEpisode(
+                tvId: mediaId,
+                season: season,
+                episode: episode,
+                watched: !isWatched
+            ))
         } catch {
-            // The episode list on screen is still correct — only the write failed.
+            setEpisode(season: season, episode: episode, watched: isWatched)
             actionError = error.userFacingMessage
         }
     }
@@ -306,19 +339,18 @@ final class MediaDetailViewModel {
         defer { pendingSeasons.remove(seasonNumber) }
 
         let allWatched = isSeasonAllWatched(seasonNumber)
+        let previous = episodes(inSeason: seasonNumber)
+        setSeason(seasonNumber, watched: !allWatched)
 
         do {
             let statusChanged = allWatched
                 ? try await mediaDetailService.unmarkSeasonWatched(tvId: mediaId, season: seasonNumber)
                 : try await mediaDetailService.markSeasonWatched(tvId: mediaId, season: seasonNumber)
-
-            seasons[seasonNumber] = .loaded(episodes(inSeason: seasonNumber).map { episode in
-                var episode = episode
-                episode.isWatched = !allWatched
-                return episode
-            })
             await applyStatusChange(statusChanged)
+        } catch where error.isConnectivityFailure {
+            outbox.enqueue(.markSeason(tvId: mediaId, season: seasonNumber, watched: !allWatched))
         } catch {
+            seasons[seasonNumber] = .loaded(previous)
             actionError = error.userFacingMessage
         }
     }
@@ -337,6 +369,8 @@ final class MediaDetailViewModel {
                 "media_id": mediaId,
                 "rating": rating
             ])
+        } catch where error.isConnectivityFailure {
+            outbox.enqueue(.rate(mediaType: mediaType, mediaId: mediaId, rating: rating))
         } catch {
             userRating = previous
             actionError = error.userFacingMessage
@@ -354,6 +388,8 @@ final class MediaDetailViewModel {
                 "media_type": mediaType.rawValue,
                 "media_id": mediaId
             ])
+        } catch where error.isConnectivityFailure {
+            outbox.enqueue(.rate(mediaType: mediaType, mediaId: mediaId, rating: nil))
         } catch {
             userRating = previous
             actionError = error.userFacingMessage
@@ -419,6 +455,23 @@ final class MediaDetailViewModel {
         syncEntryFromCache()
     }
 
+    /// Flips one episode in the loaded list. The optimistic update and its rollback are the
+    /// same operation with different arguments, so they are one function.
+    private func setEpisode(season: Int, episode: Int, watched: Bool) {
+        var updated = episodes(inSeason: season)
+        guard let index = updated.firstIndex(where: { $0.episodeNumber == episode }) else { return }
+        updated[index].isWatched = watched
+        seasons[season] = .loaded(updated)
+    }
+
+    private func setSeason(_ seasonNumber: Int, watched: Bool) {
+        seasons[seasonNumber] = .loaded(episodes(inSeason: seasonNumber).map { episode in
+            var episode = episode
+            episode.isWatched = watched
+            return episode
+        })
+    }
+
     private func markEveryLoadedEpisode(watched: Bool) {
         for (number, state) in seasons {
             seasons[number] = .loaded(state.episodes.map { episode in
@@ -429,11 +482,27 @@ final class MediaDetailViewModel {
         }
     }
 
-    /// Reads this title's watchlist row out of the shared cache.
+    /// Reads this title's watchlist row out of the shared cache, then lets anything still
+    /// queued have the last word.
+    ///
     /// If duplicates exist (legacy data created before the DB unique constraint),
     /// picks the most recently added row so the UI reflects the latest state.
+    ///
+    /// The queue overlay is what stops a change made offline from disappearing the moment the
+    /// screen is reopened: the cache cannot know about a write the backend has not seen.
     private func syncEntryFromCache() {
         let matches = store.cachedItems.filter { $0.tmdbId == mediaId && $0.mediaType == mediaType }
-        entry = matches.max { $0.id < $1.id }.map { WatchlistEntry(id: $0.id, status: $0.status) }
+        let cached = matches.max { $0.id < $1.id }.map { WatchlistEntry(id: $0.id, status: $0.status) }
+
+        switch outbox.pendingWatchlistChange(tmdbId: mediaId, mediaType: mediaType, entryId: cached?.id) {
+        case let .addToWatchlist(_, _, status):
+            entry = WatchlistEntry(id: cached?.id ?? WatchlistEntry.unsyncedId, status: status)
+        case let .updateStatus(entryId, status):
+            entry = WatchlistEntry(id: entryId, status: status)
+        case .removeFromWatchlist:
+            entry = nil
+        default:
+            entry = cached
+        }
     }
 }

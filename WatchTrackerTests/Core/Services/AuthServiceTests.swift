@@ -14,6 +14,7 @@ struct AuthServiceTests {
         let analytics = MockAnalytics()
         let router: AppRouter
         let store = WatchlistStore()
+        let outbox = MutationOutbox()
         let defaults: UserDefaults
         let notifications = MockNotificationScheduler()
         /// Private so a 401 raised by a suite running in parallel can't sign this
@@ -36,6 +37,7 @@ struct AuthServiceTests {
                 api: APIClient(session: session, tokenProvider: { "token" }, clock: ImmediateClock()),
                 router: router,
                 store: store,
+                outbox: outbox,
                 userDefaults: defaults,
                 notifications: notifications,
                 notificationCenter: notificationCenter
@@ -60,12 +62,65 @@ struct AuthServiceTests {
 
     @Test func `checkSession clears state when no session exists`() async {
         let harness = Harness()
-        harness.client.currentSessionResult = .failure(MockError.generic("no session"))
+        harness.client.currentSessionResult = .failure(AuthError.sessionMissing)
 
         await harness.service.checkSession()
 
         #expect(harness.service.isAuthenticated == false)
         #expect(harness.service.currentUser == nil)
+    }
+
+    /// Supabase refreshes an expired token over the network, so an offline launch fails the
+    /// same call a real sign-out does. Reading that as a sign-out drops the user on a login
+    /// screen they cannot use, with their whole cached library behind it.
+    @Test func `checkSession keeps the user signed in when the refresh could not reach Supabase`() async {
+        let harness = Harness()
+        try? await harness.service.signIn(email: "a@b.com", password: "secret")
+        harness.client.currentSessionResult = .failure(URLError(.notConnectedToInternet))
+
+        await harness.service.checkSession()
+
+        #expect(harness.service.isAuthenticated)
+    }
+
+    @Test func `checkSession leaves a never-signed-in user signed out when offline`() async {
+        let harness = Harness()
+        harness.client.currentSessionResult = .failure(URLError(.notConnectedToInternet))
+
+        await harness.service.checkSession()
+
+        #expect(harness.service.isAuthenticated == false)
+    }
+
+    /// A refused refresh token is a real sign-out even though it surfaces on the same call.
+    @Test func `checkSession signs out when Supabase refuses the refresh token`() async {
+        let harness = Harness()
+        try? await harness.service.signIn(email: "a@b.com", password: "secret")
+        harness.client.currentSessionResult = .failure(AuthError.api(
+            message: "invalid refresh token",
+            errorCode: .sessionNotFound,
+            underlyingData: Data(),
+            underlyingResponse: HTTPURLResponse(
+                url: URL(string: "https://example.supabase.co/auth/v1/token")!,
+                statusCode: 400,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+        ))
+
+        await harness.service.checkSession()
+
+        #expect(harness.service.isAuthenticated == false)
+    }
+
+    @Test func `signing out drops the writes the previous account never sent`() async throws {
+        let harness = Harness()
+        try await harness.service.signIn(email: "a@b.com", password: "secret")
+        harness.outbox.enqueue(.markEpisode(tvId: 1, season: 1, episode: 1, watched: true))
+
+        try await harness.service.signOut()
+
+        #expect(harness.outbox.isEmpty)
     }
 
     // MARK: - signUp
@@ -348,7 +403,7 @@ struct AuthServiceTests {
 
         let service = AuthService(
             client: client, api: api, router: AppRouter(analytics: MockAnalytics()), store: store,
-            userDefaults: defaults, notifications: MockNotificationScheduler(),
+            outbox: MutationOutbox(), userDefaults: defaults, notifications: MockNotificationScheduler(),
             notificationCenter: NotificationCenter()
         )
         try await service.signIn(email: "a@b.com", password: "secret")
@@ -374,7 +429,7 @@ struct AuthServiceTests {
 
         let service = AuthService(
             client: client, api: api, router: AppRouter(analytics: MockAnalytics()), store: WatchlistStore(),
-            userDefaults: defaults, notifications: MockNotificationScheduler(),
+            outbox: MutationOutbox(), userDefaults: defaults, notifications: MockNotificationScheduler(),
             notificationCenter: NotificationCenter()
         )
         try await service.signIn(email: "a@b.com", password: "secret")

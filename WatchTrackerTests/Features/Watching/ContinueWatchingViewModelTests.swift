@@ -11,7 +11,7 @@ struct ContinueWatchingViewModelTests {
         let item = TestFixtures.continueWatchingItem(nextEpisode: releasedEpisode)
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .success([item])
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.fetch()
         #expect(vm.items.count == 1)
     }
@@ -21,7 +21,7 @@ struct ContinueWatchingViewModelTests {
         let item = TestFixtures.continueWatchingItem(nextEpisode: futureEpisode)
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .success([item])
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.fetch()
         #expect(vm.items.isEmpty, "Items with unreleased episodes should be filtered out")
     }
@@ -30,7 +30,7 @@ struct ContinueWatchingViewModelTests {
         let item = TestFixtures.continueWatchingItem(nextEpisode: nil)
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .success([item])
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.fetch()
         #expect(vm.items.count == 1)
     }
@@ -38,7 +38,7 @@ struct ContinueWatchingViewModelTests {
     @Test func `fetch sets errorMessage on failure`() async {
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .failure(MockError.generic("network error"))
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.fetch()
         #expect(vm.errorMessage != nil)
         #expect(vm.items.isEmpty)
@@ -47,7 +47,7 @@ struct ContinueWatchingViewModelTests {
     @Test func `isLoading is false after fetch`() async {
         let mock = MockWatchlistService()
         mock.fetchContinueWatchingResult = .success([])
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.fetch()
         #expect(vm.isLoading == false)
     }
@@ -57,7 +57,7 @@ struct ContinueWatchingViewModelTests {
     @Test func `markAsWatched does nothing when item has no next episode`() async {
         let mock = MockWatchlistService()
         let item = TestFixtures.continueWatchingItem(nextEpisode: nil)
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.markAsWatched(item)
         #expect(mock.markEpisodeWatchedCalls.isEmpty)
     }
@@ -80,7 +80,7 @@ struct ContinueWatchingViewModelTests {
         let mock = MockWatchlistService()
         mock.markEpisodeWatchedResult = .success(nil)  // no status change
         mock.fetchContinueWatchingResult = .success([])
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.markAsWatched(item)
         // fetchWatchlist should NOT have been called (only fetchContinueWatching for re-fetch)
         #expect(mock.fetchWatchlistCallCount == 0)
@@ -94,7 +94,7 @@ struct ContinueWatchingViewModelTests {
         mock.fetchWatchlistResult = .success([])
         mock.fetchContinueWatchingResult = .success([])
         let store = WatchlistStore()
-        let vm = ContinueWatchingViewModel(service: mock, store: store)
+        let vm = ContinueWatchingViewModel(service: mock, store: store, outbox: MutationOutbox())
         await vm.markAsWatched(item)
         #expect(mock.fetchWatchlistCallCount == 1, "Should refresh cache when status changes")
     }
@@ -105,26 +105,29 @@ struct ContinueWatchingViewModelTests {
         let mock = MockWatchlistService()
         mock.markEpisodeWatchedResult = .success(nil)
         mock.fetchContinueWatchingResult = .success([])
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.markAsWatched(item)
         #expect(mock.fetchContinueWatchingCallCount >= 1)
     }
 
-    @Test func `markAsWatched sets errorMessage on service failure`() async {
+    /// A rejected write reports above the list rather than in place of it: the rows are
+    /// still correct, and only the one write failed.
+    @Test func `markAsWatched reports a service failure without taking the screen`() async {
         let episode = TestFixtures.nextEpisode()
         let item = TestFixtures.continueWatchingItem(nextEpisode: episode)
         let mock = MockWatchlistService()
         mock.markEpisodeWatchedResult = .failure(MockError.generic("error"))
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.markAsWatched(item)
-        #expect(vm.errorMessage != nil)
+        #expect(vm.staleMessage != nil)
+        #expect(vm.errorMessage == nil)
     }
 
     // MARK: - Helpers
 
     private func vm_markAsWatched(item: ContinueWatchingItem, mock: MockWatchlistService) async {
         mock.fetchContinueWatchingResult = .success([])
-        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore())
+        let vm = ContinueWatchingViewModel(service: mock, store: WatchlistStore(), outbox: MutationOutbox())
         await vm.markAsWatched(item)
     }
 }

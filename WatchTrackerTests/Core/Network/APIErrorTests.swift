@@ -14,8 +14,14 @@ struct APIErrorTests {
         #expect(error.errorDescription?.isEmpty == false)
     }
 
-    @Test func `networkError surfaces the underlying message`() {
-        let underlying = URLError(.timedOut)
+    /// A raw `NSURLError` string is no help to anyone, so the codes that mean "your
+    /// connection dropped" get the copy written for exactly that.
+    @Test func `networkError reads as a connection problem when it is one`() {
+        #expect(APIError.networkError(URLError(.timedOut)).errorDescription == Strings.Common.connectionError)
+    }
+
+    @Test func `networkError surfaces the underlying message when it is not a connectivity failure`() {
+        let underlying = URLError(.badServerResponse)
         let description = APIError.networkError(underlying).errorDescription
         #expect(description?.contains(underlying.localizedDescription) == true)
     }

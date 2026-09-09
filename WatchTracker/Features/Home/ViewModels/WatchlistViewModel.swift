@@ -7,7 +7,17 @@ final class WatchlistViewModel {
         didSet { rebuildDerived() }
     }
     private(set) var isLoading = false
-    private(set) var errorMessage: String?
+
+    /// Why the last load failed, and whether that should cost the whole screen. A refresh
+    /// that fails over a cached list is a banner; the same failure with nothing cached owns
+    /// the screen and offers the retry.
+    private(set) var failure: LoadFailure?
+
+    /// The message a full-screen error should show, if this failure earned one.
+    var errorMessage: String? { failure?.isBlocking == true ? failure?.message : nil }
+
+    /// The message to show above the list while it is on screen but out of date.
+    var staleMessage: String? { failure?.isBlocking == false ? failure?.message : nil }
 
     /// The status pill the user picked. `private(set)` with `select(status:)` as the door:
     /// the setter has a `didSet` that rebuilds every derived list, which is a side effect
@@ -77,7 +87,7 @@ final class WatchlistViewModel {
         guard forceRefresh || store.needsRefresh || store.cachedItems.isEmpty else { return }
 
         isLoading = true
-        errorMessage = nil
+        failure = nil
         defer { isLoading = false }
         do {
             let items = try await service.fetchWatchlist(status: nil, mediaType: nil)
@@ -85,7 +95,10 @@ final class WatchlistViewModel {
             store.replace(with: items)
             await notifyRevivedSeasons(in: items)
         } catch {
-            errorMessage = error.userFacingMessage
+            // With a list already on screen — from the cache restored at launch or from an
+            // earlier fetch — the failure is a banner. Replacing a working library with an
+            // error page because a refresh timed out is the offline bug, not the report of it.
+            failure = .from(error, hasContent: !allItems.isEmpty)
         }
     }
 
@@ -96,6 +109,9 @@ final class WatchlistViewModel {
         let cached = store.cachedItems
         if !cached.isEmpty {
             allItems = cached
+            // A blocking error raised when there was nothing to show is no longer the truth
+            // once the cache has something in it.
+            if failure?.isBlocking == true { failure = nil }
         }
     }
 

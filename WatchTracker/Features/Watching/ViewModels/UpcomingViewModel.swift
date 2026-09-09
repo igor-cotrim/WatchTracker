@@ -5,7 +5,12 @@ import Foundation
 final class UpcomingViewModel {
     private(set) var items: [UpcomingItem] = []
     private(set) var isLoading = false
-    private(set) var errorMessage: String?
+
+    /// Why the last load failed, and whether the schedule already on screen should survive it.
+    private(set) var failure: LoadFailure?
+
+    var errorMessage: String? { failure?.isBlocking == true ? failure?.message : nil }
+    var staleMessage: String? { failure?.isBlocking == false ? failure?.message : nil }
 
     private let service: WatchlistServiceProtocol
     private let notifications: NotificationScheduling
@@ -24,12 +29,12 @@ final class UpcomingViewModel {
 
     func fetch() async {
         isLoading = true
-        errorMessage = nil
+        failure = nil
         do {
             items = try await service.fetchUpcoming()
             await notifications.scheduleNotifications(for: items)
         } catch {
-            errorMessage = error.userFacingMessage
+            failure = .from(error, hasContent: !items.isEmpty)
         }
         isLoading = false
     }

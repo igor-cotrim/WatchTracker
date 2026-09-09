@@ -10,15 +10,30 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
         var statusCode: Int
         var body: Data
         var headers: [String: String]
+        /// When set, the request fails at the transport with this code instead of answering.
+        /// The only way to exercise the offline paths, which are about requests that never
+        /// reach a server rather than servers that answer badly.
+        var failure: URLError.Code?
 
-        init(statusCode: Int = 200, body: Data = Data("{}".utf8), headers: [String: String] = [:]) {
+        init(
+            statusCode: Int = 200,
+            body: Data = Data("{}".utf8),
+            headers: [String: String] = [:],
+            failure: URLError.Code? = nil
+        ) {
             self.statusCode = statusCode
             self.body = body
             self.headers = headers
+            self.failure = failure
         }
 
         static func json(_ string: String, statusCode: Int = 200) -> Stub {
             Stub(statusCode: statusCode, body: Data(string.utf8))
+        }
+
+        /// A request that never lands — a dropped connection, a timeout, no route at all.
+        static func failing(_ code: URLError.Code) -> Stub {
+            Stub(failure: code)
         }
     }
 
@@ -105,6 +120,12 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
         }
 
         let stub = recorder.next(for: request)
+
+        if let failure = stub.failure {
+            client?.urlProtocol(self, didFailWithError: URLError(failure))
+            return
+        }
+
         let response = HTTPURLResponse(
             url: request.url!,
             statusCode: stub.statusCode,

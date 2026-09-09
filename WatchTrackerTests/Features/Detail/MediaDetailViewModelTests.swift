@@ -20,6 +20,7 @@ struct MediaDetailViewModelTests {
             mediaDetailService: mediaDetailService ?? MockMediaDetailService(),
             watchlistService: watchlistService ?? MockWatchlistService(),
             store: store ?? WatchlistStore(),
+            outbox: MutationOutbox(),
             analytics: MockAnalytics()
         )
     }

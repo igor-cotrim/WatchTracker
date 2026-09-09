@@ -56,6 +56,21 @@ struct AppContainerTests {
         #expect(container.makeImportViewModel().result == nil)
     }
 
+    /// The gap the offline banner was hiding: a write can fail on a timeout while the monitor
+    /// still reports a usable path, so no reconnect is ever coming. `AppTabView` keys its
+    /// drain on this too, which is what stops such a write from sitting in the queue forever.
+    @Test func `hasPendingMutations reports a write that is still queued`() async {
+        let test = TestContainer()
+
+        #expect(test.container.hasPendingMutations == false)
+        test.outbox.enqueue(.markEpisode(tvId: 1, season: 1, episode: 1, watched: true))
+        #expect(test.container.hasPendingMutations)
+
+        await test.container.syncPendingMutations()
+
+        #expect(test.container.hasPendingMutations == false)
+    }
+
     // MARK: - The preview graph
 
     /// Previews used to reach the live backend and the keychain, because the app target

@@ -113,6 +113,7 @@ final class AuthService: AuthServiceProtocol {
     private let api: APIClient
     private let router: AppRouter
     private let store: WatchlistStore
+    private let outbox: MutationOutbox
     private let userDefaults: UserDefaults
     private let notifications: NotificationScheduling
     private let notificationCenter: NotificationCenter
@@ -136,6 +137,7 @@ final class AuthService: AuthServiceProtocol {
         api: APIClient,
         router: AppRouter,
         store: WatchlistStore,
+        outbox: MutationOutbox,
         userDefaults: UserDefaults = .standard,
         notifications: NotificationScheduling,
         // Injectable so parallel tests don't sign each other out: `.authUnauthorized`
@@ -146,6 +148,7 @@ final class AuthService: AuthServiceProtocol {
         self.api = api
         self.router = router
         self.store = store
+        self.outbox = outbox
         self.userDefaults = userDefaults
         self.notifications = notifications
         self.notificationCenter = notificationCenter
@@ -165,14 +168,29 @@ final class AuthService: AuthServiceProtocol {
         sessionExpiredMessage = nil
     }
 
+    /// Key under which the last known answer to "is someone signed in?" is kept, so a launch
+    /// that cannot reach Supabase has something better than `false` to fall back on.
+    static let wasSignedInKey = "auth.wasSignedIn"
+
     func checkSession() async {
         do {
             let session = try await client.currentSession()
             currentUser = session.user
             isAuthenticated = true
-        } catch {
+            userDefaults.set(true, forKey: AuthService.wasSignedInKey)
+        } catch where error.indicatesLostSession {
             currentUser = nil
             isAuthenticated = false
+            userDefaults.set(false, forKey: AuthService.wasSignedInKey)
+        } catch {
+            // Launched without a connection. Supabase refreshes an expired token over the
+            // network, so this failure says nothing about whether the session is still good —
+            // and treating it as a sign-out drops the user on a login screen they cannot use
+            // offline, with their whole cached library behind it.
+            //
+            // The last known state stands. Every request will still fail until the connection
+            // returns, and a genuine 401 still signs them out through `handleUnauthorized`.
+            isAuthenticated = userDefaults.bool(forKey: AuthService.wasSignedInKey)
         }
     }
 
@@ -189,6 +207,7 @@ final class AuthService: AuthServiceProtocol {
         currentUser = response.user
         isAuthenticated = true
         sessionExpiredMessage = nil
+        userDefaults.set(true, forKey: AuthService.wasSignedInKey)
     }
 
     func resetPassword(email: String) async throws {
@@ -220,6 +239,7 @@ final class AuthService: AuthServiceProtocol {
         currentUser = session.user
         isAuthenticated = true
         sessionExpiredMessage = nil
+        userDefaults.set(true, forKey: AuthService.wasSignedInKey)
     }
 
     func signOut() async throws {
@@ -261,8 +281,14 @@ final class AuthService: AuthServiceProtocol {
         router.selectedTab = .home
         router.pendingShowId = nil
 
-        // Previous account's cached watchlist.
+        // Previous account's cached watchlist, on disk included.
         store.clear()
+
+        // Writes the previous account never managed to send. Replaying them after someone
+        // else signs in would apply them to the wrong library.
+        outbox.clear()
+
+        userDefaults.set(false, forKey: AuthService.wasSignedInKey)
 
         // URL-keyed GET responses could otherwise serve another account's data.
         URLCache.shared.removeAllCachedResponses()

@@ -22,10 +22,24 @@ enum APIError: LocalizedError, Equatable {
         case .decodingError:
             return Strings.Errors.decoding
         case .networkError(let error):
-            return Strings.Errors.network(error.localizedDescription)
+            // A dropped connection gets the plain connection copy; anything else keeps the
+            // underlying description, which is the only clue about what actually broke.
+            return isConnectivity ? Strings.Common.connectionError
+                                  : Strings.Errors.network(error.localizedDescription)
         case .unknown:
             return Strings.Errors.unknown
         }
+    }
+
+    /// `true` when the request never reached the backend.
+    ///
+    /// Callers branch on this rather than on the case itself: it is what separates "queue
+    /// this write and keep the optimistic UI" from "the server refused it, put the row back".
+    nonisolated var isConnectivity: Bool {
+        guard case .networkError(let underlying) = self else { return false }
+        let nsError = underlying as NSError
+        return nsError.domain == NSURLErrorDomain
+            && URLError.connectivityCodes.contains(nsError.code)
     }
 
     /// `networkError` compares on the underlying `NSError` identity, since `Error`

@@ -19,6 +19,8 @@ final class TestContainer {
     let importData = MockImportService()
     let auth: MockAuthService
     let store = WatchlistStore()
+    let outbox = MutationOutbox()
+    let network = PreviewNetworkMonitor()
     let defaults: UserDefaults
     let container: AppContainer
 
@@ -33,9 +35,11 @@ final class TestContainer {
         container = AppContainer(
             auth: self.auth,
             router: AppRouter(analytics: analytics),
+            network: network,
             analytics: analytics,
             notifications: notifications,
             store: store,
+            outbox: outbox,
             defaults: defaults,
             watchlist: watchlist,
             discover: discover,

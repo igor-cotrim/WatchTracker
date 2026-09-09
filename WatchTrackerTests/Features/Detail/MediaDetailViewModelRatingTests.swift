@@ -12,6 +12,7 @@ struct MediaDetailViewModelSupplementalTests {
         let detail = MockMediaDetailService()
         let watchlist = MockWatchlistService()
         let store = WatchlistStore()
+        let outbox = MutationOutbox()
         let analytics = MockAnalytics()
         let viewModel: MediaDetailViewModel
 
@@ -24,6 +25,7 @@ struct MediaDetailViewModelSupplementalTests {
                 mediaDetailService: detail,
                 watchlistService: watchlist,
                 store: store,
+                outbox: outbox,
                 analytics: analytics
             )
         }

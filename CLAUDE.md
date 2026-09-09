@@ -30,12 +30,15 @@ DEVICE="iPhone 15" ./scripts/test.sh               # different simulator
 - Tag suites with `.tags(...)` from `Tags.swift` (`.model`, `.viewModel`, `.service`, `.pure`, `.async`)
 - Use `@Test(arguments:)` for table-driven cases instead of repeating a test body
 - Build models through `TestFixtures` (it decodes JSON, so private stored properties get populated)
-- Never let a test touch the network, `UserDefaults.standard`, `UNUserNotificationCenter`, or PostHog. Inject the seam instead:
+- Never let a test touch the network, the disk, `UserDefaults.standard`, `UNUserNotificationCenter`, or PostHog. Inject the seam instead:
   - HTTP → `APIClient(session:tokenProvider:clock:)` with `StubURLProtocol.session(_:)`
+  - A request that never lands → `StubURLProtocol.Stub.failing(_:)` with a `URLError.Code`
   - Debounce/retry delays → `ImmediateClock` (no real sleeping; assert on `clock.sleeps`)
   - Analytics → `AnalyticsTracking` / `MockAnalytics`
   - Notifications → `NotificationScheduling` / `MockNotificationScheduler`
   - Persistence → pass a `UserDefaults(suiteName:)` and tear it down
+  - Files (`WatchlistStore`, `MutationOutbox`) → `InMemoryArchive`, which is already the default
+  - Connectivity → `PreviewNetworkMonitor(isOnline:)`
   - Time → inject `now`/`calendar` (see `UpcomingViewModel`)
 
 ViewModel dependencies are injected via init with production defaults, so adding a seam never changes a View call-site.
@@ -142,6 +145,38 @@ default token source; the second should be empty apart from `PreviewAuthService(
 ### Networking
 
 `APIClient` is an `actor` singleton that handles all HTTP. It auto-injects the Supabase bearer token into every request and converts between snake_case JSON and camelCase Swift. Endpoints are defined as a type-safe `Endpoint` enum — add new API routes there.
+
+Its timeouts are short on purpose (15s per request, 45s per resource) and `send(_:)` retries
+**reads only** — a dropped connection or a 5xx gets two more attempts with a growing backoff,
+a 429 gets one honouring `Retry-After`. Writes are never retried: the backend has no
+idempotency keys, so a retried POST is a duplicate row.
+
+### Offline — MANDATORY
+
+The app is expected to work on a weak connection and to stay usable on none. Four rules, and
+every one of them exists because breaking it produced a bug:
+
+1. **Classify the failure before reacting to it.** `error.isConnectivityFailure`
+   (`Core/Extensions/Error+Connectivity.swift`) separates "the request never left the device"
+   from "the server answered no". Never branch on the `APIError` case for this.
+2. **A failed refresh must never take content off the screen.** ViewModels report through
+   `LoadFailure`: `.blocking` only when there is nothing to show, `.stale` (a `NoticeBanner`
+   above the content) whenever cached content is on screen. Skeletons follow the same rule —
+   `isLoading && items.isEmpty`, never `isLoading` alone.
+3. **A write that fails on connectivity is queued, not reverted.** The optimistic change
+   stands and the write goes to `MutationOutbox`; only a write the *server* refused rolls
+   back and raises an error. `AppTabView` drains the queue through
+   `AppContainer.syncPendingMutations()` when connectivity returns, before the screens refetch.
+4. **Only Supabase may end a session.** `error.indicatesLostSession` is the single test, and
+   `APIClient.supabaseTokenProvider` throws rather than sending an unauthenticated request
+   when the token cannot be refreshed — an anonymous request earns a 401, and a 401 signs the
+   user out, which turned "lost signal" into "logged out".
+
+`NetworkMonitor` (`Core/Network/`) is advisory only: every request is still attempted and
+every failure still handled. It drives the offline banner, the queue drain and the
+refetch-on-reconnect, nothing else. `WatchlistStore` and `MutationOutbox` persist through
+`FileArchiving` — `JSONFileArchive` in `AppContainer.live`, `InMemoryArchive` (the default)
+everywhere else, so no test or preview writes to disk.
 
 ### Auth
 
