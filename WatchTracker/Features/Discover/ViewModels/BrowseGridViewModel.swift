@@ -28,7 +28,7 @@ final class BrowseGridViewModel {
         currentPage = 1
         do {
             let items = try await feed.page(1, using: service)
-            state = .loaded(items)
+            state = .loaded(deduplicated([], appending: items))
             hasMorePages = !items.isEmpty
         } catch {
             state = .failed(error.userFacingMessage)
@@ -47,12 +47,24 @@ final class BrowseGridViewModel {
                 hasMorePages = false
             } else {
                 currentPage = nextPage
-                state = .loaded(existing + items)
+                state = .loaded(deduplicated(existing, appending: items))
             }
         } catch {
             // The page the user is on is still valid, so the grid stays put and `currentPage`
             // is left where it was — scrolling to the end again retries the same page rather
             // than skipping it, which is what the old rollback (`currentPage -= 1`) did.
         }
+    }
+
+    /// TMDB re-serves titles across pages, and the merged feeds fan out to a movie and a
+    /// TV query whose ids can collide, so the same poster can arrive twice. A grid keyed
+    /// on a repeated identity renders duplicated cells and blank holes, so pages are
+    /// filtered on the way in rather than at the call site.
+    private func deduplicated(
+        _ existing: [MediaDetail],
+        appending page: [MediaDetail]
+    ) -> [MediaDetail] {
+        var seen = Set(existing.map(\.identity))
+        return existing + page.filter { seen.insert($0.identity).inserted }
     }
 }

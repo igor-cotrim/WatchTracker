@@ -15,7 +15,7 @@ struct RankedMediaRowSection: View {
 
             ScrollView(.horizontal) {
                 HStack(alignment: .bottom, spacing: 4) {
-                    ForEach(Array(rankedItems.enumerated()), id: \.element.id) { index, item in
+                    ForEach(Array(rankedItems.enumerated()), id: \.element.identity) { index, item in
                         NavigationLink {
                             MediaDetailView(mediaType: item.mediaType, mediaId: item.id)
                         } label: {

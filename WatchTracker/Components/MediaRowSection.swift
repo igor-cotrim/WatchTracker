@@ -11,7 +11,7 @@ struct MediaRowSection: View {
 
             ScrollView(.horizontal) {
                 HStack(spacing: 12) {
-                    ForEach(items) { item in
+                    ForEach(items, id: \.identity) { item in
                         NavigationLink {
                             MediaDetailView(mediaType: item.mediaType, mediaId: item.id)
                         } label: {

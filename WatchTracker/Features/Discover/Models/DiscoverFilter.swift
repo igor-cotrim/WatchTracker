@@ -85,10 +85,12 @@ enum DiscoverType: String, CaseIterable, Hashable, Sendable, Identifiable {
         self == .anime ? "JP" : nil
     }
 
+    /// Plural throughout: these are chips that filter a whole list, not a badge naming one
+    /// title, so they share the watchlist picker's labels rather than `MediaTypeLabel`.
     var title: String {
         switch self {
-        case .movie: Strings.MediaTypeLabel.movie
-        case .tv: Strings.MediaTypeLabel.series
+        case .movie: Strings.MediaFilter.movies
+        case .tv: Strings.MediaFilter.tv
         case .anime: Strings.MediaFilter.anime
         }
     }

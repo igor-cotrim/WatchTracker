@@ -52,7 +52,7 @@ extension Strings {
         static var completed: String { String(localized: "status.completed") }
     }
 
-    // MARK: - Media Filter (Watchlist segmented picker)
+    // MARK: - Media Filter (plural type labels: watchlist picker, Discover filter chips)
 
     enum MediaFilter {
         static var all: String { String(localized: "media_filter.all") }
@@ -61,7 +61,7 @@ extension Strings {
         static var anime: String { String(localized: "media_filter.anime") }
     }
 
-    // MARK: - Media Type (badge labels)
+    // MARK: - Media Type (singular badge labels for one title)
 
     enum MediaTypeLabel {
         static var movie: String { String(localized: "media_type.movie") }

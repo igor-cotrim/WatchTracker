@@ -106,6 +106,44 @@ struct BrowseGridViewModelTests {
         #expect(service.trendingPagesRequested == [1])
     }
 
+    // MARK: - duplicates
+
+    /// TMDB re-serves the same titles on later pages. Appending them blind gave `ForEach`
+    /// repeated identities, which SwiftUI renders as duplicated cells with blank holes
+    /// between them — the bug this guards.
+    @Test func `loadMore drops titles already on screen`() async {
+        let (vm, _) = makeVM(pages: [
+            [TestFixtures.mediaDetail(id: 1), TestFixtures.mediaDetail(id: 2)],
+            [TestFixtures.mediaDetail(id: 2), TestFixtures.mediaDetail(id: 3)]
+        ])
+        await vm.loadInitial()
+        await vm.loadMore()
+        #expect(vm.items.map(\.identity) == ["movie-1", "movie-2", "movie-3"])
+    }
+
+    /// A movie and a series can carry the same TMDB id, so identity has to include the
+    /// type — deduplication must not collapse them into one.
+    @Test func `a movie and a series sharing an id both survive`() async {
+        let (vm, _) = makeVM(pages: [[
+            TestFixtures.mediaDetail(id: 7),
+            TestFixtures.mediaDetail(id: 7, title: nil, name: "Test Show", firstAirDate: "2021-03-02")
+        ]])
+        await vm.loadInitial()
+        #expect(vm.items.map(\.identity) == ["movie-7", "tv-7"])
+    }
+
+    @Test func `a page of nothing but duplicates still advances the page cursor`() async {
+        let (vm, _) = makeVM(pages: [
+            [TestFixtures.mediaDetail(id: 1)],
+            [TestFixtures.mediaDetail(id: 1)]
+        ])
+        await vm.loadInitial()
+        await vm.loadMore()
+        #expect(vm.items.count == 1)
+        #expect(vm.currentPage == 2)
+        #expect(vm.hasMorePages)
+    }
+
     @Test func `three sequential loadMore calls accumulate`() async {
         let (vm, _) = makeVM(pages: [
             [TestFixtures.mediaDetail(id: 1)],

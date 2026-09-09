@@ -48,7 +48,7 @@ struct BrowseGridView: View {
 
     private func grid(_ items: [MediaDetail]) -> some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            ForEach(items) { item in
+            ForEach(items, id: \.identity) { item in
                 NavigationLink {
                     MediaDetailView(mediaType: item.mediaType, mediaId: item.id)
                 } label: {
@@ -56,7 +56,7 @@ struct BrowseGridView: View {
                 }
                 .buttonStyle(PressedButtonStyle())
                 .onAppear {
-                    guard item.id == items.last?.id else { return }
+                    guard item.identity == items.last?.identity else { return }
                     Task { await viewModel?.loadMore() }
                 }
             }

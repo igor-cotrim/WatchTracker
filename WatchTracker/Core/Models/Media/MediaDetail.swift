@@ -25,6 +25,12 @@ struct MediaDetail: Codable, Identifiable {
         title != nil ? .movie : .tv
     }
 
+    /// Identity for lists. `id` is TMDB's, and TMDB numbers movies and series in separate
+    /// sequences — a film and a show routinely share one. Any list that mixes both types
+    /// (trending, search, the "see all" grid) must key on this instead, or `ForEach` sees
+    /// duplicate ids and renders repeated cells with holes between them.
+    var identity: String { "\(mediaType.rawValue)-\(id)" }
+
     /// The user's rating expressed on the 5-star / half-star scale (0.5…5.0).
     /// Backend stores 1–10 integers; each half-star is one point.
     var userStarRating: Double? {
